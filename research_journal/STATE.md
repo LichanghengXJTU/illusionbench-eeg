@@ -1,17 +1,16 @@
 # State
 
-**Tick #**: 15 (Paper first draft COMPLETE)
-**Last updated**: 2026-05-22 04:15 (Asia/Hong_Kong)
-**Current focus** (one sentence): **First-draft paper Sections 1-6 complete (~4,400 words)** — Intro + Related Work + Methods + Results + Discussion + Conclusion all in prose form. Now ready for polish: abstract refinement, figure polish, reference list, supplementary.
-**Last action**: Sections 5 Discussion (~720 words) + 6 Conclusion (~160 words) drafted. Discussion covers three subsections: dissociation interpretation, EEG decoder architectural implications, limitations.
-**Last action outcome**: Idea-001 8.7/10 with paper-ready first draft.
+**Tick #**: 16 (Paper consolidated + references)
+**Last updated**: 2026-05-22 04:30 (Asia/Hong_Kong)
+**Current focus** (one sentence): Single PAPER_DRAFT.md (~5,432 words across 6 sections + references) exists for one-shot reading; next is figures finalization or abstract polish.
+**Last action**: (a) Concatenated 5 section drafts + REFERENCES.md into PAPER_DRAFT.md via a small Python script (saved at /tmp/paper_concat.py). (b) Wrote REFERENCES.md with all ~50 cited works organized into 8 categories.
+**Last action outcome**: Paper has a single readable artifact. Idea-001 8.7/10.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 16): Two parallel directions to consider —
-  (a) **Polish abstract** — current PAPER_OUTLINE.md abstract is 250 words; revise for sharpness
-  (b) **Build a single CONSOLIDATED PAPER_DRAFT.md** by concatenating the 5 section drafts so the user has one document to read
-  (c) **References / bibliography file** with every paper cited so far
-Pick (b) + (c) for tick 16 — gives the user a single artifact to inspect.
+**Planned next action** (tick 17): Two parallel directions —
+  (a) Polish the abstract (currently ~250 words in PAPER_OUTLINE.md, can sharpen)
+  (b) Build a final-quality cover figure (currently `three_paradigm_panel.png` is the headline; could redraw with publication aesthetics)
+  Choose (a) for tick 17 (more value: abstract sets first impression); (b) for tick 18.
 **Confidence in current best idea (Idea-001)**: 8.7/10
 
 ## Working directories
