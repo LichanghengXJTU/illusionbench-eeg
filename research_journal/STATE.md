@@ -1,18 +1,13 @@
 # State
 
-**Tick #**: 13 (Methods prose drafted)
-**Last updated**: 2026-05-22 03:35 (Asia/Hong_Kong)
-**Current focus** (one sentence): Intro + Related Work + Methods drafted (~2,240 words); the paper has a complete first-half framing. Next: write the Results section consolidating E001-E025 with explicit numerical findings.
-**Last action**: Section 3 Methods prose draft v1 (~880 words). Five subsections covering stimulus pipeline, sensitivity indices, pixel-baseline sanity, model zoo, EEG-side Route A.
-**Last action outcome**: Sections 1-3 complete. Idea-001 8.7 maintained.
+**Tick #**: 14 (Results prose drafted)
+**Last updated**: 2026-05-22 03:55 (Asia/Hong_Kong)
+**Current focus** (one sentence): Sections 1-4 prose complete (~3,400 words). Next: Discussion + Conclusion to finish the paper draft.
+**Last action**: Section 4 Results prose draft v1 (~1,140 words). Subsections: §4.1 headline dissociation, §4.2 Thatcher details, §4.3 composite-face, §4.4 part-whole, §4.5 EEG Route A. All explicit numerical values cited.
+**Last action outcome**: Paper draft now covers Intro → Related Work → Methods → Results. Idea-001 score 8.7/10.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 14): Section 4 Results prose (~2 pages). Subsections:
-  4.1 Headline three-paradigm dissociation (Figure 1)
-  4.2 Thatcher details (E001-E005)
-  4.3 Composite-face (E023)
-  4.4 Part-Whole (E024)
-  4.5 Summary table
+**Planned next action** (tick 15): Section 5 Discussion prose (~1 page) + Section 6 Conclusion (~paragraph). Discussion covers: training-objective explanation hypothesis, EEG decoder architectural implications, limitations.
 **Confidence in current best idea (Idea-001)**: 8.7/10
 
 ## Working directories
