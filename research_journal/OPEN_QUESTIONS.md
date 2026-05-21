@@ -118,6 +118,20 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ---
 
+## Q010 (NEW from user 2026-05-22) — Are existing bio-inspired vision priors paradigm-consistent on IllusionBench-EEG, and competitive on standard EEG-to-image retrieval?
+
+- **Status**: untested
+- **Score**: 10/10 (Idea-003 hinges on this)
+- **Background**: CLIP-class shows paradigm-specific dissociation (Thatcher only). DINOv2 shows partial dissociation in the opposite direction (composite/part-whole only). Real human visual system handles all 3 paradigms with similar configural binding. A truly bio-aligned model should be paradigm-consistent.
+- **Discriminating experiment (tick 26)**: 
+  1. Extract CORnet-S (DiCarlo lab, Brain-Score top, open-source) on all 3 IllusionBench paradigms.
+  2. Check if ISI / CSI / PWI all > 1 AND any-two ratio < 2:1.
+  3. Compare with CLIP / DINOv2 dissociation pattern (Idea-001).
+- **Expected**: TBD — if CORnet shows paradigm-consistency: bio-inspired direction is validated, Idea-003 advances. If not: need PredNet / γ-net / NSD-aligned alternatives.
+- **Linked experiment IDs**: E028 (planned for tick 26).
+
+---
+
 ## Q009 (NEW from E023) — Why is CLIP-L14 systematically outlier in opposite direction across paradigms?
 
 - **Status**: untested

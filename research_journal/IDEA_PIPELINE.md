@@ -24,6 +24,43 @@ Ideas must have ≥ 2 prior-art citations before being added.
 
 ---
 
+## Idea-003 (NEW, user-proposed 2026-05-22): Bio-inspired visual prior for EEG-to-image decoding
+
+- **One-line pitch**: We've established that CLIP-class priors show paradigm-specific dissociation on holistic-face illusions (Thatcher: CLIP wins; Composite/Part-Whole: DINOv2 wins) and that the EEG bottleneck is uniform low-pass. The next-step contribution is to **build a bio-inspired visual prior** (LGN → V1 → V2 → V4 → IT with recurrence/feedback) and demonstrate it (a) is paradigm-consistent across the 3 illusion battery (no dissociation, like real human visual system), (b) competitive with CLIP-class on standard EEG-to-image retrieval. The framing is forward-modeling (brain mechanism → model architecture), avoiding the unscientific "model behavior → speculate brain mechanism" trap.
+
+- **Why now**: IllusionBench-EEG (Idea-001) gives the FALSIFICATION CRITERION for "human-aligned configural processing" — must work on all 3 paradigms, not just one. CLIP-class fails this test. Bio-inspired prior is the natural alternative hypothesis.
+
+- **Cheapest discriminating experiment (go/no-go in 1-2 ticks)**:
+  1. Extract CORnet-S (already open-source, DiCarlo lab, Brain-Score top-tier) on all 3 IllusionBench paradigms
+  2. Measure ISI / CSI / PWI; check if all 3 > 1 AND ratio between any two < 2:1 (paradigm-consistent)
+  3. If yes → bio-inspired direction validated; explore further (PredNet, γ-net, NSD-aligned models, then design our own LGN-IT stream model)
+  4. If no → fallback to PredNet / γ-net or design our own
+
+- **Prior art (must check before claiming novelty)**:
+  1. CORnet-S (Kubilius et al., NeurIPS 2019): 4-stage recurrent CNN matched to V1/V2/V4/IT. Code released. Brain-Score winner. **NOT yet applied to EEG-to-image decoding.**
+  2. PredNet / Lotter 2017: predictive coding on natural images.
+  3. γ-net (Linsley et al., ICLR 2020): horizontal lateral connections, contextual modulation. Specifically tested on contour illusions.
+  4. NSD-aligned vision encoders (Allen 2022, Conwell 2024): use fMRI activity to align image encoders to ventral stream. Some PyTorch checkpoints available.
+  5. **Key gap**: nobody has systematically replaced CLIP visual anchor in ATM/AVDE/ENIGMA with a bio-inspired vision encoder and measured perceptual + retrieval performance jointly.
+
+- **Failure modes considered**:
+  - (A) Bio-inspired model is paradigm-consistent but absolute values all low (ISI=2, CSI=1.4, PWI=1.4): "weak across the board". Avoid by calibrating to ISI ≥ 4 (human edge).
+  - (B) Bio-inspired model is paradigm-consistent but retrieval top-1 << CLIP-H/14: model too weak. Fallback: hybrid bio+CLIP architecture (bio head for perceptual axes, CLIP head for retrieval).
+  - (C) Existing bio-inspired model (CORnet / PredNet) ALREADY paradigm-consistent on our benchmark: contribution compressed to "show existing bio-inspired priors are better than CLIP for EEG decoding". Still publishable; faster paper.
+
+- **Downstream application argument** (why brain-aligned matters):
+  1. **Interpretable EEG decoding (strongest argument)**: per-layer mapping to brain regions enables attributing decoder decisions to specific cortical sources. CLIP is black-box dims.
+  2. **Faithful BCI reconstruction**: current EEG decoders reconstruct images well in retrieval-top-K but observers report reconstructions don't match subjective experience. Bio-aligned prior aligned to mechanism should improve perceptual fidelity.
+  3. **Cross-subject and clinical EEG decoding**: patient EEG (prosopagnosia, autism) requires interpretable representation to map damage to behavior.
+  4. **Cross-modal alignment**: bio-prior trained with brain-structural inductive bias should align more naturally to EEG (also brain signal).
+- **State of evidence**: Idea-001 results (paradigm-specific dissociation in CLIP) directly motivate Idea-003. EEG-side falsification criterion already in place via Route A.
+- **Score**: novelty 8 + feasibility 7 + evidence_potential 9 = **8.0** (provisional, raises to 9+ if go/no-go positive)
+- **Risks**:
+  - Bio-inspired vision models are smaller than modern CLIP (typically <100M params vs CLIP-bigG 1.8B) → retrieval performance likely lower. Mitigation: hybrid architecture, or argue from interpretability angle alone.
+  - Need to define "bio-inspired" rigorously; bio-fidelity vs ML-pragmatism trade-off is non-trivial.
+
+---
+
 ## Idea-002: Illusion-based EEG decoder benchmark suite
 
 - **One-line pitch**: A reproducible benchmark (face Thatcher + composite + part-whole) for evaluating whether EEG decoders preserve image-side illusion sensitivity, released alongside metrics and 12+ baseline models.

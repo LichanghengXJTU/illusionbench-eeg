@@ -1,14 +1,14 @@
 # State
 
-**Tick #**: 24 (Scaling law)
-**Last updated**: 2026-05-22 06:15 (Asia/Hong_Kong)
-**Current focus** (one sentence): Q008 fully answered — scale and language contributions decompose cleanly: same slope (~1.75 per log10 params) for image-text and SSL families, but image-text adds a +2.9 ISI constant offset.
-**Last action**: E026 scaling-law analysis. Fit per-family linear regressions on log-params: image-text ISI ≈ 1.71 × log10(M) + 0.82; DINOv2-SSL ISI ≈ 1.78 × log10(M) − 2.06. Generated `scaling_law.png` figure. Wrote E026 with predictive consequences.
-**Last action outcome**: A clean decomposition publishable result. Idea-001 8.7/10 maintained.
+**Tick #**: 25 (closed) → entering Idea-003 phase (bio-inspired vision prior for EEG decoding)
+**Last updated**: 2026-05-22 06:35 (Asia/Hong_Kong)
+**Current focus** (one sentence): User raised Idea-003 — flip the causal direction from "model behavior → speculate brain" (unscientific) to "brain mechanism → forward-modeled bio-inspired vision prior → test paradigm-consistency on IllusionBench-EEG + competitive retrieval". This is a sharper publishable contribution; cheapest go/no-go is testing CORnet-S.
+**Last action**: (a) Idea-003 added to IDEA_PIPELINE with full critique + failure modes + downstream-application arguments. (b) Q010 spawned. (c) Tick 25 E027 2AFC sanity check (Spearman ρ 0.93-0.97 across 3 paradigms) committed. Loop continues into tick 26.
+**Last action outcome**: Pivot decision confirmed — bio-inspired direction is high-value. Need go/no-go on CORnet-S immediately.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 25): The remaining high-value items from the Future Work menu are blocked or larger: (A) cross-decoder Route A is blocked on no released embeddings; (B) multi-prior decoder needs training; (C) 2AFC verification is doable but adds a few ticks; (D) non-face illusions extend benchmark substantially. Given that the project deliverable is now feature-complete + with this scaling-law refinement, consider whether to (a) implement 2AFC verification, (b) start non-face illusions, or (c) wrap up.
-**Confidence in current best idea (Idea-001)**: 8.7/10 + clean scaling decomposition supplementary
+**Planned next action** (tick 26): E028 — install CORnet-S checkpoint, add to model registry, extract on all 3 paradigms (Thatcher + Composite + Part-Whole), compute ISI/CSI/PWI, judge paradigm-consistency. If positive, expand to CORnet-S 10 time settings + Hybrid CORnet (from user's Harvard preliminary).
+**Confidence in current best idea**: 8.7/10 for Idea-001 (mature); 8.0/10 for Idea-003 (provisional, depends on tick 26 result)
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`
