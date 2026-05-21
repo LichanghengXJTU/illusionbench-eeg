@@ -112,3 +112,20 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
   variants and plot ISI vs param count separately for language vs no-language
   curves, we can attribute slope to language additivity.
 - **Linked experiment IDs**: E008 (planned, low priority — current data may suffice)
+
+---
+
+## Q009 (NEW from E023) — Why is CLIP-L14 systematically outlier in opposite direction across paradigms?
+
+- **Status**: untested
+- **Score**: 6/10
+- **Background**: OpenAI CLIP-L14 (P03) consistently behaves as an outlier:
+  Thatcher ISI 4.0 (others 5-6.8), composite CSI 1.60 corrected (others 1.10-1.20).
+  The systematic cross-paradigm reversal is suspicious — could be a real
+  training-data or architectural artifact, or it could reflect that P03's
+  ImageNet preprocessing differs from LAION CLIPs.
+- **Discriminating experiment**: Examine P03's image preprocessing pipeline
+  (Resize size, crop, normalization) vs LAION CLIPs. If preprocessing
+  differs, the apparent outlier may be measurement artifact. If same,
+  it's a genuine model-training-data effect worth investigating.
+- **Linked experiment IDs**: E009 (planned)
