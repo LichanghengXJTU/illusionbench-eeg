@@ -105,13 +105,16 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q008 (NEW from E005) — Can we separate the SCALE contribution from the LANGUAGE contribution?
 
-- **Status**: untested
+- **Status**: **ANSWERED — image-text family ≈ DINOv2 SSL in slope (1.71 vs 1.78 per log10 M params) but offset by +2.9 ISI units**
 - **Score**: 7/10
-- **Discriminating experiment**: We already have DINOv2 base (86M params, ISI 1.37)
-  → large (300M, 2.37) → giant (1.1B, 3.34). If we also test smaller CLIP/SigLIP
-  variants and plot ISI vs param count separately for language vs no-language
-  curves, we can attribute slope to language additivity.
-- **Linked experiment IDs**: E008 (planned, low priority — current data may suffice)
+- **Resolution experiment**: E026 fit per-family linear regressions on log-params (n=8 image-text, n=3 DINOv2).
+- **Result**: slopes nearly identical; intercepts differ by +2.9 in favor of
+  image-text family. **Language conditioning produces a constant offset on
+  top of the shared scale-emergence rate.**
+- **Implication**: image-text training crosses ISI=4 (lower human edge) at
+  ~72M image-encoder params; DINOv2 SSL would need ~2.5B params. Both
+  families exhibit the same slope ~1.75 per decade of scale.
+- **Linked experiment IDs**: E026 ✓
 
 ---
 
