@@ -28,3 +28,4 @@
 - 2026-05-22 03:55 — tick 14 — Section 4 Results prose drafted (~1140 words). 5 subsections covering all 3 paradigms + EEG Route A. Sections 1-4 complete (~3400 words total). PAPER_DRAFT_results.md saved.
 - 2026-05-22 04:15 — tick 15 — Sections 5 Discussion (~720 w) + 6 Conclusion (~160 w) drafted. **PAPER FIRST DRAFT COMPLETE Sections 1-6, ~4,400 words.** Discussion: training-objective × paradigm interpretation, EEG decoder implications, 5 limitations. Conclusion: concise summary of dissociation + EEG bottleneck + architectural prediction.
 - 2026-05-22 04:30 — tick 16 — Consolidated 5 section drafts + REFERENCES.md (~50 references in 8 categories) into single PAPER_DRAFT.md (~5,432 words). Built via /tmp/paper_concat.py. Paper now in one readable artifact.
+- 2026-05-22 04:45 — tick 17 — Abstract polished: v2 (190 words, claim-first) + v1 (250 words original) + 60-word elevator pitch saved to ABSTRACT.md.
