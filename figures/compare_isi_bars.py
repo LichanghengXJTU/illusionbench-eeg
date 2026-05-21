@@ -18,13 +18,17 @@ from matplotlib.patches import Patch
 PRIOR_CLASS = {
     "P02_clip_b32": "CLIP", "P03_clip_l14": "CLIP", "P04_clip_h14": "CLIP",
     "P05_clip_g14": "CLIP", "P06_clip_bigG14": "CLIP",
+    "P19_siglip_base_384": "SigLIP/MetaCLIP",
+    "P20_siglip_so400m": "SigLIP/MetaCLIP",
+    "P21_metaclip_h14": "SigLIP/MetaCLIP",
     "P07_dinov2_base": "DINOv2 (SSL)", "P08_dinov2_large": "DINOv2 (SSL)",
     "P09_dinov2_giant": "DINOv2 (SSL)",
     "P10_mae_huge": "MAE (SSL)", "P11_sdxl_vae": "VAE (pixel-stat)",
     "P17_facenet_vggface2": "Face-trained", "P18_facenet_casiawebface": "Face-trained",
     "N02_untrained_vit": "untrained / control", "N03_pixel": "untrained / control",
 }
-CLASS_ORDER = ["untrained / control", "VAE (pixel-stat)", "Face-trained", "MAE (SSL)", "DINOv2 (SSL)", "CLIP"]
+CLASS_ORDER = ["untrained / control", "VAE (pixel-stat)", "Face-trained", "MAE (SSL)",
+               "DINOv2 (SSL)", "SigLIP/MetaCLIP", "CLIP"]
 
 
 def main(args):

@@ -40,6 +40,38 @@ def load_clip_hf(hf_id: str, device: str = "cuda", dtype=torch.float16):
 
 
 # ---------------------------------------------------------------------
+# SigLIP / SigLIP2 — image-text contrastive with sigmoid loss (Q007)
+# ---------------------------------------------------------------------
+
+def load_siglip_hf(hf_id: str, device: str = "cuda", dtype=torch.float16):
+    from transformers import AutoModel, AutoProcessor
+    model = AutoModel.from_pretrained(hf_id, torch_dtype=dtype).to(device).eval()
+    processor = AutoProcessor.from_pretrained(hf_id)
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        inputs = processor(images=list(images), return_tensors="pt").to(device)
+        if inputs["pixel_values"].dtype != dtype:
+            inputs["pixel_values"] = inputs["pixel_values"].to(dtype)
+        with torch.no_grad():
+            feats = model.get_image_features(pixel_values=inputs["pixel_values"])
+            feats = F.normalize(feats, dim=-1)
+        return feats.cpu().float().numpy()
+
+    out_dim = int(model.config.vision_config.hidden_size)
+    info = {"hf_id": hf_id, "output_dim": out_dim}
+    return embed, info, model
+
+
+# ---------------------------------------------------------------------
+# MetaCLIP — same CLIPModel API, different data curation (Q007)
+# ---------------------------------------------------------------------
+
+def load_metaclip_hf(hf_id: str, device: str = "cuda", dtype=torch.float16):
+    # MetaCLIP uses the same architecture as CLIP — load via CLIPModel
+    return load_clip_hf(hf_id, device=device, dtype=dtype)
+
+
+# ---------------------------------------------------------------------
 # DINOv2 — HuggingFace transformers
 # ---------------------------------------------------------------------
 
@@ -214,6 +246,10 @@ REGISTRY: dict[str, Callable] = {
     # Face-trained backbones (Q003)
     "P17_facenet_vggface2":    lambda: load_facenet_pytorch("vggface2"),
     "P18_facenet_casiawebface": lambda: load_facenet_pytorch("casia-webface"),
+    # Image-text contrastive variants (Q007) — discriminate CLIP-specific vs family-general
+    "P19_siglip_base_384":      lambda: load_siglip_hf("google/siglip-base-patch16-384"),
+    "P20_siglip_so400m":        lambda: load_siglip_hf("google/siglip-so400m-patch14-384"),
+    "P21_metaclip_h14":         lambda: load_metaclip_hf("facebook/metaclip-h14-fullcc2.5b"),
     # Negative controls
     "N02_untrained_vit": lambda: load_untrained_vit(),
     "N03_pixel":         lambda: load_pixel_baseline(),

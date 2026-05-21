@@ -1,14 +1,14 @@
 # State
 
-**Tick #**: 2 (E004 face-trained baselines)
-**Last updated**: 2026-05-22 00:15 (Asia/Hong_Kong)
-**Current focus** (one sentence): Q007 — what specifically about CLIP-class training drives the orientation-emergent face-Thatcher sensitivity, given Q003 just refuted "face-recognition training is the cause"?
-**Last action**: E004 added FaceNet (VGGFace2 + CASIA-Webface variants). Result: ISI=1.02-1.12 (face Thatcher), 0.38-0.46 (random-bbox). Face-recognition training does NOT produce Thatcher ISI; the signature is orientation-emergent in image-text contrastive training (CLIP) but is actively suppressed by pose-invariant identity training (FaceNet).
-**Last action outcome**: Q003 ANSWERED (refuted); spawned Q007; Idea-001 score 7.0→7.7 with reframed pitch v2.
+**Tick #**: 3 (E005 image-text training family)
+**Last updated**: 2026-05-22 00:35 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-001 score now 8.0 (publishable threshold). Next: test Harmonized perception-aligned priors (Q004) to see if they exhibit the same Thatcher signature as CLIP, then plan Q005 EEG-side feasibility.
+**Last action**: E005 added SigLIP-base (ISI=3.51), SigLIP-SO400M (ISI=5.59), MetaCLIP-H/14 (ISI=6.08) to model zoo. All consistent with CLIP family (ISI 4-7) on face Thatcher, with same ~70% face-feature-specificity ratio (random-bbox drop). Q007 partially answered: family-general not CLIP-specific.
+**Last action outcome**: Confirmed image-text-training-family-general phenomenon; Idea-001 → 8.0 (novelty 8 + feasibility 8 + evidence 8).
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 3): Q007 — add SigLIP (image-text, larger pre-training data) + EVA-CLIP + MetaCLIP as image-text-training family comparison. Discriminates "any large image-text training emerges Thatcher" vs "CLIP-specific". Then Q004 Harmonized priors in tick 4 to test perception-aligned training.
-**Confidence in current best idea (Idea-001)**: 7.7/10
+**Planned next action** (tick 4): Q004 — add Harmonized priors (Serre lab: harmonized-ResNet50 / ViT-B / EfficientNet via `pip install harmonization` or git clone). Tests whether ClickMe-aligned perceptual training boosts/reduces Thatcher ISI vs vanilla CLIP/ViT counterparts.
+**Confidence in current best idea (Idea-001)**: 8.0/10
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`

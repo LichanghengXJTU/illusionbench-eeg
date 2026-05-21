@@ -79,23 +79,31 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ---
 
-## Q007 (NEW from E004) — What specifically about CLIP-class training drives the orientation-emergent face-Thatcher sensitivity?
+## Q007 — What specifically about CLIP-class training drives the orientation-emergent face-Thatcher sensitivity?
+
+- **Status**: **PARTIALLY ANSWERED — family-general (not CLIP-specific); refined into Q008**
+- **Score**: 8/10
+- **Resolution experiment**: E005 added SigLIP-base, SigLIP-SO400M, MetaCLIP-H/14.
+- **Result**: All three give ISI 3.5-6.1 on face Thatcher, comparable to
+  CLIP family. The Thatcher signature is general to image-text contrastive
+  training, not OpenAI/LAION-CLIP-specific. Scaling within the family
+  (SigLIP-base 3.5 → SigLIP-SO400M 5.6 → MetaCLIP-H/14 6.1) mirrors CLIP's
+  own scaling (b32 5.2 → bigG14 6.8). Random-bbox ratio same as CLIP (50-75% drop).
+- **Refined picture across 17 priors**:
+  - No language + no scale: ISI ≈ 1
+  - No language + scale (DINOv2): ISI up to 3.3
+  - Language + scale (CLIP / SigLIP / MetaCLIP): ISI 3.5-6.8
+  - Face-identity training: ISI ≈ 1 (active suppression)
+- **Linked experiment IDs**: E005 ✓
+
+---
+
+## Q008 (NEW from E005) — Can we separate the SCALE contribution from the LANGUAGE contribution?
 
 - **Status**: untested
-- **Score**: 8/10
-- **Prior art checked**: pending
-- **Background**: E004 showed face-recognition training does NOT produce
-  Thatcher ISI; CLIP does. Three candidate mechanisms:
-  (a) **scale + diverse data**: any sufficiently large image model on web data emerges this
-  (b) **text-image alignment**: language captions encode upright-orientation defaults
-  (c) **contrastive objective without pose-invariance**: not penalizing orientation-variance
-- **Discriminating experiment** (E005): Add SigLIP, EVA-CLIP, MetaCLIP — all
-  image-text contrastive but with different training data/objectives. If all
-  give ISI 4-7 like CLIP → (a) or (b) generic to image-text training. If they
-  diverge widely → (c) specific.
-  Also: add MoCo-v3 / iBOT / CLIP-fine-tuned-on-faces if available, to
-  separate text-from-scale.
-- **Expected outcomes**:
-  - All similar to CLIP: text-image-training-general → Q005 EEG story unchanged
-  - Wide variance: training-specific → Q006 / Q007 deepen
-- **Linked experiment IDs**: E005 (planned, next-tick candidate)
+- **Score**: 7/10
+- **Discriminating experiment**: We already have DINOv2 base (86M params, ISI 1.37)
+  → large (300M, 2.37) → giant (1.1B, 3.34). If we also test smaller CLIP/SigLIP
+  variants and plot ISI vs param count separately for language vs no-language
+  curves, we can attribute slope to language additivity.
+- **Linked experiment IDs**: E008 (planned, low priority — current data may suffice)

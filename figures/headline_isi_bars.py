@@ -19,6 +19,10 @@ PRIOR_CLASS = {
     "P04_clip_h14": "CLIP",
     "P05_clip_g14": "CLIP",
     "P06_clip_bigG14": "CLIP",
+    # SigLIP / MetaCLIP (other image-text contrastive variants — Q007)
+    "P19_siglip_base_384": "SigLIP/MetaCLIP",
+    "P20_siglip_so400m": "SigLIP/MetaCLIP",
+    "P21_metaclip_h14": "SigLIP/MetaCLIP",
     # DINOv2 (self-supervised)
     "P07_dinov2_base": "DINOv2 (SSL)",
     "P08_dinov2_large": "DINOv2 (SSL)",
@@ -37,6 +41,7 @@ PRIOR_CLASS = {
 
 CLASS_COLOR = {
     "CLIP": "#d62728",
+    "SigLIP/MetaCLIP": "#8c564b",
     "DINOv2 (SSL)": "#ff7f0e",
     "MAE (SSL)": "#bcbd22",
     "VAE (pixel-stat)": "#7f7f7f",
@@ -45,7 +50,8 @@ CLASS_COLOR = {
 }
 
 # Sort within-class by ISI ascending; classes ordered low-to-high baseline expectation
-CLASS_ORDER = ["untrained / control", "VAE (pixel-stat)", "Face-trained", "MAE (SSL)", "DINOv2 (SSL)", "CLIP"]
+CLASS_ORDER = ["untrained / control", "VAE (pixel-stat)", "Face-trained", "MAE (SSL)",
+               "DINOv2 (SSL)", "SigLIP/MetaCLIP", "CLIP"]
 
 
 def main(args):

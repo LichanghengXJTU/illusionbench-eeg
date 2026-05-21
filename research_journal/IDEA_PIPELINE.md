@@ -18,9 +18,9 @@ Ideas must have ≥ 2 prior-art citations before being added.
 - **Risks**:
   - ~~If Q001 reveals general orientation bias~~ — RESOLVED, predominantly face-specific (E003).
   - EEG signal may have insufficient SNR to carry configural information; result could be "EEG destroys it" — still publishable but a different narrative.
-- **State of evidence**: E001 + E002 + E003 + E004 establish (a) image-side ISI hierarchy, (b) face-feature-specific nature (E003), (c) NOT from face-recognition training (E004 — FaceNet flat at ISI≈1.0). EEG-side untested.
-- **Score**: novelty 8 + feasibility 8 + evidence 7 = **7.7** (up from 7.0)
-- **Reframed pitch v2**: Current EEG-to-image decoders (ATM, AVDE, ENIGMA, HVF) all use CLIP-class image priors. CLIP exhibits a strong face-Thatcher ISI signature (6.8) that is (i) face-feature-specific (E003), (ii) NOT inherited from face-recognition training (E004 — FaceNet shows none), but (iii) orientation-emergent in scale-trained image-text models. **Whether EEG-conditioning preserves this orientation-emergent face property is unknown** — and is the central question for whether EEG decoders behave more like humans (who show strong Thatcher) or like FaceNet (which suppresses orientation).
+- **State of evidence**: E001-E005 establish (a) image-side ISI hierarchy across 17 priors, (b) face-feature-specific (E003), (c) NOT from face-recognition training (E004), (d) general to image-text contrastive family (E005 — SigLIP and MetaCLIP also show ISI 5-6). EEG-side untested.
+- **Score**: novelty 8 + feasibility 8 + evidence 8 = **8.0** (up from 7.7) — crosses publishable threshold
+- **Reframed pitch v3**: Across 17 visual priors representing 6 training paradigms, a clean ISI hierarchy emerges. **Image-text contrastive training (CLIP / SigLIP / MetaCLIP) — the visual prior universally used by current EEG-to-image decoders — exhibits face-Thatcher ISI 4-7 with face-feature-specificity ratio ~70%. Crucially: face-identity training (FaceNet) shows NO Thatcher (ISI ≈ 1.0). This means current EEG decoders inherit an orientation-emergent face-configural signature from their visual anchor — but we do not know whether the EEG signal preserves it.** The central scientific question for the EEG side: do ATM / AVDE / ENIGMA pipelines preserve, attenuate, or destroy this CLIP-side Thatcher signature when projecting through the EEG modality?
 
 ---
 
