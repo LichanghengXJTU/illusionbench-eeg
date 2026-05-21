@@ -21,9 +21,10 @@ PRIOR_CLASS = {
     "P07_dinov2_base": "DINOv2 (SSL)", "P08_dinov2_large": "DINOv2 (SSL)",
     "P09_dinov2_giant": "DINOv2 (SSL)",
     "P10_mae_huge": "MAE (SSL)", "P11_sdxl_vae": "VAE (pixel-stat)",
+    "P17_facenet_vggface2": "Face-trained", "P18_facenet_casiawebface": "Face-trained",
     "N02_untrained_vit": "untrained / control", "N03_pixel": "untrained / control",
 }
-CLASS_ORDER = ["untrained / control", "VAE (pixel-stat)", "MAE (SSL)", "DINOv2 (SSL)", "CLIP"]
+CLASS_ORDER = ["untrained / control", "VAE (pixel-stat)", "Face-trained", "MAE (SSL)", "DINOv2 (SSL)", "CLIP"]
 
 
 def main(args):

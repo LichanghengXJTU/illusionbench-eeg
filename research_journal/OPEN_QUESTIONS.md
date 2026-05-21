@@ -32,12 +32,16 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q003 — Do face-trained backbones (FaceNet, ArcFace) show the strongest ISI?
 
-- **Status**: untested
-- **Score**: 8/10 (decisive for face-specificity claim)
-- **Prior art checked**: Jacob 2021 reported Thatcher emergence in VGG-Face; no head-to-head with CLIP/DINOv2.
-- **Discriminating experiment**: Add FaceNet (VGGFace2-trained Inception-Resnet) and ArcFace to model zoo; extract on FFHQ Thatcher; compute ISI.
-- **Expected (face-specificity hypothesis)**: ISI(face-trained) > ISI(CLIP-bigG) > ISI(DINOv2-giant) > ...
-- **Linked experiment IDs**: E005 (planned)
+- **Status**: **ANSWERED — REFUTED. Face-trained models show essentially NO Thatcher effect.**
+- **Score**: 8/10 (decisive negative result reshaped the project framing)
+- **Resolution experiment**: E004 added P17 FaceNet-VGGFace2 + P18 FaceNet-CASIA-Webface.
+- **Result**: FaceNet ISI(face Thatcher) = 1.02-1.12, compared with CLIP-bigG = 6.76.
+  FaceNet's d_up=0.38 and d_inv=0.34 are BOTH large (it notices feature
+  inversion) but EQUAL across orientations.
+- **Implication**: The CLIP-class Thatcher signal is NOT a face-recognition
+  feature — it is an orientation-emergent property absent in models trained
+  for pose-invariant identity matching. Tracking the explanation now becomes Q007.
+- **Linked experiment IDs**: E004 ✓
 
 ---
 
@@ -72,3 +76,26 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 - **Prior art checked**: not yet
 - **Discriminating experiment**: TBD; possibly compare CLIP variants trained on differently-curated subsets if available, OR compute "face-image fraction" of LAION-2B and correlate.
 - **Linked experiment IDs**: E0?? (deferred)
+
+---
+
+## Q007 (NEW from E004) — What specifically about CLIP-class training drives the orientation-emergent face-Thatcher sensitivity?
+
+- **Status**: untested
+- **Score**: 8/10
+- **Prior art checked**: pending
+- **Background**: E004 showed face-recognition training does NOT produce
+  Thatcher ISI; CLIP does. Three candidate mechanisms:
+  (a) **scale + diverse data**: any sufficiently large image model on web data emerges this
+  (b) **text-image alignment**: language captions encode upright-orientation defaults
+  (c) **contrastive objective without pose-invariance**: not penalizing orientation-variance
+- **Discriminating experiment** (E005): Add SigLIP, EVA-CLIP, MetaCLIP — all
+  image-text contrastive but with different training data/objectives. If all
+  give ISI 4-7 like CLIP → (a) or (b) generic to image-text training. If they
+  diverge widely → (c) specific.
+  Also: add MoCo-v3 / iBOT / CLIP-fine-tuned-on-faces if available, to
+  separate text-from-scale.
+- **Expected outcomes**:
+  - All similar to CLIP: text-image-training-general → Q005 EEG story unchanged
+  - Wide variance: training-specific → Q006 / Q007 deepen
+- **Linked experiment IDs**: E005 (planned, next-tick candidate)

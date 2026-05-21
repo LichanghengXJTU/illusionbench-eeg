@@ -18,8 +18,9 @@ Ideas must have ≥ 2 prior-art citations before being added.
 - **Risks**:
   - ~~If Q001 reveals general orientation bias~~ — RESOLVED, predominantly face-specific (E003).
   - EEG signal may have insufficient SNR to carry configural information; result could be "EEG destroys it" — still publishable but a different narrative.
-- **State of evidence**: E001 + E002 + E003 establish (a) image-side ISI hierarchy, (b) face-feature-specific nature of the signature. EEG-side untested.
-- **Score**: novelty 7 + feasibility 8 + evidence 6 = **7.0** (up from 6.7)
+- **State of evidence**: E001 + E002 + E003 + E004 establish (a) image-side ISI hierarchy, (b) face-feature-specific nature (E003), (c) NOT from face-recognition training (E004 — FaceNet flat at ISI≈1.0). EEG-side untested.
+- **Score**: novelty 8 + feasibility 8 + evidence 7 = **7.7** (up from 7.0)
+- **Reframed pitch v2**: Current EEG-to-image decoders (ATM, AVDE, ENIGMA, HVF) all use CLIP-class image priors. CLIP exhibits a strong face-Thatcher ISI signature (6.8) that is (i) face-feature-specific (E003), (ii) NOT inherited from face-recognition training (E004 — FaceNet shows none), but (iii) orientation-emergent in scale-trained image-text models. **Whether EEG-conditioning preserves this orientation-emergent face property is unknown** — and is the central question for whether EEG decoders behave more like humans (who show strong Thatcher) or like FaceNet (which suppresses orientation).
 
 ---
 

@@ -1,14 +1,14 @@
 # State
 
-**Tick #**: 1 (E003 random-bbox control)
-**Last updated**: 2026-05-21 23:50 (Asia/Hong_Kong)
-**Current focus** (one sentence): With Q001 now confirmed face-feature-specific, identify which model class most strongly encodes the configural Thatcher signature — face-recognition-trained (FaceNet/ArcFace) or large-scale CLIP-bigG.
-**Last action**: E003 random-bbox FFHQ control completed; CLIP-bigG ISI dropped 6.76 → 1.97 (−71%); other CLIP variants 59-74% reduction; DINOv2-large/giant fell below 1.0.
-**Last action outcome**: confirmed Q001 — face-feature-specificity dominates; small residual general orientation bias (~20-30%) remains in CLIP class.
+**Tick #**: 2 (E004 face-trained baselines)
+**Last updated**: 2026-05-22 00:15 (Asia/Hong_Kong)
+**Current focus** (one sentence): Q007 — what specifically about CLIP-class training drives the orientation-emergent face-Thatcher sensitivity, given Q003 just refuted "face-recognition training is the cause"?
+**Last action**: E004 added FaceNet (VGGFace2 + CASIA-Webface variants). Result: ISI=1.02-1.12 (face Thatcher), 0.38-0.46 (random-bbox). Face-recognition training does NOT produce Thatcher ISI; the signature is orientation-emergent in image-text contrastive training (CLIP) but is actively suppressed by pose-invariant identity training (FaceNet).
+**Last action outcome**: Q003 ANSWERED (refuted); spawned Q007; Idea-001 score 7.0→7.7 with reframed pitch v2.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 2): Q003 — add FaceNet (facenet-pytorch, VGGFace2-trained Inception-Resnet) + ArcFace to model zoo; extract on FFHQ face Thatcher; compute ISI. Hypothesis: ISI(face-trained) ≥ ISI(CLIP-bigG) if face-feature-specific component is from explicit face-recognition learning; ≤ if CLIP emergent property is the main driver.
-**Confidence in current best idea (Idea-001)**: 7/10 (up from 5/10) — face-specificity confirmed, now narrowing the model-class story.
+**Planned next action** (tick 3): Q007 — add SigLIP (image-text, larger pre-training data) + EVA-CLIP + MetaCLIP as image-text-training family comparison. Discriminates "any large image-text training emerges Thatcher" vs "CLIP-specific". Then Q004 Harmonized priors in tick 4 to test perception-aligned training.
+**Confidence in current best idea (Idea-001)**: 7.7/10
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`

@@ -140,6 +140,36 @@ def load_pixel_baseline(device: str = "cuda", target_size: int = 224):
 
 
 # ---------------------------------------------------------------------
+# Face-trained backbones — facenet-pytorch InceptionResnetV1
+# ---------------------------------------------------------------------
+
+def load_facenet_pytorch(pretrained: str, device: str = "cuda"):
+    """facenet-pytorch InceptionResnetV1.
+    pretrained ∈ {'vggface2', 'casia-webface'}. Expects [-1,1] 160×160 input;
+    produces 512-dim L2-normalized face-identity embedding."""
+    from facenet_pytorch import InceptionResnetV1
+    import torchvision.transforms as T
+    model = InceptionResnetV1(pretrained=pretrained).to(device).eval()
+    transform = T.Compose([
+        T.Resize(160, antialias=True),
+        T.CenterCrop(160),
+        T.ToTensor(),
+        T.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+    ])
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        batch = torch.stack([transform(img) for img in images]).to(device)
+        with torch.no_grad():
+            feats = model(batch)
+            feats = F.normalize(feats, dim=-1)
+        return feats.cpu().float().numpy()
+
+    info = {"hf_id": f"facenet-pytorch:InceptionResnetV1:{pretrained}",
+            "output_dim": 512}
+    return embed, info, model
+
+
+# ---------------------------------------------------------------------
 # Untrained ViT-B/16 (control N02)
 # ---------------------------------------------------------------------
 
@@ -181,6 +211,9 @@ REGISTRY: dict[str, Callable] = {
     "P10_mae_huge":     lambda: load_mae_hf("facebook/vit-mae-huge"),
     # VAE (true pixel-statistics encoder)
     "P11_sdxl_vae":     lambda: load_sdxl_vae(),
+    # Face-trained backbones (Q003)
+    "P17_facenet_vggface2":    lambda: load_facenet_pytorch("vggface2"),
+    "P18_facenet_casiawebface": lambda: load_facenet_pytorch("casia-webface"),
     # Negative controls
     "N02_untrained_vit": lambda: load_untrained_vit(),
     "N03_pixel":         lambda: load_pixel_baseline(),

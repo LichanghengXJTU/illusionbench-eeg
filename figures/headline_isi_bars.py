@@ -27,6 +27,9 @@ PRIOR_CLASS = {
     "P10_mae_huge": "MAE (SSL)",
     # SDXL VAE (pixel-statistics)
     "P11_sdxl_vae": "VAE (pixel-stat)",
+    # Face-recognition-trained (Q003)
+    "P17_facenet_vggface2": "Face-trained",
+    "P18_facenet_casiawebface": "Face-trained",
     # Negative controls
     "N02_untrained_vit": "untrained / control",
     "N03_pixel": "untrained / control",
@@ -37,11 +40,12 @@ CLASS_COLOR = {
     "DINOv2 (SSL)": "#ff7f0e",
     "MAE (SSL)": "#bcbd22",
     "VAE (pixel-stat)": "#7f7f7f",
+    "Face-trained": "#2ca02c",
     "untrained / control": "#cccccc",
 }
 
 # Sort within-class by ISI ascending; classes ordered low-to-high baseline expectation
-CLASS_ORDER = ["untrained / control", "VAE (pixel-stat)", "MAE (SSL)", "DINOv2 (SSL)", "CLIP"]
+CLASS_ORDER = ["untrained / control", "VAE (pixel-stat)", "Face-trained", "MAE (SSL)", "DINOv2 (SSL)", "CLIP"]
 
 
 def main(args):
