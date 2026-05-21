@@ -58,14 +58,19 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q005 — Does the EEG-to-image decoding pipeline preserve or destroy the image-side ISI signature?
 
-- **Status**: untested
+- **Status**: **SCOPED, ready for experiment in tick 5** (see E006)
 - **Score**: 10/10 (the actual EEG question; central to the project's lab fit)
 - **Prior art checked**: ATM/AVDE/ENIGMA/HVF/ViEEG never tested against illusion stimuli. Phillips & White 2026 reviews face-DNN alignment but doesn't cover EEG.
-- **Discriminating experiment**: For ATM (CLIP-H/14 visual anchor), AVDE (LaBraM + CLIP-H/14), ENIGMA (lightweight CLIP):
-  - Extract the EEG-conditioned image embedding by running their full pipeline on THINGS-EEG2 test set
-  - Compare image-side embedding ISI vs EEG-conditioned embedding ISI on the Thatcher battery
-- **Expected**: Multiple scenarios — the result IS the contribution.
-- **Linked experiment IDs**: E020+ (deferred; blocked on Q001 disambiguation)
+- **Hard problem identified (E006)**: We have NO EEG data of Thatcher stimuli. THINGS-EEG2 is natural objects, not face Thatcher. So we cannot directly "decode Thatcher EEG".
+- **Refined discriminating experiment (Route A in E006)**:
+  - Use ATM trained checkpoint + THINGS-EEG2 test data
+  - Per CLIP-H/14 dimension d, compute "EEG-preservation per dim" = correlation(CLIP_target[:,d], ATM_decoded[:,d]) across trials
+  - Per dim d, compute "Thatcher loading" = magnitude of CLIP(V1)−CLIP(V2) component in dim d, averaged across FFHQ Thatcher identities
+  - Test: are Thatcher-loaded dimensions well-preserved or destroyed by the EEG bottleneck?
+- **Expected** (working hypothesis):
+  - ATM trained on natural objects → low EEG preservation of face-specific dimensions → predicted Thatcher signature destroyed (a clean negative result is publishable)
+  - If preserved: we have strong evidence current EEG decoders ALREADY inherit the Thatcher signature even though never tested on face stimuli
+- **Linked experiment IDs**: E006 (scoping done), E020 (Route A planned for tick 5)
 
 ---
 
