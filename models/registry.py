@@ -244,6 +244,59 @@ def load_facenet_pytorch(pretrained: str, device: str = "cuda"):
 # Untrained ViT-B/16 (control N02)
 # ---------------------------------------------------------------------
 
+def load_cvlface(repo_id: str, device: str = "cuda"):
+    """CVLFace AdaFace/ArcFace IR-101 loader (HuggingFace, trust_remote_code).
+
+    The wrapper.py imports from local `models/` directory and reads relative
+    `pretrained_model/model.{yaml,pt}` paths, so we snapshot_download the
+    whole repo and load from that directory.
+    Output: 512-d L2-normalized embedding.
+    Preprocessing: RGB 112x112, normalize mean=std=0.5.
+    """
+    import os
+    import sys
+    from pathlib import Path
+    from huggingface_hub import snapshot_download
+    from transformers import AutoModel
+    from torchvision.transforms import Compose, ToTensor, Normalize
+
+    safe = repo_id.replace("/", "_")
+    local = os.path.expanduser(f"~/.cvlface_cache/{safe}")
+    Path(local).mkdir(parents=True, exist_ok=True)
+    snapshot_download(repo_id, local_dir=local)
+    for k in list(sys.modules.keys()):
+        if k == "models" or k.startswith("models."):
+            del sys.modules[k]
+    cwd_old = os.getcwd()
+    os.chdir(local)
+    sys.path.insert(0, local)
+    try:
+        model = AutoModel.from_pretrained(local, trust_remote_code=True)
+    finally:
+        os.chdir(cwd_old)
+        sys.path.pop(0)
+    model = model.to(device).eval()
+    transform = Compose([
+        ToTensor(),
+        Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    ])
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        imgs = [img.convert("RGB").resize((112, 112), Image.BILINEAR) for img in images]
+        batch = torch.stack([transform(im) for im in imgs]).to(device)
+        with torch.no_grad():
+            feats = model(batch)
+            if isinstance(feats, tuple):
+                feats = feats[0]
+        feats = F.normalize(feats, dim=-1).cpu().float().numpy()
+        return feats
+
+    info = {"hf_id": repo_id,
+            "output_dim": 512,
+            "preprocessing": "RGB 112x112 mean=std=0.5"}
+    return embed, info, model
+
+
 def load_arcface_onnx(onnx_path: str, device: str = "cuda"):
     """ArcFace ResNet-100 + additive angular margin loss (AuraFace checkpoint).
 
@@ -320,6 +373,9 @@ REGISTRY: dict[str, Callable] = {
     "P22_cornet_s":            lambda: load_cornet_s(),
     # Modern face-recognition SOTA (Idea-003 sub-path (a) probe — E030)
     "P23_arcface_auraface":    lambda: load_arcface_onnx("/workspace/models/auraface/glintr100.onnx"),
+    # CVLFace AdaFace / ArcFace IR-101 (E031 angular-margin loss + data ablation)
+    "P24_adaface_ir101_ms1mv2":      lambda: load_cvlface("minchul/cvlface_adaface_ir101_ms1mv2"),
+    "P25_arcface_ir101_webface4m":   lambda: load_cvlface("minchul/cvlface_arcface_ir101_webface4m"),
     # Image-text contrastive variants (Q007) — discriminate CLIP-specific vs family-general
     "P19_siglip_base_384":      lambda: load_siglip_hf("google/siglip-base-patch16-384"),
     "P20_siglip_so400m":        lambda: load_siglip_hf("google/siglip-so400m-patch14-384"),

@@ -24,9 +24,11 @@ Three primary tables; can be paste directly into the paper draft.
 | 14 | FaceNet (VGGFace2) | Face-trained | 1.117 [1.042, 1.198] | 1.111 [1.059, 1.166] | 0.711 [0.662, 0.760] |
 | 15 | FaceNet (CASIA-Webface) | Face-trained | 1.026 [0.974, 1.080] | 1.154 [1.110, 1.201] | 0.953 [0.891, 1.020] |
 | 16 | ArcFace (AuraFace, ResNet-100) | Face-trained (angular-margin) | 1.697 [1.638, 1.766] | 1.161 [1.123, 1.197] | 1.428 [1.335, 1.520] |
-| 17 | CORnet-S (V1-V2-V4-IT) | Bio-inspired | 0.991 [0.903, 1.078] | 1.151 [1.109, 1.192] | 0.214 [0.188, 0.243] |
-| 18 | ViT-B/16 (untrained) | Control | 1.006 [0.979, 1.043] | 1.131 [1.089, 1.175] | 0.776 [0.634, 0.923] |
-| 19 | Raw pixel | Control | 1.000 [1.000, 1.000] | 1.099 [1.083, 1.116] | 1.202 [1.081, 1.350] |
+| 17 | AdaFace IR-101 MS1MV2 | Face-trained (quality-adaptive AM) | 1.237 [1.177, 1.297] | 1.602 [1.513, 1.703] | 0.590 [0.562, 0.618] |
+| 18 | ArcFace IR-101 WebFace4M | Face-trained (angular-margin) | 1.172 [1.113, 1.227] | 1.320 [1.262, 1.389] | 0.501 [0.477, 0.526] |
+| 19 | CORnet-S (V1-V2-V4-IT) | Bio-inspired | 0.991 [0.903, 1.078] | 1.151 [1.109, 1.192] | 0.214 [0.188, 0.243] |
+| 20 | ViT-B/16 (untrained) | Control | 1.006 [0.979, 1.043] | 1.131 [1.089, 1.175] | 0.776 [0.634, 0.923] |
+| 21 | Raw pixel | Control | 1.000 [1.000, 1.000] | 1.099 [1.083, 1.116] | 1.202 [1.081, 1.350] |
 
 *Pixel-baseline (sanity)*: Thatcher = 1.000 (exact), Composite = 1.099, Part-Whole = 1.202.
 *Human Thatcher ISI reference*: Carbon et al. (2005), 2AFC d′ ratio ≈ 4–5.
