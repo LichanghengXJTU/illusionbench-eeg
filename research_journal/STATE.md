@@ -1,13 +1,13 @@
 # State
 
-**Tick #**: 11 (Introduction prose drafted)
-**Last updated**: 2026-05-22 02:55 (Asia/Hong_Kong)
-**Current focus** (one sentence): Introduction draft v1 is on disk (PAPER_DRAFT_intro.md, ~770 words). Pitch is articulated as prose; next: either related work or methods section, or generate the polished publication figures.
-**Last action**: Drafted Introduction v1 with hook → bridge → gap → approach → findings → 5 contributions → roadmap structure. Slightly over 700-word target but tight on argument.
-**Last action outcome**: Pitch reads cleanly as paper prose. Idea-001 8.7/10 maintained.
+**Tick #**: 12 (Related Work prose drafted)
+**Last updated**: 2026-05-22 03:15 (Asia/Hong_Kong)
+**Current focus** (one sentence): With Intro + Related Work drafted, the paper's framing is now articulated as prose; next is the Methods section (3) covering stimulus generation + metrics + statistical analysis.
+**Last action**: Section 2 Related Work prose draft v1 (~590 words). Four subsections covering holistic-face psychophysics, face-DNN alignment, EEG-to-image decoder lineage, and human-alignment metrics. Gap explicitly stated in 2.2.
+**Last action outcome**: Paper draft now covers Sections 1-2. Pitch + literature framing established.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 12): Write Section 2 Related Work prose (~1 page). Covers (a) holistic face psychophysics, (b) face-DNN alignment (Jacob 2021, Phillips & White 2026), (c) EEG-to-image decoder lineage with explicit CLIP-anchor commitment, (d) human-alignment metrics for DNNs.
+**Planned next action** (tick 13): Section 3 Methods prose (~1.5 pages). Cover (a) FFHQ stimulus pipeline + MediaPipe landmarks + three paradigms, (b) ISI/CSI/PWI definitions + bootstrap, (c) pixel-baseline sanity, (d) 17-prior model zoo with training paradigm summary table, (e) Route A EEG-preservation method.
 **Confidence in current best idea (Idea-001)**: 8.7/10
 
 ## Working directories
