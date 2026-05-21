@@ -59,16 +59,30 @@ Ideas must have ≥ 2 prior-art citations before being added.
   - Bio-inspired vision models are smaller than modern CLIP (typically <100M params vs CLIP-bigG 1.8B) → retrieval performance likely lower. Mitigation: hybrid architecture, or argue from interpretability angle alone.
   - Need to define "bio-inspired" rigorously; bio-fidelity vs ML-pragmatism trade-off is non-trivial.
   - **NEW from E028 (2026-05-22)**: Bio-inspired ANATOMY alone (CORnet-S V1→V2→V4→IT + recurrence, ImageNet-trained) gives NO Thatcher signal (ISI 0.99 = pixel baseline). The path forward requires combining bio-anatomy with face-specific training data and/or contrastive objective. This is a more complex engineering task than originally framed.
+  - **NEW from E030 (2026-05-22)**: **ArcFace (ResNet-100 + angular-margin loss) gives ISI 1.70 [1.638, 1.766] on Thatcher**, 77% face-feature-specific. This is the first face-identity-trained model in our 19-prior battery to show non-trivial Thatcher (FaceNet's triplet-loss model gave ISI 1.12). **The loss function (angular-margin vs triplet) matters more than the face data per se**. This revives sub-path (a) face-CORnet+angular-margin-loss as a promising direction, since both ingredients (bio-anatomy + angular-margin-loss-on-face-data) might give true paradigm-consistency. ArcFace alone INVERTS Part-Whole (PWI 1.43, opposite direction) so it's still paradigm-INconsistent.
 
-### Sub-paths for Idea-003 post-E028
+### Sub-paths for Idea-003 post-E028/E029/E030
 
-(a) **Face-tuned CORnet**: take CORnet-S architecture, replace ImageNet pretraining with face-recognition (VGGFace2) or face-CLIP. Test on 3-paradigm benchmark. **Currently most promising**.
-(b) **NSD-aligned encoders**: use models pretrained with fMRI ventral stream alignment as the visual prior. Already exist in Conwell 2024.
-(c) **PredNet / γ-net for face data**: predictive coding models with face training.
-(d) ~~Multi-anchor decoder~~: ❌ **REFUTED by E029**. Fusion equals distance-averaging, no emergent paradigm-consistency. Cannot make CLIP + CORnet jointly capture Thatcher AND Part-Whole.
-(e) **Design our own**: combine CORnet-S anatomy + face-CLIP training objective + contrastive alignment. Largest engineering effort, highest novelty.
+(a) **Face-tuned CORnet via angular-margin loss** (refined by E030):
+    take CORnet-S architecture + ArcFace-style additive angular margin
+    head; train on a face-identity dataset (e.g., VGGFace2). E030 shows
+    angular-margin loss is *sufficient on its own* to produce ISI ≈ 1.7;
+    combined with CORnet's part-whole holism (PWI 0.21), the hypothesis
+    is that the hybrid gives ISI ≥ 1.5 AND PWI ≤ 0.5 simultaneously.
+    **Currently most promising; requires custom training (1-3 days GPU).**
+(b) **NSD-aligned encoders**: not publicly available as standalone PyTorch
+    encoders [E030]; would require reproducing Conwell 2024.
+(c) **PredNet / γ-net for face data**: no off-the-shelf face-trained
+    checkpoint exists [E030].
+(d) ~~Multi-anchor decoder~~: ❌ **REFUTED by E029**.
+(e) **Design our own**: longest path; the engineering effort of (a) is
+    a strict subset of (e), so do (a) first.
+(f) **Loss-function ablation** (NEW from E030): test additional
+    angular-margin face models (CosFace, MagFace, SphereFace) to confirm
+    that the Thatcher-emergence-from-angular-margin pattern is robust.
+    Cheap, ~1-2 hours on existing server. Could be done in tick 29.
 
-Post-E029 priority order: (a) → (b) → (c) → (e). (d) ruled out.
+Post-E030 priority order: (f) → (a) → (e). (b), (c), (d) ruled out.
 
 ---
 

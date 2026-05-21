@@ -23,8 +23,10 @@ Three primary tables; can be paste directly into the paper draft.
 | 13 | SDXL-VAE | VAE | 0.997 [0.990, 1.004] | 1.162 [1.154, 1.171] | 0.436 [0.419, 0.455] |
 | 14 | FaceNet (VGGFace2) | Face-trained | 1.117 [1.042, 1.198] | 1.111 [1.059, 1.166] | 0.711 [0.662, 0.760] |
 | 15 | FaceNet (CASIA-Webface) | Face-trained | 1.026 [0.974, 1.080] | 1.154 [1.110, 1.201] | 0.953 [0.891, 1.020] |
-| 16 | ViT-B/16 (untrained) | Control | 1.006 [0.979, 1.043] | 1.131 [1.089, 1.175] | 0.776 [0.634, 0.923] |
-| 17 | Raw pixel | Control | 1.000 [1.000, 1.000] | 1.099 [1.083, 1.116] | 1.202 [1.081, 1.350] |
+| 16 | ArcFace (AuraFace, ResNet-100) | Face-trained (angular-margin) | 1.697 [1.638, 1.766] | 1.161 [1.123, 1.197] | 1.428 [1.335, 1.520] |
+| 17 | CORnet-S (V1-V2-V4-IT) | Bio-inspired | 0.991 [0.903, 1.078] | 1.151 [1.109, 1.192] | 0.214 [0.188, 0.243] |
+| 18 | ViT-B/16 (untrained) | Control | 1.006 [0.979, 1.043] | 1.131 [1.089, 1.175] | 0.776 [0.634, 0.923] |
+| 19 | Raw pixel | Control | 1.000 [1.000, 1.000] | 1.099 [1.083, 1.116] | 1.202 [1.081, 1.350] |
 
 *Pixel-baseline (sanity)*: Thatcher = 1.000 (exact), Composite = 1.099, Part-Whole = 1.202.
 *Human Thatcher ISI reference*: Carbon et al. (2005), 2AFC d′ ratio ≈ 4–5.
@@ -41,6 +43,8 @@ Three primary tables; can be paste directly into the paper draft.
 | CLIP-bigG/14 (LAION-2B) | 6.763 | 1.634 | 1.972 | 1.467 | +4.791 |
 | DINOv2-giant | 3.338 | 1.332 | 0.851 | 0.950 | +2.487 |
 | FaceNet (VGGFace2) | 1.117 | 0.163 | 0.382 | 0.411 | +0.735 |
+| ArcFace (AuraFace) | 1.697 | — | 0.387 | — | +1.310 |
+| CORnet-S | 0.991 | — | 0.938 | — | +0.053 |
 | ViT-B/16 (untrained) | 1.006 | 0.995 | 0.994 | 0.995 | +0.012 |
 | Raw pixel | 1.000 | 1.001 | 1.000 | 1.000 | +0.000 |
 

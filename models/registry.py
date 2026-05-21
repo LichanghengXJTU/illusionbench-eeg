@@ -244,6 +244,37 @@ def load_facenet_pytorch(pretrained: str, device: str = "cuda"):
 # Untrained ViT-B/16 (control N02)
 # ---------------------------------------------------------------------
 
+def load_arcface_onnx(onnx_path: str, device: str = "cuda"):
+    """ArcFace ResNet-100 + additive angular margin loss (AuraFace checkpoint).
+
+    Input expected: BGR-ordered 112x112 image, normalized to [-1, 1] via
+    (x - 127.5) / 127.5. Outputs 512-d L2-normalized embedding.
+    NPZ key for extracted embeddings: P23_arcface_auraface.
+    """
+    import onnxruntime as ort
+    providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if device == "cuda" \
+        else ["CPUExecutionProvider"]
+    sess = ort.InferenceSession(onnx_path, providers=providers)
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        batch = []
+        for img in images:
+            arr = np.asarray(img.convert("RGB").resize((112, 112), Image.BILINEAR)).astype(np.float32)
+            arr = arr[..., ::-1]  # RGB -> BGR
+            arr = (arr - 127.5) / 127.5
+            arr = arr.transpose(2, 0, 1)
+            batch.append(arr)
+        batch_np = np.stack(batch, axis=0)
+        feats = sess.run(None, {"data": batch_np})[0]
+        feats = feats / np.linalg.norm(feats, axis=1, keepdims=True).clip(1e-9)
+        return feats.astype(np.float32)
+
+    info = {"hf_id": "fal/AuraFace-v1 (glintr100.onnx)",
+            "output_dim": 512,
+            "preprocessing": "BGR 112x112 [-1,1]"}
+    return embed, info, None  # ONNX session has no nn.Module
+
+
 def load_untrained_vit(device: str = "cuda", dtype=torch.float16):
     import timm
     model = timm.create_model("vit_base_patch16_224", pretrained=False, num_classes=0)
@@ -287,6 +318,8 @@ REGISTRY: dict[str, Callable] = {
     "P18_facenet_casiawebface": lambda: load_facenet_pytorch("casia-webface"),
     # Bio-inspired (Idea-003, Q010)
     "P22_cornet_s":            lambda: load_cornet_s(),
+    # Modern face-recognition SOTA (Idea-003 sub-path (a) probe — E030)
+    "P23_arcface_auraface":    lambda: load_arcface_onnx("/workspace/models/auraface/glintr100.onnx"),
     # Image-text contrastive variants (Q007) — discriminate CLIP-specific vs family-general
     "P19_siglip_base_384":      lambda: load_siglip_hf("google/siglip-base-patch16-384"),
     "P20_siglip_so400m":        lambda: load_siglip_hf("google/siglip-so400m-patch14-384"),
