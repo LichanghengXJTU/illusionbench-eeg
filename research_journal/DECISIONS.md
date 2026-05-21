@@ -24,3 +24,4 @@
 - 2026-05-22 02:35 — tick 10 — E025 bbox-size sensitivity sweep (0.5x, 1.5x random-bbox). CLIP random-bbox ISI 1.2-2.0 across scales; face-Thatcher gap 5-7 stable. Claim 3 strengthened MODERATE→STRONG. CLAIMS_SKELETON updated. All 5 claims now have robust evidence.
 - 2026-05-22 02:55 — tick 11 — Introduction prose drafted (~770 words). Hook → bridge → gap → approach → 3 main findings → 5 contributions → roadmap. PAPER_DRAFT_intro.md saved. Idea-001 held at 8.7.
 - 2026-05-22 03:15 — tick 12 — Section 2 Related Work prose drafted (~590 words). 4 subsections: holistic psychophysics, face-DNN alignment (Jacob 2021, Phillips & White 2026), EEG-to-image lineage (ATM/AVDE/ENIGMA/HVF/ViEEG), alignment metrics. Gap explicitly stated. PAPER_DRAFT_related_work.md saved.
+- 2026-05-22 03:35 — tick 13 — Section 3 Methods prose drafted (~880 words). 5 subsections: stimuli, indices, sanity, model zoo, EEG-side Route A. PAPER_DRAFT_methods.md saved. Sections 1-3 complete.
