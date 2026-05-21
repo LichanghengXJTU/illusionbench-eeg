@@ -1,13 +1,13 @@
 # State
 
-**Tick #**: 21 (Figures 2 and 4 polished)
-**Last updated**: 2026-05-22 05:30 (Asia/Hong_Kong)
-**Current focus** (one sentence): All three main figures (Figure 1 three-paradigm panel, Figure 2 face-vs-random-bbox, Figure 4 Route A scatter) now share publication aesthetics; project is feature-complete.
-**Last action**: Wrote `face_vs_randombbox_polished.py` (Figure 2) + `route_a_polished.py` (Figure 4). Generated both as PNG + PDF on server. Match Figure 1's color scheme, pretty model names, annotation boxes, summary text bubbles.
-**Last action outcome**: Idea-001 8.7/10. Paper deliverable shape now fully aligned with publication standards.
+**Tick #**: 22 (README landing page)
+**Last updated**: 2026-05-22 05:45 (Asia/Hong_Kong)
+**Current focus** (one sentence): Project is now visually self-introducing on GitHub: README embeds the 3 publication figures + 60-second pitch + 3 headline findings + reading-budget guide. Anyone visiting the repo can grasp the project in 30 seconds.
+**Last action**: Pulled 3 polished figures into `figures/exports/`; rewrote README.md as a landing page with embedded headline figure, three findings, repo layout table, reading-budget reading guide, reproduction steps.
+**Last action outcome**: GitHub landing page is now publication-grade. The project is end-to-end shippable.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 22): Update README.md to be a proper project landing page — embed the headline figure (Figure 1), TL;DR pitch, link the paper draft, and a "How to read this repo" guide. Then in tick 23 consider whether to add one more experiment (e.g., adding EVA-CLIP / DFN-CLIP to strengthen the family-generalization story) or wrap up.
+**Planned next action** (tick 23): Decide between (a) one more experiment to deepen evidence (e.g., adding EVA-CLIP / DFN-CLIP for image-text family completeness) or (b) writing a polished summary report for the lab. Given current saturation on novel findings, lean toward (b). Alternative: write a "future work / open questions" expanded section.
 **Confidence in current best idea (Idea-001)**: 8.7/10
 
 ## Working directories
