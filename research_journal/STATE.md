@@ -1,13 +1,17 @@
 # State
 
-**Tick #**: 14 (Results prose drafted)
-**Last updated**: 2026-05-22 03:55 (Asia/Hong_Kong)
-**Current focus** (one sentence): Sections 1-4 prose complete (~3,400 words). Next: Discussion + Conclusion to finish the paper draft.
-**Last action**: Section 4 Results prose draft v1 (~1,140 words). Subsections: §4.1 headline dissociation, §4.2 Thatcher details, §4.3 composite-face, §4.4 part-whole, §4.5 EEG Route A. All explicit numerical values cited.
-**Last action outcome**: Paper draft now covers Intro → Related Work → Methods → Results. Idea-001 score 8.7/10.
+**Tick #**: 15 (Paper first draft COMPLETE)
+**Last updated**: 2026-05-22 04:15 (Asia/Hong_Kong)
+**Current focus** (one sentence): **First-draft paper Sections 1-6 complete (~4,400 words)** — Intro + Related Work + Methods + Results + Discussion + Conclusion all in prose form. Now ready for polish: abstract refinement, figure polish, reference list, supplementary.
+**Last action**: Sections 5 Discussion (~720 words) + 6 Conclusion (~160 words) drafted. Discussion covers three subsections: dissociation interpretation, EEG decoder architectural implications, limitations.
+**Last action outcome**: Idea-001 8.7/10 with paper-ready first draft.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 15): Section 5 Discussion prose (~1 page) + Section 6 Conclusion (~paragraph). Discussion covers: training-objective explanation hypothesis, EEG decoder architectural implications, limitations.
+**Planned next action** (tick 16): Two parallel directions to consider —
+  (a) **Polish abstract** — current PAPER_OUTLINE.md abstract is 250 words; revise for sharpness
+  (b) **Build a single CONSOLIDATED PAPER_DRAFT.md** by concatenating the 5 section drafts so the user has one document to read
+  (c) **References / bibliography file** with every paper cited so far
+Pick (b) + (c) for tick 16 — gives the user a single artifact to inspect.
 **Confidence in current best idea (Idea-001)**: 8.7/10
 
 ## Working directories
