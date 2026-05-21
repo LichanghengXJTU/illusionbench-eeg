@@ -150,6 +150,45 @@ def load_sdxl_vae(hf_id: str = "madebyollin/sdxl-vae-fp16-fix",
 
 
 # ---------------------------------------------------------------------
+# CORnet-S — bio-inspired V1→V2→V4→IT recurrent CNN (Brain-Score top)
+# ---------------------------------------------------------------------
+
+def load_cornet_s(device: str = "cuda"):
+    """CORnet-S from DiCarlo lab — 4-stage recurrent CNN with V1/V2/V4/IT
+    blocks matching primate ventral stream anatomy. We extract the
+    pre-classifier features (after avgpool + flatten, before the 1000-class
+    linear head) as a 512-d image embedding."""
+    import cornet
+    import torchvision.transforms as T
+    model_dp = cornet.cornet_s(pretrained=True)  # DataParallel wrapper
+    model = model_dp.module if hasattr(model_dp, "module") else model_dp
+    model = model.to(device).eval()
+    # CORnet expects 224×224 ImageNet-normalized input
+    transform = T.Compose([
+        T.Resize(256, antialias=True),
+        T.CenterCrop(224),
+        T.ToTensor(),
+        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ])
+    # Register hook on decoder.flatten so we get features pre-classifier
+    feats_buf = {}
+    def hook(_m, _inp, out):
+        feats_buf["x"] = out.detach()
+    h = model.decoder.flatten.register_forward_hook(hook)
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        batch = torch.stack([transform(img) for img in images]).to(device)
+        with torch.no_grad():
+            _ = model(batch)
+        feats = feats_buf["x"]
+        feats = F.normalize(feats, dim=-1)
+        return feats.cpu().float().numpy()
+
+    info = {"hf_id": "dicarlolab/CORnet-S", "output_dim": 512}
+    return embed, info, model
+
+
+# ---------------------------------------------------------------------
 # Pixel baseline (control N03)
 # ---------------------------------------------------------------------
 
@@ -246,6 +285,8 @@ REGISTRY: dict[str, Callable] = {
     # Face-trained backbones (Q003)
     "P17_facenet_vggface2":    lambda: load_facenet_pytorch("vggface2"),
     "P18_facenet_casiawebface": lambda: load_facenet_pytorch("casia-webface"),
+    # Bio-inspired (Idea-003, Q010)
+    "P22_cornet_s":            lambda: load_cornet_s(),
     # Image-text contrastive variants (Q007) — discriminate CLIP-specific vs family-general
     "P19_siglip_base_384":      lambda: load_siglip_hf("google/siglip-base-patch16-384"),
     "P20_siglip_so400m":        lambda: load_siglip_hf("google/siglip-so400m-patch14-384"),

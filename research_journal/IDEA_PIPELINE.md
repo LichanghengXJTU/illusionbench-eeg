@@ -54,10 +54,21 @@ Ideas must have ≥ 2 prior-art citations before being added.
   3. **Cross-subject and clinical EEG decoding**: patient EEG (prosopagnosia, autism) requires interpretable representation to map damage to behavior.
   4. **Cross-modal alignment**: bio-prior trained with brain-structural inductive bias should align more naturally to EEG (also brain signal).
 - **State of evidence**: Idea-001 results (paradigm-specific dissociation in CLIP) directly motivate Idea-003. EEG-side falsification criterion already in place via Route A.
-- **Score**: novelty 8 + feasibility 7 + evidence_potential 9 = **8.0** (provisional, raises to 9+ if go/no-go positive)
+- **Score**: novelty 8 + feasibility 6 + evidence_potential 8 = **7.3** (down from 8.0 after E028 — CORnet-S alone is NOT paradigm-consistent. Need more careful approach.)
 - **Risks**:
   - Bio-inspired vision models are smaller than modern CLIP (typically <100M params vs CLIP-bigG 1.8B) → retrieval performance likely lower. Mitigation: hybrid architecture, or argue from interpretability angle alone.
   - Need to define "bio-inspired" rigorously; bio-fidelity vs ML-pragmatism trade-off is non-trivial.
+  - **NEW from E028 (2026-05-22)**: Bio-inspired ANATOMY alone (CORnet-S V1→V2→V4→IT + recurrence, ImageNet-trained) gives NO Thatcher signal (ISI 0.99 = pixel baseline). The path forward requires combining bio-anatomy with face-specific training data and/or contrastive objective. This is a more complex engineering task than originally framed.
+
+### Sub-paths for Idea-003 post-E028
+
+(a) **Face-tuned CORnet**: take CORnet-S architecture, replace ImageNet pretraining with face-recognition (VGGFace2) or face-CLIP. Test on 3-paradigm benchmark.
+(b) **NSD-aligned encoders**: use models pretrained with fMRI ventral stream alignment as the visual prior. Already exist in Conwell 2024.
+(c) **PredNet / γ-net for face data**: predictive coding models with face training.
+(d) **Multi-anchor decoder**: keep CLIP for Thatcher signal + CORnet-S for Part-Whole; use both as parallel anchors in EEG decoder. Sidesteps the "single bio-inspired prior" framing.
+(e) **Design our own**: combine CORnet-S anatomy + face-CLIP training objective + contrastive alignment. Largest engineering effort, highest novelty.
+
+Pick (d) as the lowest-hanging-fruit + (a) as the next experimentally-cleanest. Defer (b)/(c)/(e) to later ticks.
 
 ---
 
