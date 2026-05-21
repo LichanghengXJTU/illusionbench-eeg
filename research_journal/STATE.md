@@ -1,13 +1,13 @@
 # State
 
-**Tick #**: 10 (E025 bbox-size sensitivity — Claim 3 strengthened)
-**Last updated**: 2026-05-22 02:35 (Asia/Hong_Kong)
-**Current focus** (one sentence): Claim 3 now STRONG with E003 + E025 jointly demonstrating the face-feature-specificity gap is robust to random-bbox size (CLIP random-bbox ISI 1.2-2.0 across 0.5×-1.5× scales while face-Thatcher 5-7); ready to begin writing actual paper sections.
-**Last action**: E025 — added `--bbox_scale` to random-bbox generator; ran 0.5× and 1.5× variants; extracted on 6 key priors; computed ISI; demonstrated robust ~3-4× gap. CLIP-bigG14 RB ISI: 1.63 (0.5×) → 1.97 (1.0×) → 1.47 (1.5×). Face-Thatcher gap stable across scales.
-**Last action outcome**: All 5 paper claims now have STRONG evidence. Idea-001 score held at 8.7/10 but every claim has been audited for robustness.
+**Tick #**: 11 (Introduction prose drafted)
+**Last updated**: 2026-05-22 02:55 (Asia/Hong_Kong)
+**Current focus** (one sentence): Introduction draft v1 is on disk (PAPER_DRAFT_intro.md, ~770 words). Pitch is articulated as prose; next: either related work or methods section, or generate the polished publication figures.
+**Last action**: Drafted Introduction v1 with hook → bridge → gap → approach → findings → 5 contributions → roadmap structure. Slightly over 700-word target but tight on argument.
+**Last action outcome**: Pitch reads cleanly as paper prose. Idea-001 8.7/10 maintained.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 11): Either (a) begin drafting actual Introduction prose for the paper, or (b) generate the polished publication-quality combined figure (claim-3 sensitivity panel + three-paradigm panel side by side). Both are write-phase tasks. Plan to do (a) Introduction first because it forces clarity of pitch.
+**Planned next action** (tick 12): Write Section 2 Related Work prose (~1 page). Covers (a) holistic face psychophysics, (b) face-DNN alignment (Jacob 2021, Phillips & White 2026), (c) EEG-to-image decoder lineage with explicit CLIP-anchor commitment, (d) human-alignment metrics for DNNs.
 **Confidence in current best idea (Idea-001)**: 8.7/10
 
 ## Working directories
