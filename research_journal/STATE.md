@@ -1,13 +1,13 @@
 # State
 
-**Tick #**: 18 (Headline figure polished)
-**Last updated**: 2026-05-22 04:55 (Asia/Hong_Kong)
-**Current focus** (one sentence): Headline 3-paradigm panel polished to publication aesthetics; next: build a Table 1 with the full 17-prior × 3-paradigm numerical matrix + CIs for the paper.
-**Last action**: Wrote `figures/three_paradigm_polished.py` and generated `three_paradigm_polished.{png,pdf}` with proper title, subtitle, in-panel summary boxes, pretty model names, color legend, pixel-baseline + human-range annotations.
-**Last action outcome**: Headline figure ready. Idea-001 8.7/10.
+**Tick #**: 19 (Tables built)
+**Last updated**: 2026-05-22 05:05 (Asia/Hong_Kong)
+**Current focus** (one sentence): All three main tables (full 17-prior × 3-paradigm matrix, bbox-scale sensitivity, EEG preservation summary) drafted as markdown ready for paper-paste; paper artifacts are now near-camera-ready.
+**Last action**: Wrote `TABLES.md` with Table 1 (full 17 priors × ISI/CSI/PWI + CIs), Table 2 (face-vs-random-bbox at 3 scales), Table 3 (Route A EEG preservation summary).
+**Last action outcome**: Idea-001 8.7/10. The paper has prose + figures + tables. Idea-001 deliverable is functionally complete.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 19): Generate Table 1 (full numerical matrix of all 17 priors × ISI / CSI / PWI with bootstrap CIs) as a markdown table for direct paste into the paper draft. Then in tick 20 polish Figure 2 (face vs random-bbox).
+**Planned next action** (tick 20): Final consolidation — write a one-paragraph "what to look at" guide for the PI/lab (TLDR_FOR_PI.md) pointing to the headline figure, abstract, key tables. Then in tick 21 polish the route_a scatter figure.
 **Confidence in current best idea (Idea-001)**: 8.7/10
 
 ## Working directories
