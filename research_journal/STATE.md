@@ -1,17 +1,13 @@
 # State
 
-**Tick #**: 5 (E020 Route A complete)
-**Last updated**: 2026-05-22 01:05 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-001 score now 8.3 — Route A produced first direct EEG-side evidence: ATM EEG bottleneck uniformly attenuates CLIP space to r≈0.158 per dim, with NO dimension-specific structure (Thatcher dims not selectively destroyed). Next: extend the analysis with AVDE / ENIGMA if their pretrained embeddings are available, and refine the prediction of EEG-side ISI by checking face-category-restricted preservation.
-**Last action**: Downloaded ATM pre-computed EEG embeddings (10 subjects × 200 concepts × 1024 CLIP-H/14 dims) + CLIP target embeddings. Computed per-dim preservation correlation across subjects; computed Thatcher loading per dim from E002 P04 CLIP-H/14 FFHQ embeddings. Spearman ρ(preservation, loading) = -0.029, perm p = 0.35 — NULL relationship. Scatter figure generated.
-**Last action outcome**: NULL on preservation × loading correlation; UNIFORM low preservation (mean r 0.158) ⇒ predicted EEG-side ISI ~1.5-2 (vs CLIP-side 5.5). Idea-001 8.0 → 8.3.
+**Tick #**: 6 (E021 face-subset Route A refinement)
+**Last updated**: 2026-05-22 01:15 (Asia/Hong_Kong)
+**Current focus** (one sentence): With Route A confirmed as "uniform low-pass" across both dimensions (E020) and categories (E021), the next high-value action is broadening to other illusion paradigms (composite-face, part-whole) so the framing is not Thatcher-only.
+**Last action**: E021 face-subset Route A — used CLIP text-encoder to identify top-30 face-related THINGS-EEG2 test concepts; per-dim preservation on this subset 0.150 vs random subset 0.145 (perm p=0.374, NULL). Confirms uniform low-pass. Also checked HF: AVDE / ENIGMA pre-computed embeddings NOT available (only ATM's are).
+**Last action outcome**: E021 strengthens E020. Idea-001 score unchanged at 8.3 but framing more robust.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 6): Extend Route A. Two options:
-  (a) Restrict preservation analysis to FACE categories of THINGS-EEG2 only (~7% of concepts) — sees if face-category EEG carries more face-feature information per dim than the general analysis
-  (b) Add AVDE / ENIGMA pre-computed embeddings if available on HuggingFace
-  (c) Search literature for prior empirical estimates of EEG-CLIP preservation
-Pick the cheapest-and-most-informative for tick 6.
+**Planned next action** (tick 7): Two-part — (a) READ Phillips & White 2026 BJP review full text (literature gap check; this is overdue from earlier ticks); (b) generate composite-face stimulus battery script and prepare for tick-8 extraction. Composite-face is the natural extension since it isolates configural-binding without local feature rotation (which Thatcher conflates). Cost-benefit: literature read low-cost / high-protective; composite-face is the second illusion paradigm needed for breadth claims.
 **Confidence in current best idea (Idea-001)**: 8.3/10
 
 ## Working directories
