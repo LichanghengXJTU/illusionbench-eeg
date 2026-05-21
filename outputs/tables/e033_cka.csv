@@ -1,0 +1,8 @@
+prior_a,prior_b,cka_linear
+P04_clip_h14,P26_adaface_ir50_casia,0.45152310909941007
+P06_clip_bigG14,P26_adaface_ir50_casia,0.4591969722217302
+P09_dinov2_giant,P26_adaface_ir50_casia,0.4243675838155328
+P22_cornet_s,P26_adaface_ir50_casia,0.3888277893764269
+P17_facenet_vggface2,P26_adaface_ir50_casia,0.52936737411679
+P04_clip_h14,P09_dinov2_giant,0.7499161768885595
+P04_clip_h14,P06_clip_bigG14,0.9328257685937227
