@@ -61,12 +61,18 @@ bias. Random-location bbox controls reduce CLIP ISI by 59-74%.
   - All CLIP variants: 59-74% reduction
   - DINOv2-large/giant: PWI even below 1 (0.85-0.89) on random-bbox
 
-**Strength**: MODERATE-STRONG. Single discriminating experiment. Could be reinforced by
-gaze-tracking or human Bubbles psychophysics in future work.
+**Strength**: STRONG (now). E003 + E025 together. E025 added bbox-size sensitivity
+sweep (0.5×, 1.5×) showing CLIP random-bbox ISI remains 1.2-2.0 across sizes
+while face-Thatcher stays 5-7 — face-specificity gap is robust to perturbation
+magnitude. Could be additionally reinforced by gaze-tracking or human Bubbles
+psychophysics in future work.
 
 **Counter-claims considered**:
 - Could it be measurement artifact? No — same algorithm, same identities, only bbox
   location varies. Pixel-baseline still = 1.000.
+- Could it be bbox-size-dependent? No — E025 sensitivity sweep shows
+  CLIP-bigG14 random-bbox ISI varies between 1.47 and 1.97 across 0.5×–1.5×
+  scales, while face-Thatcher ISI is 5.50-6.76. Robust gap.
 
 ---
 

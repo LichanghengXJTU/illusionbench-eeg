@@ -177,6 +177,12 @@ def main(args):
             (right_eye_bbox[2] - right_eye_bbox[0], right_eye_bbox[3] - right_eye_bbox[1]),
             (mouth_bbox[2] - mouth_bbox[0], mouth_bbox[3] - mouth_bbox[1]),
         ]
+        # Apply size scaling (Claim 3 sensitivity sweep)
+        scale = max(0.1, float(args.bbox_scale))
+        feature_bbox_sizes = [
+            (max(8, int(round(bw * scale))), max(8, int(round(bh * scale))))
+            for (bw, bh) in feature_bbox_sizes
+        ]
 
         # Exclusion mask: dilated face landmarks
         excl = build_exclusion_mask(lm_arr, w, h, dilate_px=args.exclusion_dilate_px)
@@ -266,6 +272,8 @@ def parse_args():
     p.add_argument("--exclusion_dilate_px", type=int, default=80,
                    help="how far to dilate face landmark mask to forbid bbox centres")
     p.add_argument("--max_tries", type=int, default=400)
+    p.add_argument("--bbox_scale", type=float, default=1.0,
+                   help="multiply feature-bbox sizes by this scalar (Claim 3 sensitivity sweep)")
     return p.parse_args()
 
 

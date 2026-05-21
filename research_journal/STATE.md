@@ -1,13 +1,13 @@
 # State
 
-**Tick #**: 9 (WRITE phase begun — outline + claims skeleton)
-**Last updated**: 2026-05-22 02:15 (Asia/Hong_Kong)
-**Current focus** (one sentence): With three paradigms of evidence consolidated, the paper structure (PAPER_OUTLINE.md) and 5 main claims (CLAIMS_SKELETON.md) are now drafted; weakest claim (#3) identified for possible strengthening; next is to either strengthen claim 3 OR begin writing actual prose.
-**Last action**: Wrote PAPER_OUTLINE.md (full structure abstract → conclusion, with figure/table planning) and CLAIMS_SKELETON.md (5 main claims with evidence audits, weakest claim identified). Three-paradigm panel figure inspected — story is visually clean.
-**Last action outcome**: Paper draft framework ready. Idea-001 8.7/10 with publishable thesis.
+**Tick #**: 10 (E025 bbox-size sensitivity — Claim 3 strengthened)
+**Last updated**: 2026-05-22 02:35 (Asia/Hong_Kong)
+**Current focus** (one sentence): Claim 3 now STRONG with E003 + E025 jointly demonstrating the face-feature-specificity gap is robust to random-bbox size (CLIP random-bbox ISI 1.2-2.0 across 0.5×-1.5× scales while face-Thatcher 5-7); ready to begin writing actual paper sections.
+**Last action**: E025 — added `--bbox_scale` to random-bbox generator; ran 0.5× and 1.5× variants; extracted on 6 key priors; computed ISI; demonstrated robust ~3-4× gap. CLIP-bigG14 RB ISI: 1.63 (0.5×) → 1.97 (1.0×) → 1.47 (1.5×). Face-Thatcher gap stable across scales.
+**Last action outcome**: All 5 paper claims now have STRONG evidence. Idea-001 score held at 8.7/10 but every claim has been audited for robustness.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 10): Two routes — (a) Strengthen Claim 3 (face-feature-localization) by running a bbox-size sensitivity sweep on random-bbox control; (b) begin drafting the actual Introduction prose. Route (a) is fast (~30 min) and quantitatively useful; route (b) is more useful for actual paper. Pick (a) first since cheaper and addresses weakest claim, then (b) for tick 11.
+**Planned next action** (tick 11): Either (a) begin drafting actual Introduction prose for the paper, or (b) generate the polished publication-quality combined figure (claim-3 sensitivity panel + three-paradigm panel side by side). Both are write-phase tasks. Plan to do (a) Introduction first because it forces clarity of pitch.
 **Confidence in current best idea (Idea-001)**: 8.7/10
 
 ## Working directories
