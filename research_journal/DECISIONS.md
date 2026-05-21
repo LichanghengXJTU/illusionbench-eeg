@@ -31,3 +31,4 @@
 - 2026-05-22 04:45 — tick 17 — Abstract polished: v2 (190 words, claim-first) + v1 (250 words original) + 60-word elevator pitch saved to ABSTRACT.md.
 - 2026-05-22 04:55 — tick 18 — Headline figure polished: three_paradigm_polished.{png,pdf} with title, subtitles, in-panel summaries, pretty model names, color-coded class legend, pixel-baseline + human-range annotations.
 - 2026-05-22 05:05 — tick 19 — Built TABLES.md with 3 markdown tables: Table 1 full 17-prior × 3-paradigm matrix with CIs, Table 2 face-vs-random-bbox at 3 scales, Table 3 Route A EEG preservation summary. Paper now has prose + figures + tables.
+- 2026-05-22 05:15 — tick 20 — Wrote TLDR_FOR_PI.md: one-page navigation guide with priority-ordered file pointers + time-budgeted reading paths (5/15/30/60/120 min). Project deliverables now fully consolidated: paper draft + figures + tables + abstract + TLDR + GitHub.
