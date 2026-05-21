@@ -62,13 +62,13 @@ Ideas must have ≥ 2 prior-art citations before being added.
 
 ### Sub-paths for Idea-003 post-E028
 
-(a) **Face-tuned CORnet**: take CORnet-S architecture, replace ImageNet pretraining with face-recognition (VGGFace2) or face-CLIP. Test on 3-paradigm benchmark.
+(a) **Face-tuned CORnet**: take CORnet-S architecture, replace ImageNet pretraining with face-recognition (VGGFace2) or face-CLIP. Test on 3-paradigm benchmark. **Currently most promising**.
 (b) **NSD-aligned encoders**: use models pretrained with fMRI ventral stream alignment as the visual prior. Already exist in Conwell 2024.
 (c) **PredNet / γ-net for face data**: predictive coding models with face training.
-(d) **Multi-anchor decoder**: keep CLIP for Thatcher signal + CORnet-S for Part-Whole; use both as parallel anchors in EEG decoder. Sidesteps the "single bio-inspired prior" framing.
+(d) ~~Multi-anchor decoder~~: ❌ **REFUTED by E029**. Fusion equals distance-averaging, no emergent paradigm-consistency. Cannot make CLIP + CORnet jointly capture Thatcher AND Part-Whole.
 (e) **Design our own**: combine CORnet-S anatomy + face-CLIP training objective + contrastive alignment. Largest engineering effort, highest novelty.
 
-Pick (d) as the lowest-hanging-fruit + (a) as the next experimentally-cleanest. Defer (b)/(c)/(e) to later ticks.
+Post-E029 priority order: (a) → (b) → (c) → (e). (d) ruled out.
 
 ---
 
