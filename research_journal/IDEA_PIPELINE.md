@@ -7,19 +7,19 @@ Ideas must have ≥ 2 prior-art citations before being added.
 
 ## Idea-001 (current strongest): EEG-decoding "Thatcher-signal preservation"
 
-- **One-line pitch**: Current SOTA EEG-to-image decoders inherit a strong CLIP-class ISI signature on the image side; we measure whether the EEG signal preserves it when compressed through the EEG encoder.
-- **Why now**: We have evidence (E002) that the CLIP visual prior — universal across ATM / AVDE / ENIGMA / HVF — shows ISI 4-7 on FFHQ Thatcher. The downstream question is whether EEG signal under current decoders carries this information.
-- **Cheapest discriminating experiment**: After resolving Q001 (face-specific or not), run E020: extract EEG-conditioned image embeddings via ATM/AVDE/ENIGMA pipelines on THINGS-EEG2 test stimuli; substitute the Thatcher battery; measure ISI of the EEG-decoded representations.
+- **One-line pitch**: Current SOTA EEG-to-image decoders inherit a face-feature-specific configural Thatcher signature from their CLIP visual priors (ISI 4-7, ~70% face-specific per E003); we measure whether the EEG signal preserves this signature through encoder compression.
+- **Why now**: We have evidence (E002 + E003) that the CLIP visual prior — universal across ATM / AVDE / ENIGMA / HVF — shows ISI 4-7 on FFHQ Thatcher, and that this is ~70-80% face-feature-specific (E003 random-bbox control drops ISI by 60-74%). The downstream question is whether EEG signal under current decoders carries this face-configural information.
+- **Cheapest discriminating experiment**: Once face-trained / Harmonized baselines are added (Q003/Q004), run E020: extract EEG-conditioned image embeddings via ATM/AVDE/ENIGMA pipelines on THINGS-EEG2 test stimuli; substitute the Thatcher battery; measure ISI of EEG-decoded representations.
 - **Prior art**:
   1. Jacob et al. 2021 Nat Comm: face-DNN reproduces Thatcher behaviorally. https://www.nature.com/articles/s41467-021-22078-3
   2. Li et al. 2024 (ATM): EEG-to-image via CLIP guidance. arxiv 2403.07721
   3. Phillips & White 2026 (BJP review): face-DNN alignment without EEG. https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjop.12794
   - **Gap claim**: no prior work measures whether EEG-conditioned visual representations preserve face-configural illusion signatures.
 - **Risks**:
-  - If Q001 reveals that CLIP-class ISI is general orientation bias (not face-configural), the pitch must change.
-  - EEG signal may have insufficient SNR to carry configural information; result could be "EEG destroys it" which is still publishable but a different narrative.
-- **State of evidence**: E001 + E002 establish image-side ISI hierarchy; EEG-side untested.
-- **Score**: novelty 7 + feasibility 8 + evidence 5 = **6.7** (current best)
+  - ~~If Q001 reveals general orientation bias~~ — RESOLVED, predominantly face-specific (E003).
+  - EEG signal may have insufficient SNR to carry configural information; result could be "EEG destroys it" — still publishable but a different narrative.
+- **State of evidence**: E001 + E002 + E003 establish (a) image-side ISI hierarchy, (b) face-feature-specific nature of the signature. EEG-side untested.
+- **Score**: novelty 7 + feasibility 8 + evidence 6 = **7.0** (up from 6.7)
 
 ---
 

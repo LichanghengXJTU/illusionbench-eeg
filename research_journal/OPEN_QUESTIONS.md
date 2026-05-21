@@ -7,15 +7,15 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q001 — Is the CLIP ISI signature face-specific or general orientation bias?
 
-- **Status**: untested
-- **Score**: 9/10 (load-bearing for the whole interpretation of E001/E002)
-- **Prior art checked**: partial — Jacob et al. 2021 (Nat Comm) showed face-trained DNNs reproduce Thatcher; did NOT test whether non-face images also produce this asymmetry under matched perturbation. Search needed.
-- **Discriminating experiment**: non-face Thatcher control (E003). Take 200 ImageNet non-face images, define 2 random local bboxes per image, apply 180° rotation. Run all 12 priors. Compute ISI.
-- **Expected outcome to support "face-specific configural"**: ISI(nonface, CLIP-bigG) ≈ 1.0-1.5 (no upright-orientation effect on non-face local perturbation)
-- **Expected outcome to refute (= general orientation bias)**: ISI(nonface, CLIP-bigG) ≈ 4-7 (same magnitude as face Thatcher)
-- **Linked experiment IDs**: E003 (planned)
+- **Status**: **ANSWERED — face-specific dominates (70-80%); small residual general bias (20-30%)**
+- **Score**: 9/10 (was load-bearing; now resolved)
+- **Resolution experiment**: E003 random-bbox FFHQ control. Same 200 identities, same algorithm, same bbox sizes, but bboxes placed at NON-feature locations (forehead/hair/neck/background, excluded by dilated face-landmark mask).
+- **Result**: CLIP-bigG14 dropped from 6.76 (face) → 1.97 (random-bbox); −71% reduction. All 5 CLIP variants dropped 59-74%. DINOv2-large/giant fell to 0.85-0.89 (below 1, no upright bias for non-feature regions). Residual ISI > 1 in CLIP class (1.3-2.1) is real general upright bias but small.
+- **Implication for project**: Idea-001 (EEG Thatcher signal preservation) now has a face-feature-specific phenomenon to track through the EEG decoder, rather than a hard-to-interpret orientation-distance ratio.
+- **Linked experiment IDs**: E003 ✓
 - **Notes**:
-  - 2026-05-21 — created. This is the FIRST thing to resolve in tick 1.
+  - 2026-05-21 — created.
+  - 2026-05-21 23:30 — ANSWERED via E003. Updated.
 
 ---
 

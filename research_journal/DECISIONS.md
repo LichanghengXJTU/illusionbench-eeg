@@ -12,3 +12,4 @@
 - 2026-05-21 22:48 — E002 FFHQ ISI computed; CLIP-bigG ISI=6.76, sanity baselines remain 1.000.
 - 2026-05-21 22:50 — user authorized autonomous research loop with: Max-tier budget (no cap), 70/30 exploit/explore, GitHub remote (PAT pending), rigor-strict (no fabrication, no unverified claims). Working dir moved to ~/Desktop/EEG/illusionbench/.
 - 2026-05-21 22:55 — created SKILL `research-loop-eeg-illusion`. Journal scaffolding seeded (Q001-Q006, E001-E002, IDEA_PIPELINE Ideas 1-2, LITERATURE with 7+5 entries).
+- 2026-05-21 23:50 — tick 1 — E003 random-bbox control completed; Q001 ANSWERED (face-feature-specific ~70-80%, residual general bias ~20-30%); CLIP-bigG 6.76→1.97 on non-feature locations; Idea-001 score 6.7→7.0
