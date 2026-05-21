@@ -4,3 +4,4 @@ __pycache__/
 qc/*.png
 qc/*.jpg
 *.npz
+.DS_Store
