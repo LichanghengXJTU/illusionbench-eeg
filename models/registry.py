@@ -1,0 +1,200 @@
+"""models/registry.py — model loaders for IllusionBench-EEG.
+
+Each loader returns (embed_fn, info, model_obj). embed_fn takes a sequence of PIL.Image
+and returns an L2-normalized (N, D) float32 numpy array on CPU.
+
+Convention: every embedding is L2-normalized so that cosine distance = 1 - dot product.
+"""
+from __future__ import annotations
+
+import gc
+from typing import Callable, Sequence
+
+import numpy as np
+import torch
+import torch.nn.functional as F
+from PIL import Image
+
+
+# ---------------------------------------------------------------------
+# CLIP family — HuggingFace transformers
+# ---------------------------------------------------------------------
+
+def load_clip_hf(hf_id: str, device: str = "cuda", dtype=torch.float16):
+    from transformers import CLIPModel, CLIPProcessor
+    model = CLIPModel.from_pretrained(hf_id, torch_dtype=dtype).to(device).eval()
+    processor = CLIPProcessor.from_pretrained(hf_id)
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        inputs = processor(images=list(images), return_tensors="pt", padding=True).to(device)
+        # cast pixel_values to model dtype if needed
+        if inputs["pixel_values"].dtype != dtype:
+            inputs["pixel_values"] = inputs["pixel_values"].to(dtype)
+        with torch.no_grad():
+            feats = model.get_image_features(pixel_values=inputs["pixel_values"])
+            feats = F.normalize(feats, dim=-1)
+        return feats.cpu().float().numpy()
+
+    info = {"hf_id": hf_id, "output_dim": int(model.config.projection_dim)}
+    return embed, info, model
+
+
+# ---------------------------------------------------------------------
+# DINOv2 — HuggingFace transformers
+# ---------------------------------------------------------------------
+
+def load_dinov2_hf(hf_id: str, device: str = "cuda", dtype=torch.float16):
+    from transformers import AutoImageProcessor, AutoModel
+    model = AutoModel.from_pretrained(hf_id, torch_dtype=dtype).to(device).eval()
+    processor = AutoImageProcessor.from_pretrained(hf_id)
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        inputs = processor(images=list(images), return_tensors="pt").to(device)
+        if inputs["pixel_values"].dtype != dtype:
+            inputs["pixel_values"] = inputs["pixel_values"].to(dtype)
+        with torch.no_grad():
+            out = model(**inputs)
+            feats = out.last_hidden_state[:, 0, :]  # CLS token
+            feats = F.normalize(feats, dim=-1)
+        return feats.cpu().float().numpy()
+
+    info = {"hf_id": hf_id, "output_dim": int(model.config.hidden_size)}
+    return embed, info, model
+
+
+# ---------------------------------------------------------------------
+# MAE — HuggingFace transformers, encoder only (mask_ratio=0)
+# ---------------------------------------------------------------------
+
+def load_mae_hf(hf_id: str, device: str = "cuda", dtype=torch.float32):
+    from transformers import AutoImageProcessor, ViTMAEModel
+    model = ViTMAEModel.from_pretrained(hf_id, torch_dtype=dtype).to(device).eval()
+    model.config.mask_ratio = 0.0
+    processor = AutoImageProcessor.from_pretrained(hf_id)
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        inputs = processor(images=list(images), return_tensors="pt").to(device)
+        if inputs["pixel_values"].dtype != dtype:
+            inputs["pixel_values"] = inputs["pixel_values"].to(dtype)
+        with torch.no_grad():
+            out = model(**inputs)
+            # mean-pool over patch tokens (after CLS)
+            hidden = out.last_hidden_state  # (B, 1+N_patches, D) with mask_ratio=0
+            feats = hidden.mean(dim=1)
+            feats = F.normalize(feats, dim=-1)
+        return feats.cpu().float().numpy()
+
+    info = {"hf_id": hf_id, "output_dim": int(model.config.hidden_size)}
+    return embed, info, model
+
+
+# ---------------------------------------------------------------------
+# SDXL VAE — diffusers
+# ---------------------------------------------------------------------
+
+def load_sdxl_vae(hf_id: str = "madebyollin/sdxl-vae-fp16-fix",
+                  device: str = "cuda", target_size: int = 512):
+    from diffusers import AutoencoderKL
+    import torchvision.transforms as T
+    model = AutoencoderKL.from_pretrained(hf_id, torch_dtype=torch.float16).to(device).eval()
+    transform = T.Compose([
+        T.Resize(target_size, antialias=True),
+        T.CenterCrop(target_size),
+        T.ToTensor(),
+        T.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),  # [-1, 1]
+    ])
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        batch = torch.stack([transform(img) for img in images]).to(device).half()
+        with torch.no_grad():
+            latent = model.encode(batch).latent_dist.mean  # (B, 4, H/8, W/8)
+        feats = latent.flatten(1)
+        feats = F.normalize(feats, dim=-1)
+        return feats.cpu().float().numpy()
+
+    out_dim = 4 * (target_size // 8) * (target_size // 8)
+    info = {"hf_id": hf_id, "output_dim": out_dim, "target_size": target_size}
+    return embed, info, model
+
+
+# ---------------------------------------------------------------------
+# Pixel baseline (control N03)
+# ---------------------------------------------------------------------
+
+def load_pixel_baseline(device: str = "cuda", target_size: int = 224):
+    import torchvision.transforms as T
+    transform = T.Compose([
+        T.Resize(target_size, antialias=True),
+        T.CenterCrop(target_size),
+        T.ToTensor(),  # [0, 1]
+    ])
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        batch = torch.stack([transform(img) for img in images])
+        feats = batch.flatten(1)  # (B, 3*H*W)
+        feats = F.normalize(feats, dim=-1)
+        return feats.numpy()
+
+    info = {"hf_id": None, "output_dim": 3 * target_size * target_size}
+    return embed, info, None
+
+
+# ---------------------------------------------------------------------
+# Untrained ViT-B/16 (control N02)
+# ---------------------------------------------------------------------
+
+def load_untrained_vit(device: str = "cuda", dtype=torch.float16):
+    import timm
+    model = timm.create_model("vit_base_patch16_224", pretrained=False, num_classes=0)
+    model = model.to(device).to(dtype).eval()
+    cfg = timm.data.resolve_data_config({}, model=model)
+    transform = timm.data.create_transform(**cfg)
+
+    def embed(images: Sequence[Image.Image]) -> np.ndarray:
+        batch = torch.stack([transform(img) for img in images]).to(device).to(dtype)
+        with torch.no_grad():
+            feats = model(batch)
+            feats = F.normalize(feats, dim=-1)
+        return feats.cpu().float().numpy()
+
+    info = {"hf_id": "vit_base_patch16_224 (untrained)",
+            "output_dim": int(model.num_features)}
+    return embed, info, model
+
+
+# ---------------------------------------------------------------------
+# Registry
+# ---------------------------------------------------------------------
+
+REGISTRY: dict[str, Callable] = {
+    # CLIP family
+    "P02_clip_b32":    lambda: load_clip_hf("openai/clip-vit-base-patch32"),
+    "P03_clip_l14":    lambda: load_clip_hf("openai/clip-vit-large-patch14"),
+    "P04_clip_h14":    lambda: load_clip_hf("laion/CLIP-ViT-H-14-laion2B-s32B-b79K"),
+    "P05_clip_g14":    lambda: load_clip_hf("laion/CLIP-ViT-g-14-laion2B-s12B-b42K"),
+    "P06_clip_bigG14": lambda: load_clip_hf("laion/CLIP-ViT-bigG-14-laion2B-39B-b160k"),
+    # DINOv2 (self-supervised; commonly considered more "object-shape" focused)
+    "P07_dinov2_base":  lambda: load_dinov2_hf("facebook/dinov2-base"),
+    "P08_dinov2_large": lambda: load_dinov2_hf("facebook/dinov2-large"),
+    "P09_dinov2_giant": lambda: load_dinov2_hf("facebook/dinov2-giant"),
+    # MAE (pixel-prediction self-supervised — "image-statistics" prior)
+    "P10_mae_huge":     lambda: load_mae_hf("facebook/vit-mae-huge"),
+    # VAE (true pixel-statistics encoder)
+    "P11_sdxl_vae":     lambda: load_sdxl_vae(),
+    # Negative controls
+    "N02_untrained_vit": lambda: load_untrained_vit(),
+    "N03_pixel":         lambda: load_pixel_baseline(),
+}
+
+
+def free_model(model_obj):
+    """Release a model's GPU memory; safe to call with None."""
+    if model_obj is not None:
+        try:
+            model_obj.cpu()
+        except Exception:
+            pass
+        del model_obj
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+qc/*.png
+qc/*.jpg
+*.npz

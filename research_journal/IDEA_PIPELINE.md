@@ -1,0 +1,39 @@
+# Idea pipeline
+
+Each idea ranked by **score = (novelty × feasibility × evidence) / 30**, on 0-10 each.
+Ideas must have ≥ 2 prior-art citations before being added.
+
+---
+
+## Idea-001 (current strongest): EEG-decoding "Thatcher-signal preservation"
+
+- **One-line pitch**: Current SOTA EEG-to-image decoders inherit a strong CLIP-class ISI signature on the image side; we measure whether the EEG signal preserves it when compressed through the EEG encoder.
+- **Why now**: We have evidence (E002) that the CLIP visual prior — universal across ATM / AVDE / ENIGMA / HVF — shows ISI 4-7 on FFHQ Thatcher. The downstream question is whether EEG signal under current decoders carries this information.
+- **Cheapest discriminating experiment**: After resolving Q001 (face-specific or not), run E020: extract EEG-conditioned image embeddings via ATM/AVDE/ENIGMA pipelines on THINGS-EEG2 test stimuli; substitute the Thatcher battery; measure ISI of the EEG-decoded representations.
+- **Prior art**:
+  1. Jacob et al. 2021 Nat Comm: face-DNN reproduces Thatcher behaviorally. https://www.nature.com/articles/s41467-021-22078-3
+  2. Li et al. 2024 (ATM): EEG-to-image via CLIP guidance. arxiv 2403.07721
+  3. Phillips & White 2026 (BJP review): face-DNN alignment without EEG. https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjop.12794
+  - **Gap claim**: no prior work measures whether EEG-conditioned visual representations preserve face-configural illusion signatures.
+- **Risks**:
+  - If Q001 reveals that CLIP-class ISI is general orientation bias (not face-configural), the pitch must change.
+  - EEG signal may have insufficient SNR to carry configural information; result could be "EEG destroys it" which is still publishable but a different narrative.
+- **State of evidence**: E001 + E002 establish image-side ISI hierarchy; EEG-side untested.
+- **Score**: novelty 7 + feasibility 8 + evidence 5 = **6.7** (current best)
+
+---
+
+## Idea-002: Illusion-based EEG decoder benchmark suite
+
+- **One-line pitch**: A reproducible benchmark (face Thatcher + composite + part-whole) for evaluating whether EEG decoders preserve image-side illusion sensitivity, released alongside metrics and 12+ baseline models.
+- **Why now**: Same evidence as Idea-001; benchmark framing is broader and more D&B-track-friendly.
+- **Cheapest discriminating experiment**: Same as Idea-001 plus expand stimulus battery to composite + part-whole.
+- **Prior art**:
+  1. Jacob et al. 2021 used 9 visual phenomena but no EEG.
+  2. Phillips & White 2026 reviews many DNN-face alignment studies but no benchmark released for EEG decoders.
+- **Risks**: D&B benchmarks need a strong "useful for the field" justification, which depends on Q005 result.
+- **Score**: novelty 6 + feasibility 7 + evidence 5 = **6.0**
+
+---
+
+(More ideas will be added by the loop. Score gates: ≥ 6.5 to be considered actionable; ≥ 8 to claim "publishable.")
