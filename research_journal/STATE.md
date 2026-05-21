@@ -1,14 +1,14 @@
 # State
 
-**Tick #**: 29 (Angular-margin loss-family ablation, AdaFace surprise)
+**Tick #**: 30 (AuraFace RGB sanity + AdaFace IR-50 dataset sweep)
 **Last updated**: 2026-05-22 (Asia/Hong_Kong)
-**Current focus** (one sentence): E031 tested AdaFace IR-101 MS1MV2 (P24) and ArcFace IR-101 WebFace4M (P25); falsified "angular-margin loss → Thatcher" broad hypothesis, but discovered AdaFace IR-101 MS1MV2 is the most paradigm-consistent face-recognition model (ISI 1.24, CSI 1.60, PWI 0.59 — all in expected direction across 3 paradigms).
-**Last action**: E031 — extracted CVLFace AdaFace IR-101 + ArcFace IR-101 WebFace4M; computed ISI/CSI/PWI on 3 paradigms + random-bbox.
-**Last action outcome**: 7 distinct dissociation patterns now identified across 21 priors. AdaFace IR-101 is best-balanced face-rec model (all 3 indices deviate from baseline in expected direction). AuraFace's Thatcher (1.70) + inverted PWI (1.43) is NOT replicated on IR-101 ArcFace (ISI 1.17, PWI 0.50) — confounded by backbone/data, not loss alone.
+**Current focus** (one sentence): E032 resolved AuraFace's PWI inversion as a BGR-preprocessing artifact (RGB-correct PWI = 0.99, baseline), AND discovered AdaFace IR-50 trained on small CASIA dataset gives the highest Thatcher ISI of any face-rec model (**2.91 [2.63, 3.22]**, comparable to mid-tier CLIP).
+**Last action**: E032 — extracted P23rgb (AuraFace RGB control) + P26 (AdaFace IR-50 CASIA) + P28 (IR-50 WebFace4M) + P29 (IR-50 MS1MV2); computed all 4 paradigm metrics.
+**Last action outcome**: AdaFace IR-50 CASIA is the strongest face-rec Thatcher signal (ISI 2.91), demonstrating inverted data-scaling (small noisy data → more Thatcher). 10+ distinct dissociation patterns now across 24 priors. AuraFace PWI inversion is a preprocessing artifact, not a real finding.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 30): Sanity check — re-extract AuraFace with RGB preprocessing to rule out BGR confound; also test AdaFace IR-50 variants on CASIA/VGG2/WebFace4M to disentangle data scale effect from architecture effect. 1-2h work.
-**Confidence in current best idea**: 8.7/10 for Idea-001 (mature, publishable); 7.5/10 for Idea-003 (sub-path (a) refined toward AdaFace-style training)
+**Planned next action** (tick 31): Sub-path (h) — replace ATM's CLIP target with P26 AdaFace-CASIA embeddings; train ATM mini-version (1 subject, few epochs) on THINGS-EEG2 and measure: (1) does training converge? (2) does the EEG-side preserve the AdaFace Thatcher signal better than CLIP-side? Estimated 2-4h GPU.
+**Confidence in current best idea**: 8.7/10 for Idea-001 (mature); **8.2/10 for Idea-003** (raised — AdaFace-CASIA gives a concrete proof-of-concept that face-rec can match modest CLIP Thatcher)
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`

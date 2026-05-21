@@ -23,12 +23,21 @@ Three primary tables; can be paste directly into the paper draft.
 | 13 | SDXL-VAE | VAE | 0.997 [0.990, 1.004] | 1.162 [1.154, 1.171] | 0.436 [0.419, 0.455] |
 | 14 | FaceNet (VGGFace2) | Face-trained | 1.117 [1.042, 1.198] | 1.111 [1.059, 1.166] | 0.711 [0.662, 0.760] |
 | 15 | FaceNet (CASIA-Webface) | Face-trained | 1.026 [0.974, 1.080] | 1.154 [1.110, 1.201] | 0.953 [0.891, 1.020] |
-| 16 | ArcFace (AuraFace, ResNet-100) | Face-trained (angular-margin) | 1.697 [1.638, 1.766] | 1.161 [1.123, 1.197] | 1.428 [1.335, 1.520] |
+| 16 | ArcFace (AuraFace, R100, BGR†) | Face-trained (angular-margin) | 1.697 [1.638, 1.766] | 1.161 [1.123, 1.197] | 1.428 [1.335, 1.520] |
+| 16b | ArcFace (AuraFace, R100, RGB) | Face-trained (angular-margin) | 1.450 [1.392, 1.511] | 1.170 [1.136, 1.209] | 0.985 [0.940, 1.035] |
 | 17 | AdaFace IR-101 MS1MV2 | Face-trained (quality-adaptive AM) | 1.237 [1.177, 1.297] | 1.602 [1.513, 1.703] | 0.590 [0.562, 0.618] |
 | 18 | ArcFace IR-101 WebFace4M | Face-trained (angular-margin) | 1.172 [1.113, 1.227] | 1.320 [1.262, 1.389] | 0.501 [0.477, 0.526] |
-| 19 | CORnet-S (V1-V2-V4-IT) | Bio-inspired | 0.991 [0.903, 1.078] | 1.151 [1.109, 1.192] | 0.214 [0.188, 0.243] |
-| 20 | ViT-B/16 (untrained) | Control | 1.006 [0.979, 1.043] | 1.131 [1.089, 1.175] | 0.776 [0.634, 0.923] |
-| 21 | Raw pixel | Control | 1.000 [1.000, 1.000] | 1.099 [1.083, 1.116] | 1.202 [1.081, 1.350] |
+| 19 | **AdaFace IR-50 CASIA** | Face-trained (quality-adaptive AM, small data) | **2.908 [2.627, 3.219]** | 1.284 [1.232, 1.341] | 0.751 [0.709, 0.798] |
+| 20 | AdaFace IR-50 WebFace4M | Face-trained (quality-adaptive AM) | 1.329 [1.261, 1.406] | 1.340 [1.288, 1.402] | 0.516 [0.490, 0.544] |
+| 21 | AdaFace IR-50 MS1MV2 | Face-trained (quality-adaptive AM) | 1.207 [1.144, 1.268] | 1.461 [1.398, 1.539] | 0.638 [0.610, 0.665] |
+| 22 | CORnet-S (V1-V2-V4-IT) | Bio-inspired | 0.991 [0.903, 1.078] | 1.151 [1.109, 1.192] | 0.214 [0.188, 0.243] |
+| 23 | ViT-B/16 (untrained) | Control | 1.006 [0.979, 1.043] | 1.131 [1.089, 1.175] | 0.776 [0.634, 0.923] |
+| 24 | Raw pixel | Control | 1.000 [1.000, 1.000] | 1.099 [1.083, 1.116] | 1.202 [1.081, 1.350] |
+
+† BGR preprocessing reflects insightface convention; RGB is the model-correct
+ordering and SHOULD be used. P23 with BGR shows a Part-Whole inversion that
+disappears with RGB (P23rgb / row 16b) — confirming the inversion was a
+preprocessing artifact, not a real model property.
 
 *Pixel-baseline (sanity)*: Thatcher = 1.000 (exact), Composite = 1.099, Part-Whole = 1.202.
 *Human Thatcher ISI reference*: Carbon et al. (2005), 2AFC d′ ratio ≈ 4–5.

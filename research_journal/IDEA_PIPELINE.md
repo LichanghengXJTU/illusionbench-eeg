@@ -61,33 +61,28 @@ Ideas must have ≥ 2 prior-art citations before being added.
   - **NEW from E028 (2026-05-22)**: Bio-inspired ANATOMY alone (CORnet-S V1→V2→V4→IT + recurrence, ImageNet-trained) gives NO Thatcher signal (ISI 0.99 = pixel baseline). The path forward requires combining bio-anatomy with face-specific training data and/or contrastive objective. This is a more complex engineering task than originally framed.
   - **NEW from E030 (2026-05-22)**: **ArcFace (ResNet-100 + angular-margin loss) gives ISI 1.70 [1.638, 1.766] on Thatcher**, 77% face-feature-specific. This is the first face-identity-trained model in our 19-prior battery to show non-trivial Thatcher (FaceNet's triplet-loss model gave ISI 1.12). **The loss function (angular-margin vs triplet) matters more than the face data per se**. This revives sub-path (a) face-CORnet+angular-margin-loss as a promising direction, since both ingredients (bio-anatomy + angular-margin-loss-on-face-data) might give true paradigm-consistency. ArcFace alone INVERTS Part-Whole (PWI 1.43, opposite direction) so it's still paradigm-INconsistent.
 
-### Sub-paths for Idea-003 post-E028/E029/E030/E031
+### Sub-paths for Idea-003 post-E028/E029/E030/E031/E032
 
-(a) **Face-tuned CORnet via angular-margin loss** — REFINED post-E031:
-    E031 shows that angular-margin loss is NOT uniformly Thatcher-emergent
-    (AdaFace 1.24, ArcFace IR-101 1.17, ArcFace AuraFace 1.70). The
-    distinguishing factor between these models is training data + backbone,
-    not loss alone. **The cleanest off-the-shelf "partial paradigm-
-    consistent face model"** is AdaFace IR-101 MS1MV2 (ISI 1.24, CSI 1.60,
-    PWI 0.59 — all in expected direction). For sub-path (a), the candidate
-    architecture is: CORnet-S backbone + AdaFace's quality-adaptive
-    angular-margin head, trained on MS1MV2-style face-identity data.
-    Estimated training: 1-3 days GPU.
-(b) **NSD-aligned encoders**: not publicly available [E030].
-(c) **PredNet / γ-net for face data**: not released [E030].
+(a) **Face-tuned CORnet via angular-margin loss + small noisy face data**
+    (REFINED post-E032): The strongest Thatcher signal among ALL face-rec
+    models is **AdaFace IR-50 + CASIA-WebFace** (ISI 2.91). Smaller noisier
+    training data appears to be better. Target architecture for sub-path (a):
+    CORnet-S anatomy + AdaFace-style quality-adaptive margin + CASIA-like
+    training data. **Estimated training: 1-3 days GPU.**
+(b)-(c) **NSD-aligned encoders / face-PredNet**: not publicly available [E030].
 (d) ~~Multi-anchor decoder~~: ❌ **REFUTED by E029**.
 (e) **Design our own**: longest path; (a) is a strict subset.
-(f) ~~Loss-function ablation~~: ❌ **PARTIALLY REFUTED by E031** — the
-    "angular-margin loss → Thatcher" hypothesis does not hold uniformly.
-    But the experiment yielded an unexpected positive (AdaFace partial
-    paradigm-consistency).
-(g) **NEW post-E031**: **Compare AdaFace's vs CLIP's per-paradigm sensitivity
-    structure** — is AdaFace's paradigm-consistency a real signal or a
-    smaller version of pattern-matching noise? Could be tested with the
-    Route A per-dim analysis (E020 methodology) applied to AdaFace +
-    Thatcher/Composite stimulus pairs.
+(f) ~~Loss-function ablation~~: ❌ done (E031, E032).
+(g) **Compare AdaFace-CASIA vs CLIP on Route A per-dim preservation** — is
+    AdaFace-CASIA's Thatcher carried by a few specific dims or distributed?
+    Could test if EEG-side can preserve AdaFace-CASIA's signal.
+(h) **NEW from E032**: **AdaFace IR-50 + CASIA might already be a useful EEG
+    target embedding** — its small embedding (512-d), small backbone (43.6M),
+    and high Thatcher (2.91) could be plugged into ATM as an alternative to
+    CLIP-bigG. Quick test: replace ATM's CLIP-H/14 target with
+    P26_adaface_ir50_casia and re-train; measure top-1 retrieval. 2-4h GPU.
 
-Post-E031 priority order: (a) → (g) → (e). (b), (c), (d), (f) ruled out / done.
+Post-E032 priority order: (h) → (a) → (g) → (e). (b), (c), (d), (f) ruled out.
 
 ---
 
