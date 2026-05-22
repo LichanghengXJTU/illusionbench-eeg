@@ -64,38 +64,49 @@ with MediaPipe landmark-based geometry. Each paradigm produces an
 embedding-space sensitivity index (ISI / CSI / PWI) with bootstrap confidence
 intervals; pixel-baseline sanity is verified at exactly 1.000 for Thatcher.
 
-Our central findings are threefold. First, a clean **training-objective × paradigm
-dissociation** emerges: image-text contrastive priors (CLIP / SigLIP / MetaCLIP)
-dominate the Thatcher illusion with ISI 4-7 — within or above human-reference
-range — while DINOv2 self-supervised priors dominate composite-face and part-
-whole context binding. Second, **face-identification-trained networks (FaceNet
-VGGFace2 and CASIA-Webface variants) show no holistic illusion effect on any
-paradigm**, despite being explicitly trained on millions of face identity pairs.
-The pose-invariance objective intrinsic to identity recognition actively
-suppresses the orientation-dependent configural features that other training
-paradigms emerge. Third, **direct analysis of ATM's pre-computed EEG embeddings
-on all 10 THINGS-EEG2 subjects** reveals that the EEG bottleneck imposes a
-uniform per-dimension attenuation (mean Pearson r ≈ 0.158 across 1024 CLIP-H/14
-dimensions) with no dimension-specific structure: Thatcher-loaded dimensions are
-neither selectively preserved nor selectively destroyed, and face-related
-categories receive no privileged preservation. Combined, these findings imply
-that current EEG visual decoders cannot reproduce human-aligned holistic
-processing on any of the three paradigms, regardless of which paradigm's signal
-is on their image side.
+Our central findings span seven specific claims. First, a clean
+**training-objective × paradigm dissociation** emerges across 25 visual priors:
+image-text contrastive priors (CLIP / SigLIP / MetaCLIP) dominate the Thatcher
+illusion with ISI 4-7 — within or above human-reference range — while DINOv2
+self-supervised priors dominate composite-face and part-whole context binding.
+Second, **face-identification-trained networks using triplet loss (FaceNet
+VGGFace2 and CASIA-Webface)** show no holistic illusion effect on any
+paradigm, despite explicit identity supervision. Third, the face-Thatcher
+signal in CLIP-class priors is **~70% face-feature-localized** as verified by
+random-location bbox controls. Fourth, **direct per-CLIP-dim analysis of ATM's
+pre-computed EEG embeddings** on all 10 THINGS-EEG2 subjects reveals the EEG
+bottleneck imposes a uniform low-pass (mean r ≈ 0.158) with no Thatcher-loaded
+or face-category-specific preservation; the result holds INDIVIDUALLY for each
+of 10 subjects. Fifth, combining (1)+(4), **current EEG visual decoders cannot
+reproduce holistic face processing on any paradigm**. Sixth, the
+**face-recognition data-scaling law is inverted relative to CLIP**: AdaFace
+IR-50 trained on the small noisy CASIA-WebFace gives Thatcher ISI 2.91 —
+the strongest among all face-rec models — while AdaFace IR-50/IR-101 on
+larger MS1MV2 and WebFace4M give ISI 1.21-1.33. Seventh, representational-
+similarity analysis (RSA + CKA) across paradigms reveals **paradigm-conditional
+cluster migration**: the same prior can be face-rec-clustered on Thatcher and
+semantic-clustered on Part-Whole, demonstrating that dissociation is a
+(model × paradigm) interaction.
 
-We make five specific contributions: (1) **IllusionBench-EEG**, an open
+We make seven specific contributions: (1) **IllusionBench-EEG**, an open
 three-paradigm stimulus battery (Thatcher / composite / part-whole) generated
 deterministically from FFHQ-1024 with pixel-baseline-verified metrics; (2)
-**Training-objective × paradigm dissociation** — the first systematic mapping
-showing different model classes capture different aspects of face-configural
-processing; (3) **Empirical refutation of "face-trained DNNs are most face-aligned"**:
-across all three paradigms, FaceNet performs at baseline while large-scale
-image-text contrastive and self-supervised global models exhibit substantial
-illusion sensitivity; (4) **A per-CLIP-dimension EEG preservation analysis** on
-ATM showing the EEG bottleneck is a non-specific low-pass that cannot
-selectively transmit holistic perceptual information; (5) **An architectural
-prediction** for human-aligned EEG visual decoding: dimension-fine perceptual
-structure preservation (not single CLIP-cluster anchoring) is required.
+**Training-objective × paradigm dissociation** across 25 priors / 8 training
+paradigms — the first systematic mapping showing different model classes
+capture different aspects of face-configural processing; (3) **Empirical
+refutation of "face-trained DNNs are most face-aligned"** for triplet-loss
+identity networks, while showing that the angular-margin face-recognition
+sub-class can develop Thatcher sensitivity under specific data conditions;
+(4) **A per-CLIP-dimension EEG preservation analysis** on ATM showing the EEG
+bottleneck is a non-specific low-pass that cannot selectively transmit
+holistic perceptual information, holding individually for each of 10 subjects;
+(5) **The face-recognition data-scaling inversion** (Claim 6), showing that
+smaller noisier face data can yield stronger Thatcher signal than larger
+cleaner data — opposite of CLIP scaling laws; (6) **A paradigm-conditional
+representational-similarity analysis** demonstrating that dissociation is a
+(model × paradigm) interaction; (7) **An architectural prediction** for
+human-aligned EEG visual decoding: multi-prior dimension-fine alignment is
+required (single CLIP-cluster anchoring is insufficient).
 
 The paper is organized as follows. Section 2 reviews related work. Section 3
 describes the IllusionBench-EEG stimuli and metrics. Section 4 presents the

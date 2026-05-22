@@ -1,14 +1,14 @@
 # State
 
-**Tick #**: 38 (TLDR_FOR_PI refresh)
+**Tick #**: 39 (OPEN_QUESTIONS update + Introduction refresh)
 **Last updated**: 2026-05-22 (Asia/Hong_Kong)
-**Current focus** (one sentence): Refreshed TLDR_FOR_PI.md to reflect the 25-prior 7-claim story; updated artifact priority list, what-we-built, what-we-found, future-work sections.
-**Last action**: Wrote TLDR_FOR_PI.md v3 from scratch (was tick-17 vintage). Sections covered: project intro, 25-prior model zoo, RSA cluster taxonomy, 7 findings (was 3), priority artifact list with 10 entries (was 6), Idea-001 score raised to 9.3/10, mentions Idea-003 sub-path (a) as most promising future direction.
-**Last action outcome**: PI / lab now has a current "at a glance" entry point reflecting all tick 26-37 findings. Read time ~5 min, links to all 5 polished figures (Figure 1, 2, 3, 4b, 5).
+**Current focus** (one sentence): Marked Q010 ANSWERED (CORnet-S NOT paradigm-consistent), added Q011 (angular-margin × small-data generality), Q012 (RSA cluster migration robustness), Q013 (other concept categories for EEG selectivity); refreshed PAPER_DRAFT §1 Introduction central-findings paragraph + 7-contribution list.
+**Last action**: OPEN_QUESTIONS.md: Q010 marked answered with full resolution narrative; new Q011, Q012, Q013 added with scores and discriminating experiments. PAPER_DRAFT.md §1: rewrote 4-paragraph central-findings + 5-bullet contribution list into 7-claim central paragraph + 7-bullet contribution list.
+**Last action outcome**: Paper draft Section 1 (Introduction) now coherently presents the 7-claim story. OPEN_QUESTIONS shows clear next-experiment paths for E036-E038.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 39): Could now (a) update OPEN_QUESTIONS.md to mark Q010 (bio-inspired) and add new Q011-Q012, (b) produce a combined Figure 4 (Route A scatter + E035 per-subject panel), (c) draft submission-ready Introduction (Section 1) since current draft is from tick 13. (c) is highest leverage for paper submission.
-**Confidence in current best idea**: 9.3/10 for Idea-001 (paper-ready with TLDR refreshed); 8.2/10 for Idea-003.
+**Planned next action** (tick 40): Three options: (a) implement Q011 (test additional small-noisy-data face-rec checkpoints if any can be found), (b) implement Q012 (RSA clustering robustness — try Ward + complete linkage, k=4/8, bootstrap), (c) draft a combined Figure 4 panel (Route A scatter + E035 per-subject panel). (b) is cheapest (~15 min, all data already on server) and most pertinent to defending Claim 7.
+**Confidence in current best idea**: 9.3/10 for Idea-001 (Introduction now matches refined story); 8.2/10 for Idea-003.
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`

@@ -120,15 +120,47 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q010 (NEW from user 2026-05-22) — Are existing bio-inspired vision priors paradigm-consistent on IllusionBench-EEG, and competitive on standard EEG-to-image retrieval?
 
-- **Status**: untested
-- **Score**: 10/10 (Idea-003 hinges on this)
-- **Background**: CLIP-class shows paradigm-specific dissociation (Thatcher only). DINOv2 shows partial dissociation in the opposite direction (composite/part-whole only). Real human visual system handles all 3 paradigms with similar configural binding. A truly bio-aligned model should be paradigm-consistent.
-- **Discriminating experiment (tick 26)**: 
-  1. Extract CORnet-S (DiCarlo lab, Brain-Score top, open-source) on all 3 IllusionBench paradigms.
-  2. Check if ISI / CSI / PWI all > 1 AND any-two ratio < 2:1.
-  3. Compare with CLIP / DINOv2 dissociation pattern (Idea-001).
-- **Expected**: TBD — if CORnet shows paradigm-consistency: bio-inspired direction is validated, Idea-003 advances. If not: need PredNet / γ-net / NSD-aligned alternatives.
-- **Linked experiment IDs**: E028 (planned for tick 26).
+- **Status**: **ANSWERED — CORnet-S is NOT paradigm-consistent; it captures Part-Whole but no Thatcher or Composite.**
+- **Score**: 10/10 (Idea-003 hinged on this; resolved)
+- **Resolution experiment (E028)**: CORnet-S (DiCarlo lab, ImageNet-trained) gave Thatcher ISI 0.99 [0.90, 1.08] (= pixel baseline), Composite CSI 1.15 (≈ pixel baseline 1.10), Part-Whole PWI 0.21 [0.19, 0.24] — the LOWEST PWI of all 25 priors in our battery.
+- **Interpretation**: bio-inspired anatomy alone (V1→V2→V4→IT + recurrence) trained on ImageNet captures whole-face context dominance over local perturbations (Part-Whole) but NOT face-feature-specific orientation interaction (Thatcher) and NOT spatial-alignment integration (Composite). The full configural-illusion repertoire requires combining bio-anatomy with face-specific data and training objective. Sub-paths (b) NSD-aligned, (c) face-PredNet, (d) multi-anchor fusion all ruled out by E029-E030.
+- **Linked experiment IDs**: E028 ✓ (the answer), E029 (refuted sub-path d), E030 (no off-the-shelf face-bio), E031 (refined sub-path a), E032 (AdaFace-CASIA reveals the candidate recipe).
+
+---
+
+## Q011 (NEW from E031/E032) — Does face-recognition with angular-margin loss + small noisy training data uniformly produce a Thatcher-like signal, or is AdaFace-CASIA an idiosyncratic case?
+
+- **Status**: partially answered (1 angular-margin checkpoint at IR-50 + CASIA showed ISI 2.91). Need more datapoints in the (loss, backbone, data) cube to claim generality.
+- **Score**: 8/10
+- **Background**: E031 showed AdaFace IR-101 MS1MV2 (ISI 1.24), ArcFace IR-101 WebFace4M (ISI 1.17), AdaFace IR-50 MS1MV2 (1.21), AdaFace IR-50 WebFace4M (1.33) — all face-rec models with ISI < 1.5. Only AdaFace IR-50 CASIA (P26) gave ISI 2.91. This single datapoint is the basis for Claim 6 (data-inversion).
+- **Discriminating experiments**:
+  1. Add SphereFace / CosFace ResNet-50 checkpoints on CASIA-WebFace if released.
+  2. Add AdaFace IR-50 on additional small noisy datasets (e.g., LFW ~5K identities, IJB-A, AgeDB-30).
+  3. Train AdaFace IR-50 on a downsampled subset of MS1MV2 (matching CASIA size + identity count) — does it ALSO give ISI ~3?
+- **Expected outcomes**: If multiple angular-margin face-rec models on CASIA-sized data converge on ISI ~2.5-3, the data-inversion claim is fully general. If AdaFace IR-50 CASIA is unique, the claim narrows to specific (backbone × dataset × loss) interactions.
+- **Linked experiment IDs**: E031 ✓, E032 ✓. Future: E036 (planned).
+
+---
+
+## Q012 (NEW from E033/E034) — How robust is the paradigm-conditional cluster migration across (a) clustering algorithms, (b) k choices, (c) larger benchmarks?
+
+- **Status**: untested for robustness; the qualitative pattern was observed at k=6 using average-linkage.
+- **Score**: 6/10 (foundational for Claim 7 robustness)
+- **Discriminating experiments**:
+  1. Re-cluster at k=4 and k=8; check if CORnet-S, AdaFace-CASIA, FaceNet migrations persist.
+  2. Use Ward linkage and complete linkage instead of average; check stability.
+  3. Bootstrap the stimulus set (resample 80%) and recompute RSA — does each subject sample yield the same cluster taxonomy?
+- **Linked experiment IDs**: E033 ✓, E034 ✓. Future: E037 (planned).
+
+---
+
+## Q013 (NEW from E035) — Are there ANY THINGS-EEG2 concepts for which the EEG-side embedding is selectively above-baseline?
+
+- **Status**: open (single per-dim category-level analysis in E021 was NULL; not exhaustive)
+- **Score**: 6/10 (sanity for Claim 4)
+- **Background**: E021 took the top-30 face-related test concepts (by CLIP-text similarity) and found per-dim r = 0.150 vs random-matched 0.145 (NULL). But there could be other concept categories (e.g., animals, tools, foods) where EEG selectively preserves CLIP. If any positive subset exists, the uniform low-pass story has a wrinkle.
+- **Discriminating experiment**: cluster the 200 test concepts via CLIP-text similarity to 12 category labels (food, tool, animal, vehicle, face, body part, plant, building, container, weapon, instrument, garment). For each category, compute mean r and compare with random-matched subset. Report any category with z > 2.
+- **Linked experiment IDs**: planned E038.
 
 ---
 
