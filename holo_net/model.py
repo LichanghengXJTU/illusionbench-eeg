@@ -257,13 +257,23 @@ class OrientationGate(nn.Module):
     FFA holistic-binding activation.
 
     Reference: Yin (1969) inversion effect; Rossion & Jacques (2008) N170.
+
+    NOTE (tick-54 bug fix): orientation = whole-face vertical flip = a spatial
+    permutation. Global average pooling is permutation-invariant, so a GAP'd
+    feature vector is provably blind to orientation — verified at random init:
+    orientation_logits differed by only 3e-5 between an image and its vertical
+    flip, and the orientation CE loss sat dead-flat at ln 2 for 6450 training
+    steps (E042 run v1). The conv stack DOES carry the orientation (afp_spatial
+    flips with the input); only the pooling discarded it. Fix: pool to a coarse
+    grid×grid map (top-vs-bottom layout preserved) instead of 1×1.
     """
-    def __init__(self, in_dim: int = 512, soft: bool = True):
+    def __init__(self, in_dim: int = 512, soft: bool = True, grid: int = 4):
         super().__init__()
-        self.gap = nn.AdaptiveAvgPool2d(1)
+        self.grid = grid
+        self.pool = nn.AdaptiveAvgPool2d((grid, grid))
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(in_dim, 64),
+            nn.Linear(in_dim * grid * grid, 64),
             nn.ReLU(inplace=True),
             nn.Linear(64, 2),  # upright / inverted logits
         )
@@ -274,7 +284,7 @@ class OrientationGate(nn.Module):
         orientation_logits: (B, 2) for cross-entropy training loss
         gate_signal: (B, 1, 1, 1) scalar gate ∈ [0, 1] (sigmoid) or {0, 1} (hard)
         """
-        pooled = self.gap(afp_spatial)
+        pooled = self.pool(afp_spatial)   # (B, in_dim, grid, grid) — keeps spatial layout
         logits = self.classifier(pooled)  # (B, 2)
         if self.soft:
             # Soft gate = sigmoid(upright_logit - inverted_logit)

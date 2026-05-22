@@ -221,7 +221,13 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q015 (NEW from E042 monitoring, tick 53) — Is the HOLO-Net Orientation Gate actually learning upright-vs-inverted?
 
-- **Status**: **WATCH-ITEM** — flagged, not yet investigated.
+- **Status**: **ANSWERED (tick 54) — REAL BUG, fixed.** The `OrientationGate`
+  global-average-pooled `afp_spatial` before its classifier; a vertical flip is
+  a spatial permutation and a mean is permutation-invariant, so the gate input
+  was provably orientation-blind (`GAP(t)−GAP(flip t)` = 0.000000 exact).
+  Fix: pool to a coarse 4×4 grid instead of 1×1 (`pool4×4` changes 131% under
+  flip). E042 run v1 killed (its gate could never learn → Thatcher mechanism
+  inert); run v2 relaunched with the fix. See E042 addendum.
 - **Score**: 8/10 (the Orientation Gate is load-bearing: design doc §7 makes it
   the mechanism of the Thatcher effect — "gate suppresses FFA recurrence on
   inverted faces". If it never learns, the full HOLO-Net would give Thatcher

@@ -1,35 +1,30 @@
 # State
 
-**Tick #**: 53
-**Last updated**: 2026-05-22 ~13:45 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net — the full architecture is
-training (E042); this tick evaluated the minimal-mode checkpoint to establish
-the "minus all bio components" ablation baseline and validate the eval harness.
-**Last action**: Tick 53 — ran `eval_extract.py` + `compute_metrics.py` on the
-minimal checkpoint (step 25000). Created E041.
-**Last action outcome**: CONFIRMED — minimal HOLO-Net Thatcher ISI ≈ 1.0 at all
-7 layers (0.965-1.037); no Thatcher effect without the bio components. Eval
-pipeline validated end-to-end (v1 ISI 1.019 ≈ pixel baseline).
+**Tick #**: 54
+**Last updated**: 2026-05-22 ~14:25 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net — found and fixed a real
+OrientationGate bug (global-pooling made it orientation-blind), relaunched the
+full training as run v2.
+**Last action**: Tick 54 — diagnosed Q015 (orientation loss flat at chance for
+6450 steps). Confirmed the cause: `OrientationGate` GAP'd `afp_spatial` before
+classifying, and a mean is flip-invariant. Fixed `model.py` (4×4 pool instead of
+1×1), added a training `--seed` to `train.py`, killed E042 run v1, relaunched v2.
+**Last action outcome**: CONFIRMED bug + fix (GAP flip-diff 0.000000 vs 4×4
+flip-diff 0.43). v2 training cleanly: step ~300, identity ~10.6, 0.38 s/step.
 **Running tasks** (on server, H100 80GB):
-  - PID 44488 — minimal run (E040 / ablation baseline), step ~26K/30K,
-    identity ~1.8, ETA ~30 min. Checkpoint frozen at step 25000.
-  - PID 47222 — **FULL HOLO-Net (E042)**, step ~4K/30K, identity ~13 (margin
-    warmup just ended at step 4000 — real descent expected to begin now),
-    predcode 0.12, face_detect 0.06, gist 0.16. **orientation 0.71 — flat (Q015)**.
+  - PID (v2) — **FULL HOLO-Net run v2 (E042)**, `/workspace/holo_net_full_v2/`,
+    OrientationGate fixed, `--seed 20260521`. step ~300/30000.
+  - minimal run (E040) — was at step 29K last poll; expected finished (GPU freed
+    → v2 runs at 0.38 s/step). Confirm + locate final checkpoint next tick.
 **Stuck streak**: 0
-**Planned next action** (tick 54): monitor the full run — confirm identity-loss
-descent now that margin warmup is done, and watch the Orientation Gate (Q015).
-When the minimal run finishes → re-eval its final checkpoint. Locate the
-composite-CSI / part-whole-PWI metric code so all 3 paradigms can be scored.
+**Planned next action** (tick 55): (a) confirm the `orientation` loss now
+descends below ln 2 in v2 — the real proof the gate fix works; (b) re-eval the
+minimal FINAL (step-30000) checkpoint on Thatcher; (c) locate the composite-CSI
+/ part-whole-PWI metric code (not in `analysis/`).
 **Confidence in current best idea**:
-  - **Idea-003 (HOLO-Net)**: ~7.5/10 — architecture trains; ablation floor now
-    established (minimal ISI≈1); awaiting the full-model falsification result.
+  - **Idea-003 (HOLO-Net)**: ~7.5/10 — architecture trains; a load-bearing bug
+    (OrientationGate) caught and fixed before it wasted the full run.
   - **Idea-001**: 9.3/10 — groundwork, stable.
-
-## Open watch-items
-- **Q015**: full-run `orientation` loss flat at chance (≈0.69) through step 3850.
-  Re-check at step ~10000; if still flat → real bug → the Thatcher mechanism
-  (design §7) would be defeated → fix + relaunch E042.
 
 ## Strategic note (user directive 2026-05-22)
 Idea-001 is theoretical groundwork; **Idea-003 (HOLO-Net) is the headline and
@@ -42,7 +37,7 @@ report status every tick.
 - Local Mac: `~/Desktop/EEG/illusionbench/`
 - Server: `/workspace/illusionbench-eeg/` (plain dir, not git)
 - HOLO-Net runs: `/workspace/holo_net_stage2/` (minimal/E040),
-  `/workspace/holo_net_full_v1/` (full/E042)
+  `/workspace/holo_net_full_v2/` (full, fixed/E042); `holo_net_full_v1/` dead
 - Stimulus manifests (server): `data/stimuli_ffhq{,_composite,_partwhole,_randombbox}/thatcher_manifest.csv`
 - Server SSH: `ssh -i ~/.ssh/id_ed25519 -p 11022 root@103.207.149.173`
 - GitHub: https://github.com/LichanghengXJTU/illusionbench-eeg

@@ -291,7 +291,16 @@ def main():
                         help="weight for view-invariance aux loss. v2 with 0.05 caused embedding collapse — disabled by default until contrastive negatives are added.")
     parser.add_argument("--minimal", action="store_true",
                         help="Strip all bio-fidelity additions; CORnet-S + AFP + AdaFace baseline only")
+    parser.add_argument("--seed", type=int, default=20260521,
+                        help="seed for model init + main-process RNG (the WebDataset "
+                             "shardshuffle + multi-worker data stream stays stochastic)")
     args = parser.parse_args()
+
+    import numpy as np
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
+    np.random.seed(args.seed)
+    print(f"[seed] torch/cuda/numpy seeded with {args.seed}")
 
     if args.mode == "overfit_test":
         single_batch_overfit_test()

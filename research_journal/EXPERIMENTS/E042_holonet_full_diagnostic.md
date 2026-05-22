@@ -93,3 +93,38 @@ step_time ≈ 0.8 s (GPU shared with the minimal run).
 4. Decide whether to scale identities 10K→larger (10K ≈ CASIA-WebFace scale,
    itself the best face-rec Thatcher prior P26 — so 10K is already defensible)
    for a definitive run.
+
+---
+
+## Addendum — tick 54: OrientationGate bug found + fixed; run v1 → v2
+
+While monitoring run v1, the `orientation` aux loss was found dead-flat at
+ln 2 ≈ 0.693 for 6450 steps (Q015). Root cause — a real architecture bug:
+
+- `OrientationGate` global-average-pooled `afp_spatial` (B,512,7,7) → (B,512)
+  before its classifier. Orientation = a whole-face vertical flip = a spatial
+  permutation; a mean is permutation-invariant ⇒ the GAP'd vector is provably
+  blind to orientation.
+- Verified at random init: `orientation_logits` differed by 3e-5 between an
+  image and its vertical flip; `GAP(t) − GAP(flip(t))` = 0.000000 exactly,
+  while `pool4×4(t) − pool4×4(flip(t))` = 0.43 (131% of signal magnitude).
+- The conv stack itself IS orientation-bearing (afp_spatial flip-aligned
+  residual 9e-4 ≪ its 2.2e-3 magnitude) — only the pooling discarded it.
+- The OFA / PFC-Gist heads also GAP, but face/non-face is a channel-statistics
+  task (not spatial), so GAP is fine there — consistent with the observation
+  that `face_detect` and `gist` losses DID descend while `orientation` did not.
+
+**Fix** (`model.py` `OrientationGate`): pool to a coarse 4×4 grid
+(`AdaptiveAvgPool2d((4,4))`) instead of 1×1, preserving top-vs-bottom layout;
+classifier input 512 → 512·16. +0.49M params (56.26M → 56.75M). Also added
+`--seed` (default 20260521) to `train.py` for reproducible model init.
+
+Run v1 was killed at step ~7000 — with an inert OrientationGate its FFA gating
+(the Thatcher mechanism, design §7) could never engage, so the Thatcher result
+would have been a guaranteed null. **Run v2** relaunched with the fix:
+`/workspace/holo_net_full_v2/`, identical config (full model, SGD 0.1, 10K
+classes, batch 512, 30K steps) + `--seed 20260521`. v2 step 250: identity 10.6,
+predcode 4.5, step_time 0.38 s (minimal run had finished → full GPU). Orientation
+descent to be confirmed next tick — the gate now has the capacity; with the
+buggy gate it was mathematically impossible.
+
