@@ -1,25 +1,24 @@
 # State
 
-**Tick #**: 56
-**Last updated**: 2026-05-22 ~15:45 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net — the full model failed to
-train across 3 runs (v1/v2/v3); switched from patch-and-relaunch to a systematic
-component-isolation ablation (E043) to find which component breaks identity.
-**Last action**: Tick 56 — found v3 also failed (identity descended 13→10.6 then
-rose to 14.1; orientation flat). Instrumented `train.py` with a `--enable` flag
-for per-component ablation, killed v3, launched two parallel diagnostics.
-**Last action outcome**: diag-A + diag-B running; descent trend readable next tick.
-**Running tasks** (on server, H100 80GB — both training, 40 GB / 99% util):
-  - **diag-A (E043)** `--enable ffa` — `/workspace/holo_net_diagA_ffa/`, minimal
-    backbone + FFA holistic term, no aux losses. step ~550.
-  - **diag-B (E043)** `--enable pc,ofa,gist,magno` —
-    `/workspace/holo_net_diagB_aux/`, minimal backbone + magno + 3 aux losses,
-    no FFA. step ~100.
+**Tick #**: 57
+**Last updated**: 2026-05-23 ~00:20 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net — component-isolation
+ablation (E043) running to find which component breaks full-model identity
+training; diag-A/B inconclusive so far, diag-D added.
+**Last action**: Tick 57 — read diag-A/diag-B at step ~3000 (both descend
+13→10.6, similar, neither catastrophic, neither past the step-4000 margin
+transition where v3 blew up). Launched diag-D (`--enable ffa,orient`) to test
+the gate×FFA interaction.
+**Last action outcome**: inconclusive yet — decisive window (step 3000-5000) not
+reached; diag-D added to cover the orient×FFA hypothesis.
+**Running tasks** (on server, H100 80GB — 3 runs, 60 GB):
+  - **diag-A (E043)** `--enable ffa` — step ~3050, identity ~10.6.
+  - **diag-B (E043)** `--enable pc,ofa,gist,magno` — step ~2600, identity ~10.6.
+  - **diag-D (E043)** `--enable ffa,orient` — step ~50, identity 13.3.
 **Stuck streak**: 0 (each tick has produced a tangible artifact / decision)
-**Planned next action** (tick 57): read diag-A vs diag-B identity descent
-(~step 4000+). Whichever group's identity fails to descend = the culprit;
-narrow within it. If both descend → test `--enable orient` next. Goal: a
-trainable full HOLO-Net.
+**Planned next action** (tick 58): read diag-A/B/D past step ~4000-5000 — the
+window where v3's identity blew up. Whichever config's identity stays down vs
+blows up isolates the culprit. Goal: a trainable full HOLO-Net.
 **Confidence in current best idea**:
   - **Idea-003 (HOLO-Net)**: ~6.5/10 — lowered: the full architecture has
     resisted training across 3 runs. The ablation (E043) will say whether it is

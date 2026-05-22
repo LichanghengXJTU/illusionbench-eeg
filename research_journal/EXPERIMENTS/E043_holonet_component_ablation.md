@@ -56,4 +56,26 @@ warmup that completes at step 4000 — the point where v3's identity blew up).
 ## Replicability
 
 `holo_net/train.py --enable` at the tick-56 commit; seed 20260521.
-Outputs: `/workspace/holo_net_diagA_ffa/`, `/workspace/holo_net_diagB_aux/`.
+Outputs: `/workspace/holo_net_diagA_ffa/`, `/workspace/holo_net_diagB_aux/`,
+`/workspace/holo_net_diagD_ffa_orient/`.
+
+---
+
+## Addendum — tick 57: diag-A/B preliminary (inconclusive); diag-D added
+
+At step ~3000 both diagnostics look **similar and not catastrophic**:
+- diag-A (+ffa): identity 13.2 → 10.6 (step 3050), descending with an early
+  bounce.
+- diag-B (+aux): identity 13.0 → 10.6 (step 2600), same shape; predcode
+  4.1→0.5, face_detect→0.02, gist 0.9→0.18 (the aux losses themselves descend).
+
+So neither the FFA holistic term alone nor the aux-loss group alone breaks
+identity in the first ~3000 steps — both track roughly like the minimal run.
+**But the decisive window is step 3000-5000**: that is where v3's identity blew
+up (10.6 → 14.1), coinciding with the AdaFace margin warmup completing at step
+4000. diag-A/B have not reached it yet — verdict deferred to next tick.
+
+**diag-D launched** `--enable ffa,orient` — FFA holistic term + a *functional*
+Orientation Gate, i.e. `atl_input = afp_pooled + gate·ffa_out` with a real gate
+(v3's holistic mechanism, minus pc/ofa/gist/magno). If diag-A trains but diag-D
+does not, the gate×FFA interaction is the culprit. diag-D step 50, identity 13.3.
