@@ -227,3 +227,18 @@ launched — full HOLO-Net + gate.detach(), 30000 steps, seed 20260521,
 `/workspace/holo_net_full_v5/`. Expected: identity descends like v4/minimal AND
 orientation now descends. v5 is the candidate for the falsification test.
 
+---
+
+## Addendum — tick 61: v5 — gate.detach() fix CONFIRMED working
+
+v5 step 5550. **orientation loss: 0.71 → 0.56 (step 450) → 0.050 (step 900) →
+0.009 (step 1350)**, then settles ~0.01-0.10 — the OrientationGate now learns
+orientation properly (v4 was dead-flat at 0.696 for 11400 steps). The
+`gate.detach()` fix works: with the identity gradient removed, the orientation
+CE trains the gate cleanly. **v5 is the first run with a functional gate AND
+on-track identity training.**
+
+Identity at step 5550 = 12.56, in the normal bounce (minimal/v4 bounce 11-14 in
+this range); verdict deferred to step ~15000+. v5 remains the falsification-test
+candidate.
+

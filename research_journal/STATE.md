@@ -1,25 +1,23 @@
 # State
 
-**Tick #**: 60
-**Last updated**: 2026-05-23 ~02:10 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net — v4 confirmed the full
-model trains (identity tracks the minimal run); fixed the inert OrientationGate
-(`gate.detach()`); v5 is the candidate run for the falsification test.
-**Last action**: Tick 60 — read v4 at step 11400: identity 8.47, descending,
-≈ minimal at the same step → Q017 ANSWERED YES (the full HOLO-Net trains). But
-v4's orientation loss stayed flat (gate inert — identity gradient overwhelmed
-the orientation CE). Applied `gate.detach()`, killed v4, launched v5.
-**Last action outcome**: Q017 = yes (architecture trains). v5 running (step
-~250, identity 10.7, 0.37 s/step).
+**Tick #**: 61
+**Last updated**: 2026-05-23 ~02:47 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net — v5 (full model + all
+fixes) training; the gate.detach() fix is confirmed (orientation now learns);
+v5 is the falsification-test candidate.
+**Last action**: Tick 61 — monitored v5 at step 5550. Orientation loss
+0.71→0.01 by step 1350 (v4 was flat) → `gate.detach()` fix CONFIRMED working.
+Identity 12.56, in the normal bounce.
+**Last action outcome**: v5 on track — functional gate + on-track identity
+training (first run with both).
 **Running tasks** (on server, H100 80GB):
-  - **v5 — full HOLO-Net + gate.detach() (E042)** — `/workspace/holo_net_full_v5/`,
-    30000 steps, seed 20260521. step ~250. ~3 h to completion.
+  - **v5 — full HOLO-Net + all fixes (E042)** — `/workspace/holo_net_full_v5/`,
+    30000 steps, seed 20260521. step ~5550, ~2.5 h to completion.
 **Stuck streak**: 0
-**Planned next action** (tick 61): monitor v5 — confirm identity descends
-(expected, like v4) AND orientation now descends below ln 2 (the gate.detach()
-fix working). Judge at step ~15000+. When v5 completes → 3-paradigm per-layer
-eval = the HOLO-Net falsification test (FFA layer: ISI≥3, CSI≥1.5, PWI≤0.5,
-random-bbox≤1.5).
+**Planned next action** (tick 62): v5 still mid-bounce — write the v5
+falsification-eval wrapper (eval_extract + compute_metrics over all 4 stimulus
+sets, per layer, with pixel-correction) so the evaluation is one clean command
+when v5 finishes. Judge v5 identity at step ~15000+; full eval when complete.
 **Confidence in current best idea**:
   - **Idea-003 (HOLO-Net)**: ~7.5/10 — the architecture is confirmed trainable
     (Q017); the gate fix is well-founded (v2 proved the gate learns when the
