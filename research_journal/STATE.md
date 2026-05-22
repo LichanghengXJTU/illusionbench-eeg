@@ -1,20 +1,21 @@
 # State
 
-**Tick #**: 67
-**Last updated**: 2026-05-23 ~06:42 (Asia/Hong_Kong)
-**Current focus** (one sentence): Begin integrating the HOLO-Net result into
-the paper materials while awaiting FLAG-002 steer.
-**Last action**: Tick 67 — added **Claim 8** to `CLAIMS_SKELETON.md`: the
-bio-faithful-architecture constructive negative — HOLO-Net + identity training
-gives ISI ≈ 1.0 like FaceNet, confirming Claims 1+2+3 from the architecture side.
-**Last action outcome**: paper now has an explicit anchor for the HOLO-Net
-result; the prose updates (ABSTRACT, §4.x architecture-test section) flow from it.
+**Tick #**: 68
+**Last updated**: 2026-05-23 ~07:14 (Asia/Hong_Kong)
+**Current focus** (one sentence): Continuing paper integration — added the
+HOLO-Net §4.7 "architecture test" subsection to PAPER_DRAFT; ABSTRACT next.
+**Last action**: Tick 68 — wrote **§4.7 Architecture test** in `PAPER_DRAFT.md`
+(~470 words) — the constructive-negative subsection: HOLO-Net pre-registered
+falsification, the FFA-layer numbers, the FFA-not-inert sub-finding, and the
+conclusion that the operative lever is the training objective (Claim 8). No
+user steer on FLAG-002 yet.
+**Last action outcome**: paper now has the architecture-test result inline
+with the other Results subsections.
 **Running tasks** (on server, H100 80GB): none.
 **Stuck streak**: 0
-**Planned next action** (tick 68): continue paper integration — write a brief
-"§4.7 architecture test" prose paragraph for `PAPER_DRAFT.md` and update
-`ABSTRACT.md` to mention the HOLO-Net negative result. If the user has steered
-FLAG-002 → act on it. Still no design-§8 architecture revision unprompted.
+**Planned next action** (tick 69): update `ABSTRACT.md` (v4) to add a sentence
+on the HOLO-Net constructive-negative; also update `TLDR_FOR_PI.md` to reflect
+the architecture-test outcome. If FLAG-002 steered → act on it.
 **Confidence in current best idea**:
   - **Idea-001** (IllusionBench-EEG): **9.3/10** — unaffected, and strengthened:
     the HOLO-Net negative result is architecture-side corroboration of its

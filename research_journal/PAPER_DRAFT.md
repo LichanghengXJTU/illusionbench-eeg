@@ -538,6 +538,56 @@ RSA section adds depth at the cost of some breadth — trim during revision.
 
 ---
 
+## 4.7 Architecture test: does building a bio-faithful face model produce the missing illusions?
+
+The training-objective × paradigm dissociation in §4.1-§4.4 leaves open a
+mechanistic question: is the dissociation a property of the *training objective*
+or of the *architecture*? To probe this constructively, we built **HOLO-Net** —
+a strict bio-fidelity face model in which each layer is mapped to a specific
+ventral-stream region (LGN → V1 → V2 → V4 → OFA → MFP → AFP →
+Orientation-Gate → FFA → ATL) with Predify-style predictive-coding feedback
+and a magno-derived PFC gist signal feeding the FFA holistic-binding module.
+The architecture was pre-registered with a falsification target: at the FFA
+layer, simultaneously Thatcher ISI ≥ 3, Composite CSI ≥ 1.5, Part-Whole
+PWI ≤ 0.5, and Random-bbox ISI ≤ 1.5 — a combination no prior in §3.4
+achieves. HOLO-Net was trained on Glint360K face identities with an AdaFace
+identity objective and a multi-task auxiliary loss (predictive coding,
+orientation, face-detect, view-invariance, magno-gist), with no
+illusion-stimulus exposure (training-set purity verified).
+
+After 30,000 steps of training (final identity loss 0.97; orientation-gate
+loss 0.16, i.e. the gate is functional), HOLO-Net's FFA-layer indices
+(pixel-corrected) are **Thatcher ISI 1.00, Composite CSI 0.99, Part-Whole
+PWI 2.20, Random-bbox ISI 1.08** — three of the four falsification criteria
+fail. The Thatcher and composite indices are flat at the pixel-baseline value
+at *every* layer of the network (v1 through atl, range 0.97-1.18). The
+pattern is essentially that of FaceNet (Claim 2): a face-identity-trained
+model produces no Thatcher or composite illusion despite explicit face
+supervision. Comparison against the matched ablation baseline — the identical
+architecture with all bio-fidelity components disabled — gives FFA-layer
+ISI 0.98, CSI 1.19, PWI 0.78: enabling the bio-fidelity components does not
+lift Thatcher or composite above the no-bio baseline.
+
+The FFA module itself is **not inert**: it drives Part-Whole PWI from 0.75 at
+the MFP layer to 2.20 at the FFA layer — the largest single-paradigm
+deviation HOLO-Net produces (the ATL head then projects this back to 0.81).
+The holistic-binding module genuinely restructures the part-whole
+representation, just in the opposite direction to the design's ≤ 0.5
+criterion (which was calibrated from DINOv2's dampening behaviour). The
+architecture has expressive capacity; what it lacks under identity training
+is the specific configural-illusion signal.
+
+Taken with §4.1-§4.4, this is a **constructive negative**: building a
+maximally bio-faithful face architecture does not substitute for the training
+objective. The training-objective × paradigm dissociation observed in §4.1 is
+not an artefact of the off-the-shelf models' specific architectures (CLIP's
+transformer, DINOv2's ViT, FaceNet's Inception); the same dissociation
+re-emerges from a from-scratch brain-region-mapped face network. The
+operative lever is the training objective, not architectural bio-fidelity
+(Claim 8).
+
+---
+
 # 5. Discussion & 6. Conclusion — draft v1 (tick 15)
 
 **Length target**: Discussion ~700 words, Conclusion ~150 words.
