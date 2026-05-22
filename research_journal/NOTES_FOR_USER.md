@@ -22,3 +22,31 @@ tick.
 - **What blocks if not provided**: Q004 cannot be tested with the official Harmonization checkpoints.
 - **What I am doing in the meantime**: Pivoting to Q005 EEG-side feasibility — cloning ATM repo, scoping what's needed to run their full inference pipeline on Thatcher stimuli. This is higher-value for Idea-001 anyway.
 - **Awaiting**: User suggestion — options: (a) approve a Python 3.11 + TF 2.15 secondary venv, (b) approve porting Harmonized weights to PyTorch (significant effort), (c) drop Harmonized and use DINOv2+THINGS-similarity-finetune as the perception-aligned fallback per skills-roadmap, (d) defer Q004 indefinitely. The loop continues regardless.
+
+---
+
+## FLAG-001 — 2026-05-22 12:15 — HOLO-Net full architecture does not train; decision fork ahead (not a resource NEED — the loop is proceeding)
+
+- **What happened**: The full bio-fidelity HOLO-Net (Idea-003, sub-path e) failed
+  to optimize in Stage-2 face fine-tuning — identity loss stuck at 63-69 for 8750
+  steps, no learning (E040 run v1). It only trains after disabling **every**
+  bio-fidelity component (LGN-Magno, OFA, FFA, Orientation Gate, Predify PC,
+  PFC-Gist) → "minimal mode". Minimal mode ≈ Idea-003 sub-path (a) (CORnet
+  anatomy + AdaFace + Glint360K), NOT the HOLO-Net thesis. The run currently on
+  the H100 (step ~16K/30K) is therefore a sub-path-(a) experiment.
+- **Why it matters**: the pre-registered HOLO-Net falsification criteria are
+  measured at the FFA layer — which is disabled in the only config that trains.
+  Idea-003's headline novelty is, as of tick 50, untested.
+- **The fork (the loop's default is option 1; tell it if you want otherwise)**:
+  1. **[default]** Let the minimal run finish → evaluate it on IllusionBench
+     (E041) as a clean sub-path (a) datapoint → then run Q014 component-ablation
+     ladder to isolate which bio component breaks the full model. Keeps Idea-003
+     alive at low cost.
+  2. **Debug-first**: stop the minimal run now and go straight to the Q014
+     ablation ladder on the full architecture.
+  3. **De-scope**: treat HOLO-Net as future work; Idea-001 (the IllusionBench-EEG
+     paper, score 9.3, paper-ready) is the deliverable. Idea-003 does not gate it.
+- **What blocks if not decided**: nothing — the loop proceeds on option 1. This
+  flag exists so you can redirect from your phone (edit this file with a
+  `RESOLVED:` line) if you prefer option 2 or 3.
+- **Idea-001 status**: unaffected, paper-ready, score 9.3/10.

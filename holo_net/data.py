@@ -66,6 +66,7 @@ def make_glint360k_dataset(
     shard_pattern: str,
     p_inverted: float = 0.5,
     pair_for_view_invariance: bool = True,
+    max_class_id: Optional[int] = None,
 ) -> IterableDataset:
     """Create a WebDataset over Glint360K with multi-task augmentations.
 
@@ -76,6 +77,9 @@ def make_glint360k_dataset(
         (for Orientation Gate training)
       pair_for_view_invariance: whether to yield a second augmentation
         of the same image (for view-invariance loss)
+      max_class_id: if set, filter out samples with class > max_class_id.
+        Useful for training on smaller subset (10K of 360K identities)
+        for better per-class density.
     """
     import webdataset as wds
 
@@ -87,6 +91,9 @@ def make_glint360k_dataset(
             cls = int(cls.decode("utf-8").strip())
         elif isinstance(cls, str):
             cls = int(cls.strip())
+        # Optional class-id filtering (None means keep all)
+        if max_class_id is not None and cls > max_class_id:
+            return None  # WebDataset will skip None samples via .select()
         img_pil = Image.open(io.BytesIO(img_bytes)).convert("RGB")
         # Upsample 112→224 to match HOLO-Net input expectation
         img_pil = img_pil.resize((224, 224), Image.BILINEAR)
@@ -120,7 +127,9 @@ def make_glint360k_dataset(
     ds = (wds.WebDataset(shard_pattern, shardshuffle=100)
           .shuffle(1000)
           .decode()
-          .map(transform))
+          .map(transform)
+          .select(lambda x: x is not None)
+          .repeat())  # CRITICAL: without this, iterator exits after 1 epoch (~977 steps for 10K subset)
     return ds
 
 
@@ -130,15 +139,20 @@ def make_glint360k_dataloader(
     num_workers: int = 8,
     p_inverted: float = 0.5,
     pair_for_view_invariance: bool = True,
+    max_class_id: Optional[int] = None,
+    prefetch_factor: int = 4,
 ) -> DataLoader:
     """High-level dataloader for Glint360K with multi-task augmentations."""
-    ds = make_glint360k_dataset(shard_pattern, p_inverted, pair_for_view_invariance)
+    ds = make_glint360k_dataset(shard_pattern, p_inverted,
+                                  pair_for_view_invariance, max_class_id)
     return DataLoader(
         ds,
         batch_size=batch_size,
         num_workers=num_workers,
         pin_memory=True,
         drop_last=True,
+        persistent_workers=(num_workers > 0),
+        prefetch_factor=prefetch_factor,
     )
 
 

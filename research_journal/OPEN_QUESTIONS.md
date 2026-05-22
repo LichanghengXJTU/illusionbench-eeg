@@ -178,3 +178,37 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
   differs, the apparent outlier may be measurement artifact. If same,
   it's a genuine model-training-data effect worth investigating.
 - **Linked experiment IDs**: E009 (planned)
+
+---
+
+## Q014 (NEW from E040, tick 50) — Does the FULL HOLO-Net (bio components ON) optimize at all, or is the multi-task + recurrent + predictive-coding landscape pathological?
+
+- **Status**: **observed failure, cause NOT yet isolated**
+- **Score**: 9/10 (load-bearing — Idea-003's entire thesis depends on the full
+  model training; the falsification criteria are evaluated at the FFA layer,
+  which is disabled in the only configuration that currently trains).
+- **Background**: E040 run v1 — full HOLO-Net (all bio components) + AdamW
+  lr≈1e-4 + 360K classes — identity loss stuck 63-69 for 8750 steps, no
+  decrease. Minimal mode (all bio components OFF) + SGD lr 0.1 + 10K classes
+  trains fine (13→5.8). The two configs differ on THREE axes simultaneously,
+  so the failure is not attributable.
+- **Discriminating experiment**: from the known-trainable config (minimal,
+  SGD lr 0.1, num_classes=10000), re-enable bio components ONE at a time:
+  +Predify PC → +FFA recurrent attention → +Orientation Gate → +OFA branch
+  → +LGN-Magno dual-stream → +PFC-Gist. Train each ~2-3K steps; record
+  whether identity loss still descends. Also test: full components + SGD 0.1
+  (isolates optimizer from architecture).
+- **Expected outcome**:
+  - If a single component flips training from "descends" to "stuck" → that
+    component is the culprit; fix in isolation (re-design / detach its
+    gradient path / re-weight its aux loss / `.detach()` the PC target).
+  - If even one extra component breaks it → the 6-term multi-task formulation
+    needs a principled re-weighting (e.g., GradNorm / uncertainty weighting)
+    or staged curriculum (identity-only warmup, then add aux losses).
+  - If full-components + SGD 0.1 trains → the v1 failure was just AdamW
+    lr 1e-4, and HOLO-Net is salvageable cheaply.
+- **Why it matters**: Idea-003 currently rests on a model that does not
+  optimize. Until Q014 is answered, the headline novelty (bio-fidelity
+  architecture) is untested and the current run only delivers sub-path (a).
+- **Linked experiment IDs**: E040 ✓ (the observed failure), future E042
+  (the ablation ladder).

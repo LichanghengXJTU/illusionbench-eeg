@@ -54,7 +54,23 @@ Ideas must have ≥ 2 prior-art citations before being added.
   3. **Cross-subject and clinical EEG decoding**: patient EEG (prosopagnosia, autism) requires interpretable representation to map damage to behavior.
   4. **Cross-modal alignment**: bio-prior trained with brain-structural inductive bias should align more naturally to EEG (also brain signal).
 - **State of evidence**: Idea-001 results (paradigm-specific dissociation in CLIP) directly motivate Idea-003. EEG-side falsification criterion already in place via Route A.
-- **Score**: novelty 8 + feasibility 6 + evidence_potential 8 = **7.3** (down from 8.0 after E028 — CORnet-S alone is NOT paradigm-consistent. Need more careful approach.)
+- **Score**: novelty 8 + feasibility **4** + evidence_potential 8 = **6.5** (down from 7.3 — see tick-50 update below; the full HOLO-Net does not train).
+
+### Tick-50 update (E040) — full HOLO-Net Stage-2 training FAILED to optimize
+
+- The full bio-fidelity HOLO-Net (sub-path **e**, "design our own") with all
+  components ON does NOT learn: identity loss stuck 63-69 for 8750 steps (E040
+  run v1). It only trains after disabling **every** bio-fidelity component
+  (LGN-Magno, OFA, FFA, Orientation Gate, Predify PC, PFC-Gist) → "minimal mode".
+- Minimal mode = ≈ sub-path **(a)** (CORnet anatomy + AdaFace + Glint360K data).
+  So the run currently on the H100 tests sub-path (a), NOT the HOLO-Net thesis.
+  Its evaluation (E041) is still useful — a clean sub-path (a) datapoint.
+- **Feasibility downgraded 6→4**: the headline-novelty architecture is, as of
+  tick 50, non-functional. Recoverability depends on Q014 (isolate the breaking
+  component). If Q014 finds a single fixable culprit, feasibility recovers.
+- **Idea-001 is unaffected and remains the safe deliverable (score 9.3).**
+  Idea-003 should not gate the paper.
+
 - **Risks**:
   - Bio-inspired vision models are smaller than modern CLIP (typically <100M params vs CLIP-bigG 1.8B) → retrieval performance likely lower. Mitigation: hybrid architecture, or argue from interpretability angle alone.
   - Need to define "bio-inspired" rigorously; bio-fidelity vs ML-pragmatism trade-off is non-trivial.

@@ -25,25 +25,23 @@ import torch.nn.functional as F
 class AdaFaceLoss(nn.Module):
     """AdaFace quality-adaptive angular-margin softmax loss.
 
-    Implements Eq. (8) of Kim et al. 2022:
-      g(||x|| ; h) = (||x|| - ||x||_mean) / (||x||_std + epsilon) * h
-      g_clip = clip(g, -1, 1)
-      m_adaptive = m * g_clip  (so high-quality faces get more margin)
-      logit_target = scale * cos(theta + m_adaptive) - m_adaptive  (additive margin)
-      logit_others = scale * cos(theta)
-      loss = CrossEntropy(logits, targets)
+    Implements Eq. (8) of Kim et al. 2022.
 
-    For first iterations before mean/std stabilize, use a running EMA.
+    Includes margin warmup: linearly ramp margin from 0 to target margin over
+    `warmup_steps`. This is critical for training stability from random init —
+    without warmup, the initial cos(theta + 0.4) penalty pushes target logit
+    deeply negative, creating a hard plateau early in training.
     """
     def __init__(self, embedding_dim: int = 512, num_classes: int = 360000,
                  margin: float = 0.4, scale: float = 64.0, h: float = 0.333,
-                 ema_decay: float = 0.99):
+                 ema_decay: float = 0.99, warmup_steps: int = 4000):
         super().__init__()
         self.embedding_dim = embedding_dim
         self.num_classes = num_classes
-        self.margin = margin
+        self.target_margin = margin
         self.scale = scale
         self.h = h
+        self.warmup_steps = warmup_steps
         # Class centers (W matrix). Initialized via Xavier.
         self.weight = nn.Parameter(torch.empty(num_classes, embedding_dim))
         nn.init.xavier_uniform_(self.weight)
@@ -51,6 +49,16 @@ class AdaFaceLoss(nn.Module):
         self.register_buffer("running_norm_mean", torch.tensor(1.0))
         self.register_buffer("running_norm_std", torch.tensor(0.1))
         self.ema_decay = ema_decay
+        # Step counter for margin warmup
+        self.register_buffer("step_count", torch.tensor(0, dtype=torch.long))
+
+    @property
+    def margin(self) -> float:
+        """Current margin value, ramped from 0 to target_margin over warmup_steps."""
+        if self.warmup_steps <= 0:
+            return self.target_margin
+        progress = min(1.0, self.step_count.item() / self.warmup_steps)
+        return self.target_margin * progress
 
     def forward(self, embeddings: torch.Tensor, labels: torch.Tensor,
                 pre_norm_embeddings: Optional[torch.Tensor] = None) -> torch.Tensor:
@@ -80,15 +88,23 @@ class AdaFaceLoss(nn.Module):
             m_adaptive = torch.full((cos_theta.shape[0],), self.margin,
                                      device=cos_theta.device)
 
-        # Compute theta
+        # Increment step counter for next iteration's margin (only during training)
+        if self.training:
+            self.step_count += 1
+
+        # Compute theta for additive angular margin
         theta = torch.acos(cos_theta)  # (B, num_classes)
-        # Apply additive margin only to target class
+        # Apply additive margin only to target class:
+        #   target logit = scale * cos(theta + m_adaptive)
+        #   non-target logit = scale * cos(theta)  (unchanged)
         target_one_hot = F.one_hot(labels, num_classes=self.num_classes).bool()
         m_expand = m_adaptive.unsqueeze(1)  # (B, 1)
-        theta_target = theta + m_expand  # add margin to all (will mask)
-        cos_with_margin = torch.where(target_one_hot, torch.cos(theta_target), cos_theta)
-        # Subtract additive margin term
-        logits = self.scale * (cos_with_margin - m_expand * target_one_hot.float())
+        target_cos_with_margin = torch.cos(theta + m_expand)  # (B, num_classes)
+        cos_modified = torch.where(target_one_hot, target_cos_with_margin, cos_theta)
+        # CORRECT formula (no extra subtraction; v1/v2 had buggy `- scale * m` term
+        # that artificially depressed target logits and caused identity loss to
+        # start at ~65 instead of ~1)
+        logits = self.scale * cos_modified
         loss = F.cross_entropy(logits, labels)
         return loss
 

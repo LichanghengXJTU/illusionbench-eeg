@@ -31,16 +31,42 @@ from holo_net.data import make_glint360k_dataloader
 # Utilities
 # ---------------------------------------------------------------------------
 
-def setup_model_and_loss(num_classes: int, device: str = "cuda") -> tuple[HOLONet, HOLONetLoss]:
+def setup_model_and_loss(num_classes: int, device: str = "cuda",
+                          minimal: bool = False) -> tuple[HOLONet, HOLONetLoss]:
+    """Build model + loss.
+    minimal=True disables all bio-fidelity additions (LGN-Magno, OFA, FFA,
+    Orientation Gate, PC feedback, PFC-Gist). Gives a CORnet-S + AFP + AdaFace
+    baseline for debugging.
+    """
     cfg = HOLONetConfig()
+    if minimal:
+        cfg.use_magno = False
+        cfg.use_ofa_branch = False
+        cfg.use_orientation_gate = False
+        cfg.use_pfc_gist = False
+        cfg.use_ffa = False
+        cfg.use_pc_feedback = False
+        cfg.w_predcode = 0.0
+        cfg.w_orientation = 0.0
+        cfg.w_face_detect = 0.0
+        cfg.w_view_invariance = 0.0
+        cfg.w_gist = 0.0
     model = HOLONet(cfg).to(device)
     loss_module = HOLONetLoss(cfg, num_classes=num_classes).to(device)
     return model, loss_module
 
 
-def make_optimizer(model: HOLONet, loss_module: HOLONetLoss, lr: float = 1e-4):
+def make_optimizer(model: HOLONet, loss_module: HOLONetLoss, lr: float = 0.1,
+                   optimizer_type: str = "sgd"):
+    """Optimizer. SGD with momentum is standard for AdaFace at scale.
+    AdamW lr=1e-4 was tried and found too slow for 360K-class classification.
+    """
     params = list(model.parameters()) + list(loss_module.parameters())
-    return torch.optim.AdamW(params, lr=lr, weight_decay=1e-4)
+    if optimizer_type == "sgd":
+        return torch.optim.SGD(params, lr=lr, momentum=0.9, weight_decay=5e-4, nesterov=True)
+    elif optimizer_type == "adamw":
+        return torch.optim.AdamW(params, lr=lr, weight_decay=1e-4)
+    raise ValueError(f"unknown optimizer_type: {optimizer_type}")
 
 
 def init_from_cornet(model: HOLONet) -> int:
@@ -126,13 +152,27 @@ def train_stage2(args):
     ckpt_path = output_dir / "checkpoint.pt"
 
     # Model + loss
-    model, loss_module = setup_model_and_loss(num_classes=args.num_classes, device=device)
+    model, loss_module = setup_model_and_loss(num_classes=args.num_classes,
+                                                device=device, minimal=args.minimal)
+    if args.minimal:
+        print("  MINIMAL MODE: LGN-Magno, OFA, FFA, OrientGate, PC, PFC all disabled")
     # Optional CORnet init (currently no-op pending key remapping; trains from scratch)
     init_from_cornet(model)
 
-    optimizer = make_optimizer(model, loss_module, lr=args.lr)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.max_steps)
+    optimizer = make_optimizer(model, loss_module, lr=args.lr,
+                                 optimizer_type=args.optimizer)
+    # Linear warmup followed by cosine decay
+    def lr_lambda(step):
+        if step < args.warmup_steps:
+            return step / max(1, args.warmup_steps)
+        progress = (step - args.warmup_steps) / max(1, args.max_steps - args.warmup_steps)
+        import math
+        return 0.5 * (1.0 + math.cos(math.pi * min(1.0, progress)))
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
     scaler = GradScaler(enabled=args.use_amp)
+
+    # Override view_invariance weight to reduce interference with orient gate
+    loss_module.cfg.w_view_invariance = args.w_view_invariance
 
     # Dataloader
     dl = make_glint360k_dataloader(
@@ -141,6 +181,7 @@ def train_stage2(args):
         num_workers=args.num_workers,
         p_inverted=0.5,
         pair_for_view_invariance=True,
+        max_class_id=(args.num_classes - 1 if args.num_classes < 360232 else None),
     )
 
     # Training loop
@@ -240,10 +281,16 @@ def main():
     parser.add_argument("--num_classes", type=int, default=360232)
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--num_workers", type=int, default=8)
-    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--lr", type=float, default=0.1)
+    parser.add_argument("--optimizer", choices=["sgd", "adamw"], default="sgd")
     parser.add_argument("--max_steps", type=int, default=50000)
+    parser.add_argument("--warmup_steps", type=int, default=1000)
     parser.add_argument("--ckpt_every", type=int, default=5000)
     parser.add_argument("--use_amp", action="store_true", default=True)
+    parser.add_argument("--w_view_invariance", type=float, default=0.0,
+                        help="weight for view-invariance aux loss. v2 with 0.05 caused embedding collapse — disabled by default until contrastive negatives are added.")
+    parser.add_argument("--minimal", action="store_true",
+                        help="Strip all bio-fidelity additions; CORnet-S + AFP + AdaFace baseline only")
     args = parser.parse_args()
 
     if args.mode == "overfit_test":

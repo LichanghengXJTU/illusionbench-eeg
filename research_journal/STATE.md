@@ -1,19 +1,41 @@
 # State
 
-**Tick #**: 40 (PIVOT — HOLO-Net design doc for Idea-003 sub-path e)
-**Last updated**: 2026-05-22 (Asia/Hong_Kong)
-**Current focus** (one sentence): User pivoted from RSA robustness check to substantive Idea-003 design — propose a NEW bio-fidelity model architecture (HOLO-Net) where each layer maps to a specific brain region.
-**Last action**: Wrote `IDEA_003_HOLO_NET_DESIGN.md` (12 sections, ~3500 words). Brain-region layer mapping: LGN(Magno+Parvo) → V1/V2/V4/IT (CORnet-S backbone) + OFA branch + AFP view-invariance + FFA 3-step recurrent self-attention with Magno-gist query + Orientation Gate + Predify-style top-down predictive coding feedback + ATL AdaFace identity head. Web-search lit review for face patches (Tsao & Freiwald 2010), magno gist (Bar 2003), predictive coding (Rao & Ballard 1999, Predify package), CORnet-S (Kubilius 2019), OFA/FFA/ATL hierarchical face processing (Collins & Olson 2014). Pre-registered falsification: at FFA layer must simultaneously satisfy ISI≥3, CSI≥1.5, PWI≤0.5, Random-bbox≤1.5 (no current prior achieves this). Training plan: ~155GB Glint360K + 10% ImageNet on H100 for 3-5 days.
-**Last action outcome**: User has detailed design doc to review. Stopped previous tick-40 monitor (RSA robustness check) since it's superseded.
-**Running tasks** (on server): none
-**Stuck streak**: 0
-**Planned next action** (tick 41): AWAITING user decisions on §12 of design doc (falsification thresholds OK? Predify vs custom PC? Calendar budget? Capsule/GLOM fallback?). After greenlight: tick 41 = PyTorch architecture skeleton, tick 42 = Predify integration + dual-stream sanity test, tick 43 = Glint360K dataset acquisition (~140GB), tick 44+ = training + evaluation.
-**Confidence in current best idea**: 9.3/10 for Idea-001 (paper-ready, stable); **8.5/10 for Idea-003** (raised — concrete architectural design with falsification criteria, replaces the recipe-level sub-path (a)).
+**Tick #**: 50
+**Last updated**: 2026-05-22 ~12:20 (Asia/Hong_Kong)
+**Current focus** (one sentence): HOLO-Net (Idea-003) Stage-2 face fine-tune is
+running in a de-risked MINIMAL MODE after the full bio-fidelity architecture
+failed to optimize; this tick = check on training + journal resync.
+**Last action**: Tick 50 — polled server; synced `holo_net/` code (local↔server
+verified identical); created E040 documenting the full-model training failure;
+added Q014; flagged the HOLO-Net training failure to the user (FLAG-001 in
+NOTES_FOR_USER.md).
+**Last action outcome**: no-result-yet (training in progress). Sub-results:
+full-model training failure CONFIRMED; minimal-mode training CONFIRMED working.
+**Running tasks** (on server):
+  - PID 44488 — HOLO-Net Stage-2 minimal-mode training. step ~15850/30000 (~53%),
+    identity loss 13.1→5.8, view-invariance 0.70→0.09, ETA ~85-90 min.
+    Log: `/workspace/holo_net_stage2/train_log.jsonl`
+**Stuck streak**: 0 (tick produced E040 + Q014 + journal resync)
+**Planned next action** (tick 51): poll training. If done → E041, evaluate the
+minimal checkpoint on the 3 IllusionBench paradigms + random-bbox (a sub-path (a)
+result). If still running → re-check and reschedule. Then Q014 component-ablation
+ladder to isolate the full-model failure.
+**Confidence in current best idea**:
+  - **Idea-001** (IllusionBench-EEG paper): **9.3/10** — paper-ready, unchanged.
+    This is the safe, publishable deliverable.
+  - **Idea-003** (HOLO-Net): **~6.5/10** — down from 8.5. The full bio-fidelity
+    architecture does not train; the current run only tests sub-path (a).
+
+## Journal hygiene note
+Ticks ~44-49 debugged Stage-2 training but did NOT update STATE.md / DECISIONS.md
+per tick (loop constraint 7 was violated during that span). Tick 50 reconstructs
+that period from server artifacts (failed-run logs + checkpoints). STATE.md must
+be rewritten every tick from here on.
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`
-- Server: `/workspace/illusionbench-eeg/`
+- Server: `/workspace/illusionbench-eeg/`  (NOTE: not a git repo — plain dir)
+- HOLO-Net training output: `/workspace/holo_net_stage2/`
 - ATM repo: `/workspace/eeg_repos/EEG_Image_decode/`
-- CORnet repo: `/workspace/eeg_repos/CORnet/`
 - Server SSH: `ssh -i ~/.ssh/id_ed25519 -p 11022 root@103.207.149.173`
 - GitHub: https://github.com/LichanghengXJTU/illusionbench-eeg
