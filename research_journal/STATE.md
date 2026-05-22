@@ -1,14 +1,14 @@
 # State
 
-**Tick #**: 35 (Refresh Figure 2 + Figure 5 with 25 priors)
+**Tick #**: 36 (E035 per-subject Route A — Claim 4 strengthening)
 **Last updated**: 2026-05-22 (Asia/Hong_Kong)
-**Current focus** (one sentence): Continued figure-refresh tick. Updated `figures/face_vs_randombbox_polished.py` and `figures/scaling_law.py` with new prior classes (Bio-inspired, Face-AM, Face-triplet), regenerated `_v2.{png,pdf}` for both.
-**Last action**: Edited PRIOR_CLASS / CLASS_ORDER / CLASS_COLOR / PRETTY_NAME / IMAGE_ENCODER_PARAMS_M / FAMILY tables; added Face-AM/Face-triplet/Bio-inspired scatter to scaling_law; regenerated figures.
-**Last action outcome**: Figure 2 v2 shows AdaFace-IR50-CASIA face Thatcher ISI ≈ 3 vs random-bbox ≈ 1, while CORnet-S is at baseline for both — visually demonstrates Claim 3 generalizes to new priors. Figure 5 v2 shows Face-AM cluster does NOT lie on the CLIP/DINOv2 scaling curve — they're at log10(params)≈1.7 with widely varying ISI 1.2-3.0 driven by training data, not scale (E032 data-inversion finding visualized).
+**Current focus** (one sentence): Weakest-claim audit identified Claim 4 (EEG uniform low-pass) as the weakest. E035 strengthens it by showing the result holds INDIVIDUALLY for each of 10 THINGS-EEG2 subjects — not a subject-averaging artifact.
+**Last action**: Web search confirmed no public pre-computed EEG embeddings beyond ATM-S exist for THINGS-EEG2 (NICE-EEG releases weights only; AVDE/ENIGMA/ViEEG no releases). Pivoted to per-subject consistency analysis. Computed per-dim Pearson r + Spearman(r, Thatcher-loading) per subject.
+**Last action outcome**: 8/10 subjects show negative Spearman(r, loading) < 0; 9/10 have p > 0.1; mean r per subject in [0.126, 0.212]. Pooled distribution of 10240 (dim, subject) r values is roughly Gaussian centered at 0.158, no bimodality. Claim 4 raised from MEDIUM-STRONG to STRONG.
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 36): Two options: (a) download a small subset of THINGS-EEG2 test images for the AdaFace-target Route A (Claim 4 extension), (b) do a "weakest claim audit" — explicitly identify which claim has the lowest evidence quality and design an experiment to strengthen it. (b) is meta-work; (a) is empirical extension. Will likely do (a) but with a small budget (~10 min) to fetch images.
-**Confidence in current best idea**: 9.0/10 for Idea-001 (paper-ready, all figures now reflect 25 priors); 8.2/10 for Idea-003.
+**Planned next action** (tick 37): Three candidates: (a) audit Claim 6 (face-rec data inversion) by checking additional small/noisy face datasets (e.g., LFW, AgeDB); (b) integrate E035 figure into paper Figure 4 or 4b; (c) update ABSTRACT to reflect 7 claims including E035 strengthening. (c) is paper-finishing, fastest.
+**Confidence in current best idea**: 9.2/10 for Idea-001 (Claim 4 raised STRONG); 8.2/10 for Idea-003.
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`

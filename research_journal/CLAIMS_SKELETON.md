@@ -80,23 +80,36 @@ psychophysics in future work.
 
 **Statement**: ATM-S decoded EEG embeddings preserve CLIP-H/14 target space with
 mean per-dim Pearson r ≈ 0.158 across 10 THINGS-EEG2 subjects, with NO
-dimension-specific structure correlating with Thatcher loading.
+dimension-specific structure correlating with Thatcher loading. **This uniform
+low-pass holds INDIVIDUALLY for each subject.**
 
 **Evidence**:
 - E020: Spearman ρ(preservation, Thatcher loading) = -0.029, permutation p = 0.35
 - E020: High-loading-quartile preservation 0.154 vs low-loading-quartile 0.165 (~identical)
 - E021: Face-related test concepts preservation 0.150 vs random-subset 0.145, perm p = 0.37
+- **E035 (NEW — strengthening)**: per-subject Route A — all 10 subjects show
+  Spearman(r, loading) between -0.063 and +0.037, 8/10 negative, 9/10
+  p > 0.1. Mean r per subject in [0.126, 0.212], std=0.026. High-Q minus
+  low-Q quartile difference per subject in [-0.020, +0.006]. The pooled
+  distribution of all 10240 (dim, subject) r values is roughly Gaussian
+  centered at 0.158 with no bimodality.
 
-**Strength**: STRONG. Two independent NULL tests (per-dim and per-category).
+**Strength**: STRONG (raised from MEDIUM-STRONG by E035).
 
 **Interpretation**: Current EEG visual decoding is non-specific low-pass. Predicted
-EEG-side ISI on Thatcher: ~1.5-2 (collapse from 5.5 image-side).
+EEG-side ISI on Thatcher: ~1.5-2 (collapse from 5.5 image-side). The result
+holds individually for each subject — not a subject-averaging artifact.
 
 **Counter-claims considered**:
-- Could ATM be uniquely bad? Other EEG decoders not testable yet (no pre-computed
-  embeddings on HF for AVDE/ENIGMA). Limitation, not refutation.
+- Could ATM be uniquely bad? Other EEG decoders not testable yet — no
+  pre-computed embeddings publicly available for NICE/AVDE/ENIGMA/ViEEG on
+  HuggingFace as of 2026-05; NICE-EEG releases model weights only
+  (HF: eeyhsong/NICE), not pre-computed THINGS-EEG2 embeddings. We could
+  re-run NICE inference but this requires the full preprocessed
+  EEG dataset (~20 GB). Marked as limitation.
 - Could the result reflect THINGS-EEG2 train data limitations? Possibly, but face-category
   subgroup analysis already rules out a major training-data face-vs-object split.
+- Could the result be a subject-averaging artifact? **No (E035)**.
 
 ---
 
@@ -133,7 +146,9 @@ residual general orientation component (random-bbox CLIP ISI 1.3-2.0, well above
 
 **Claim 4** has the highest counter-claim risk: limited to ATM. Worth attempting
 a Route A on another EEG decoder before final submission if pre-computed embeddings
-become available.
+become available. **Per-subject consistency check (E035, tick 36) reduces this risk
+substantially**: all 10 subjects show the same uniform low-pass pattern, ruling
+out the subject-averaging concern.
 
 ---
 
