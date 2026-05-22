@@ -1,29 +1,35 @@
 # State
 
-**Tick #**: 52
-**Last updated**: 2026-05-22 ~13:05 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net is the headline; the full
-architecture is training (E042) and this tick built the evaluation harness so a
-result can be computed the moment a checkpoint is ready.
-**Last action**: Tick 52 — wrote `holo_net/eval_extract.py` (loads a HOLO-Net
-checkpoint, emits one repo-standard NPZ per brain-region layer so the existing
-`analysis/compute_metrics.py` computes Thatcher ISI unchanged); located the four
-IllusionBench stimulus manifests on the server.
-**Last action outcome**: artifact delivered (eval harness). Training healthy.
+**Tick #**: 53
+**Last updated**: 2026-05-22 ~13:45 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net — the full architecture is
+training (E042); this tick evaluated the minimal-mode checkpoint to establish
+the "minus all bio components" ablation baseline and validate the eval harness.
+**Last action**: Tick 53 — ran `eval_extract.py` + `compute_metrics.py` on the
+minimal checkpoint (step 25000). Created E041.
+**Last action outcome**: CONFIRMED — minimal HOLO-Net Thatcher ISI ≈ 1.0 at all
+7 layers (0.965-1.037); no Thatcher effect without the bio components. Eval
+pipeline validated end-to-end (v1 ISI 1.019 ≈ pixel baseline).
 **Running tasks** (on server, H100 80GB):
-  - PID 44488 — minimal-mode run (E040 / "minus all bio components" ablation),
-    step ~22.5K/30K, identity ~3.3. checkpoint.pt auto-saved every 5K steps.
-  - PID 47222 — **FULL HOLO-Net run (E042)**, step ~2K/30K, identity 13.2→12.2,
-    predcode 4.2→1.2, descending past warmup. Output `/workspace/holo_net_full_v1/`.
+  - PID 44488 — minimal run (E040 / ablation baseline), step ~26K/30K,
+    identity ~1.8, ETA ~30 min. Checkpoint frozen at step 25000.
+  - PID 47222 — **FULL HOLO-Net (E042)**, step ~4K/30K, identity ~13 (margin
+    warmup just ended at step 4000 — real descent expected to begin now),
+    predcode 0.12, face_detect 0.06, gist 0.16. **orientation 0.71 — flat (Q015)**.
 **Stuck streak**: 0
-**Planned next action** (tick 53): run `eval_extract.py` on the best available
-minimal checkpoint → `compute_metrics.py` → first per-layer Thatcher ISI
-(E041 — preliminary, partial-training). Also locate the composite-CSI /
-part-whole-PWI metric code (not in `analysis/`).
+**Planned next action** (tick 54): monitor the full run — confirm identity-loss
+descent now that margin warmup is done, and watch the Orientation Gate (Q015).
+When the minimal run finishes → re-eval its final checkpoint. Locate the
+composite-CSI / part-whole-PWI metric code so all 3 paradigms can be scored.
 **Confidence in current best idea**:
-  - **Idea-003 (HOLO-Net)**: ~7.5/10 — architecture trains; awaiting the
-    falsification-criteria evaluation.
+  - **Idea-003 (HOLO-Net)**: ~7.5/10 — architecture trains; ablation floor now
+    established (minimal ISI≈1); awaiting the full-model falsification result.
   - **Idea-001**: 9.3/10 — groundwork, stable.
+
+## Open watch-items
+- **Q015**: full-run `orientation` loss flat at chance (≈0.69) through step 3850.
+  Re-check at step ~10000; if still flat → real bug → the Thatcher mechanism
+  (design §7) would be defeated → fix + relaunch E042.
 
 ## Strategic note (user directive 2026-05-22)
 Idea-001 is theoretical groundwork; **Idea-003 (HOLO-Net) is the headline and

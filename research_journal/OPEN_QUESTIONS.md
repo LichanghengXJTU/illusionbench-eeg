@@ -216,3 +216,28 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
   architecture) is untested and the current run only delivers sub-path (a).
 - **Linked experiment IDs**: E040 ✓ (the observed failure), E042 ✓ (the
   controlled re-test that isolated the cause).
+
+---
+
+## Q015 (NEW from E042 monitoring, tick 53) — Is the HOLO-Net Orientation Gate actually learning upright-vs-inverted?
+
+- **Status**: **WATCH-ITEM** — flagged, not yet investigated.
+- **Score**: 8/10 (the Orientation Gate is load-bearing: design doc §7 makes it
+  the mechanism of the Thatcher effect — "gate suppresses FFA recurrence on
+  inverted faces". If it never learns, the full HOLO-Net would give Thatcher
+  ISI ≈ 1, i.e. a null result.)
+- **Observation**: in the E042 full run, the `orientation` CE loss is flat —
+  0.695 (step 0) → 0.695 (step 1700) → 0.707 (step 3850) ≈ ln 2 (chance). The
+  upright/inverted distinction (a whole-image vertical flip) should be an easy
+  task; 3850 steps of no movement is suspicious.
+- **Candidate explanations**: (a) genuinely slow — aux weight is only 0.1 and
+  global grad-clip norm 1.0 may attenuate it; the backbone is still forming so
+  `afp_spatial` may not yet support the readout; (b) a real bug — gradient to
+  the OrientationGate / AFP path is blocked, or the label path is wrong.
+  Code audit (tick 53) found no obvious structural bug: the orientation CE
+  backprops into the gate classifier and into `afp_spatial`.
+- **Discriminating check**: monitor the loss to **step ~10000**. If still ≈ 0.69
+  → real bug → investigate (probe gate-classifier gradient norms; verify
+  `orientation` labels in the batch; consider raising the aux weight or a warmup
+  for it). If descending by step 10000 → it was just slow; no action.
+- **Linked experiment IDs**: E042.
