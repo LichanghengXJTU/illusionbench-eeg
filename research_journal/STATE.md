@@ -1,23 +1,24 @@
 # State
 
-**Tick #**: 62
-**Last updated**: 2026-05-23 ~03:18 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net — v5 (full model + all
-fixes) training on track; the falsification-eval wrapper is now written and
-ready for when v5 finishes.
-**Last action**: Tick 62 — wrote `holo_net/eval_falsification.py` (orchestrates
-eval_extract + compute_metrics over all 4 stimulus sets per layer, pixel-
-corrects, prints the FFA-layer §6 verdict). Monitored v5 at step ~10650:
-identity ~8.6 (tracking minimal), orientation 0.12 (gate working).
-**Last action outcome**: eval wrapper ready; v5 on track.
+**Tick #**: 63
+**Last updated**: 2026-05-23 ~03:52 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net — v5 training on track
+(identity descending like minimal, gate working); the eval wrapper is validated.
+**Last action**: Tick 63 — v5 at step 16250: identity 5.96 (minimal was 6.3 at
+step 15000 → v5 tracks/slightly leads), orientation 0.13 (gate functional).
+Deployed `eval_falsification.py` and launched it on the minimal checkpoint —
+running cleanly (Thatcher paradigm done, composite in progress) → wrapper
+validated.
+**Last action outcome**: v5 fully on track; eval wrapper works end-to-end.
 **Running tasks** (on server, H100 80GB):
   - **v5 — full HOLO-Net + all fixes (E042)** — `/workspace/holo_net_full_v5/`,
-    30000 steps, seed 20260521. step ~10650, ~1.9 h to completion.
+    step ~16550/30000, identity ~6.3 descending. ~1.4 h to completion.
+  - falsification eval on the minimal checkpoint — `/workspace/falsif_minimal.log`,
+    ~8 min to finish (validates the wrapper + completes the 4-paradigm floor).
 **Stuck streak**: 0
-**Planned next action** (tick 63): monitor v5 (~step 15000 — the identity
-verdict point; minimal there was 6.3). When v5 finishes → scp
-`eval_falsification.py` to server, run it on the v5 final checkpoint = the
-HOLO-Net falsification test.
+**Planned next action** (tick 64): read the minimal 4-paradigm falsification
+table from `falsif_minimal.log` (→ E041); monitor v5 (~step 21000). When v5
+finishes → run `eval_falsification.py` on the v5 checkpoint = the HOLO-Net test.
 **Confidence in current best idea**:
   - **Idea-003 (HOLO-Net)**: ~7.5/10 — the architecture is confirmed trainable
     (Q017); the gate fix is well-founded (v2 proved the gate learns when the
