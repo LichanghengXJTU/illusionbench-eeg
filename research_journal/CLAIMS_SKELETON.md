@@ -232,3 +232,61 @@ what task is being asked.
 - Could it be sample-size effect (800 vs 400 stimuli)? Possibly small contribution.
   But the cross-paradigm Spearman = 0.54 on Part-Whole reflects a real signal
   difference, not stochastic noise.
+
+---
+
+## Claim 8 (NEW post-E044) — Bio-faithful architecture is not sufficient; the configural-illusion signal is training-objective-driven (constructive negative)
+
+**Statement**: A maximally bio-faithful face architecture — HOLO-Net, with each
+layer mapped to a brain region (LGN→V1→V2→V4→OFA→MFP→AFP→Orientation-Gate→FFA
+→ATL + Predify-style PC feedback + magno-PFC gist), trained only on Glint360K
+face identities with an AdaFace identity objective and no illusion-stimulus
+exposure — shows NO Thatcher effect (ISI ≈ 1.0) and NO composite effect
+(CSI ≈ 1.0) at any layer including the FFA layer where the design pre-
+registered the falsification. This pattern is exactly that of FaceNet
+(Claim 2), confirming that the configural-illusion emergence pinned to
+image-text contrastive training (Claims 1, 3) is **not architecture-driven** —
+the training objective is the lever. The HOLO-Net FFA module is, however, not
+inert: it drives Part-Whole PWI from mfp 0.75 → ffa 2.20 (the largest
+single-paradigm deviation HOLO-Net produces), but in the opposite direction to
+the design's ≤ 0.5 criterion — the architecture changes something real, just
+not the human-aligned configural signal.
+
+**Evidence**:
+- E041: minimal HOLO-Net (bio components OFF) FFA-layer ablation floor —
+  Thatcher ISI 0.98, Composite CSI 1.19, Part-Whole PWI 0.78, Random-bbox
+  1.08; fails all (intended baseline).
+- E044: full HOLO-Net v5 (all bio components, trained to identity loss 0.97,
+  functional Orientation Gate) FFA layer — ISI 1.00, CSI 0.99, PWI 2.20,
+  Random-bbox 1.08; fails 3 of 4 pre-registered §6 criteria → ALL FOUR: FAIL.
+- Per-layer profile (pixel-corrected): ISI flat ≈ 1.0 at every layer (v1 1.02,
+  v2 1.04, v4 1.00, mfp 0.99, afp 1.02, ffa 1.00, atl 1.00); CSI flat ≈ 1.0
+  (range 0.97-1.18); PWI jumps mfp 0.75 → afp 2.07 → ffa 2.20 → atl 0.81 —
+  the FFA holistic-binding module specifically restructures part-whole
+  geometry. Random-bbox stays ≈ 1.0-1.1 at all layers (control intact).
+
+**Strength**: STRONG. The full HOLO-Net + FaceNet (Claim 2) — two
+architecturally very different face-identity-trained models — both produce
+ISI ≈ 1.0. The negative result is reproducible across architectures conditioned
+on training objective.
+
+**Interpretation**: confirms Claims 1+2+3 from the architecture side. The
+"first paradigm-consistent" headline that Idea-003 aimed at is refuted as
+pre-registered. But the constructive negative is itself a load-bearing finding:
+it rules out architectural bio-fidelity as the cause of the dissociation in
+Claim 1, leaving the training objective as the operative lever.
+
+**Counter-claims considered**:
+- Undertrained? At step 30000, identity loss 0.97 (well-trained); orientation
+  0.16 (gate accurate); ISI ≈ 1.0 at all layers from early epochs onward.
+  Training is not the limitation.
+- Could a different architecture revision (design §8: 6-step FFA, Capsule,
+  GLOM) succeed under identity training? Possible but contraindicated — the
+  FFA module IS not inert (PWI 2.20); the architecture HAS expressive
+  capacity; the gap is the objective per Claim 2.
+- The design §7 Thatcher mechanism is conceptually flawed: the Orientation
+  Gate distinguishes WHOLE-face orientation, but Thatcher is a LOCAL-feature
+  inversion within an upright face — the gate has no signal for it. A
+  revision could address this, but again would not change the objective.
+- Could HOLO-Net + image-text contrastive objective succeed? Open question
+  (FLAG-002 option 2) — would test architecture × objective. Not run.

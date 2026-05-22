@@ -1,20 +1,20 @@
 # State
 
-**Tick #**: 66
-**Last updated**: 2026-05-23 ~06:06 (Asia/Hong_Kong)
-**Current focus** (one sentence): HOLO-Net experimental arc concluded (v5
-refuted); synthesis written; the strategic direction now awaits a FLAG-002 steer.
-**Last action**: Tick 66 — wrote `research_journal/HOLONET_SYNTHESIS.md`:
-consolidates the E040-E044 arc, the v5 refutation, the diagnosis (objective not
-architecture; the §7 gate flaw), and the integrated Idea-001 + HOLO-Net story.
-**Last action outcome**: synthesis complete; no user reply to FLAG-002 yet.
+**Tick #**: 67
+**Last updated**: 2026-05-23 ~06:42 (Asia/Hong_Kong)
+**Current focus** (one sentence): Begin integrating the HOLO-Net result into
+the paper materials while awaiting FLAG-002 steer.
+**Last action**: Tick 67 — added **Claim 8** to `CLAIMS_SKELETON.md`: the
+bio-faithful-architecture constructive negative — HOLO-Net + identity training
+gives ISI ≈ 1.0 like FaceNet, confirming Claims 1+2+3 from the architecture side.
+**Last action outcome**: paper now has an explicit anchor for the HOLO-Net
+result; the prose updates (ABSTRACT, §4.x architecture-test section) flow from it.
 **Running tasks** (on server, H100 80GB): none.
 **Stuck streak**: 0
-**Planned next action** (tick 67): if the user has steered FLAG-002 → act on it.
-Else → begin integrating the HOLO-Net result into the paper materials (a new
-"architecture test" claim/section) — option-1 work that is useful regardless of
-the fork, and deepens Idea-001 (the strongest line, 9.3). Do NOT launch a
-design-§8 architecture revision unprompted.
+**Planned next action** (tick 68): continue paper integration — write a brief
+"§4.7 architecture test" prose paragraph for `PAPER_DRAFT.md` and update
+`ABSTRACT.md` to mention the HOLO-Net negative result. If the user has steered
+FLAG-002 → act on it. Still no design-§8 architecture revision unprompted.
 **Confidence in current best idea**:
   - **Idea-001** (IllusionBench-EEG): **9.3/10** — unaffected, and strengthened:
     the HOLO-Net negative result is architecture-side corroboration of its
