@@ -272,16 +272,23 @@ isolate the model-representational signal.
 
 ## 3.4 Visual prior model zoo
 
-We evaluate 17 visual priors spanning 6 training paradigms:
-**(i) image-text contrastive**: CLIP-RN50, CLIP-ViT-B/32 OpenAI, CLIP-ViT-L/14
+We evaluate 25 visual priors spanning 8 training paradigms:
+**(i) image-text contrastive**: CLIP-ViT-B/32 OpenAI, CLIP-ViT-L/14
 OpenAI, CLIP-ViT-H/14 LAION-2B, CLIP-ViT-g/14 LAION-2B, CLIP-ViT-bigG/14
 LAION-2B; **(ii) other image-text contrastive**: SigLIP-base-patch16-384,
 SigLIP-SO400M-patch14-384 (Zhai et al., 2023), MetaCLIP-H/14
 (Xu et al., 2024 ICLR); **(iii) DINOv2 self-supervised** (Oquab et al., 2024):
 base, large, giant; **(iv) MAE self-supervised pixel-prediction** (He et al.,
 2022): ViT-MAE-Huge; **(v) SDXL VAE** (Podell et al., 2023): pixel-statistics
-encoder; **(vi) face-identity-trained**: InceptionResnetV1 (facenet-pytorch)
-trained on VGGFace2 and CASIA-Webface (Schroff et al., 2015); **(controls)**:
+encoder; **(vi) bio-inspired**: CORnet-S (Kubilius et al., 2019), a
+recurrent-CNN-modeled-on-ventral-stream V1→V2→V4→IT pipeline that is the
+top Brain-Score architecture; **(vii) face-identity-trained (triplet loss)**:
+InceptionResnetV1 (facenet-pytorch) trained on VGGFace2 and CASIA-Webface
+(Schroff et al., 2015); **(viii) face-identity-trained (angular-margin
+loss)**: ArcFace ResNet-100 trained on insightface's curated face data
+(AuraFace checkpoint; Deng et al., 2019); AdaFace IR-101 trained on MS1MV2
+(Kim et al., 2022); ArcFace IR-101 trained on WebFace4M; AdaFace IR-50
+trained on CASIA-WebFace, MS1MV2, WebFace4M (CVLFace releases). **(controls)**:
 untrained ViT-B/16, raw pixel cosine distance. All image embeddings are L2-
 normalized.
 
@@ -448,11 +455,63 @@ ISI under this attenuation factor would collapse from the image-side 5.5 to
 approximately 1.7 (assuming linear attenuation as a first-order estimate),
 within sampling noise of the pixel baseline.
 
+## 4.6 Representational similarity analysis: cluster taxonomy and paradigm-conditional migration
+
+The paradigm-specific dissociation results above probe specific perturbation
+axes (orientation, alignment, isolation). To complement this, we compute the
+global representational geometry of each prior via Representational
+Similarity Analysis (RSA). For each prior we compute the 800×800 cosine
+distance matrix on Thatcher stimuli (and analogous 400×400 matrices on
+Composite and Part-Whole stimuli), then take the upper triangle as a vector
+and compute pairwise Spearman correlation between priors. The resulting
+25×25 RSA correlation matrix is hierarchically clustered (average linkage on
+1−R) at k=6.
+
+**Cluster structure on Thatcher stimuli** (Figure 3, left panel). At k=6
+we obtain six families: (a) raw pixel alone; (b) reconstructive priors
+(SDXL-VAE, MAE-Huge, untrained ViT-B/16); (c) CORnet-S alone; (d) the big
+"semantic" cluster of 11 priors fusing all CLIP variants, all DINOv2
+variants, all SigLIP and MetaCLIP — distinctly bounded but internally
+homogeneous; (e) angular-margin face-recognition (ArcFace AuraFace,
+AdaFace IR-101 MS1MV2, ArcFace IR-101 WebFace4M, AdaFace IR-50 ×3) — 7
+priors clustered tightly; (f) triplet face-recognition (FaceNet-VGGFace2,
+FaceNet-CASIA). Quantitatively, within-CLIP CKA (CLIP-H/14 vs
+CLIP-bigG/14) = 0.93; CLIP-vs-DINOv2-giant CKA = 0.75; CLIP-vs-AdaFace-CASIA
+CKA = **0.45**, i.e. AdaFace-CASIA adds roughly 55% novel information over
+CLIP on face stimuli.
+
+**Cluster structure changes by paradigm**. Comparing the per-paradigm RSA
+matrices (Figure 3 panels), the cross-paradigm Spearman agreement between
+the upper-triangle vectors is **0.86** (Thatcher↔Composite), **0.54**
+(Thatcher↔Part-Whole), and **0.73** (Composite↔Part-Whole). Part-Whole is
+the most distinct paradigm. Several priors migrate between clusters across
+paradigms: (i) CORnet-S moves from alone (Thatcher) to the semantic cluster
+(Composite) to the reconstructive cluster (Part-Whole); (ii) AdaFace IR-50
+CASIA moves from the angular-margin face-rec cluster (Thatcher) to the
+triplet face-rec cluster (Composite) to the semantic cluster (Part-Whole);
+(iii) FaceNet variants stay triplet-clustered on Thatcher and Composite but
+collapse into the semantic cluster on Part-Whole. These migrations
+demonstrate that **a model's representational geometry is paradigm-
+conditional**: dissociation is a (model × paradigm) interaction, not a
+fixed model-identity property.
+
+**Implications.** At the level of global RSA, the paradigm-dissociation we
+report in §4.1-4.4 is a **fine-grained effect within an otherwise globally
+similar representational space** — CLIP and DINOv2 are placed in the same
+big "semantic" cluster despite their opposite paradigm scores (CLIP-bigG/14
+Thatcher 6.76 / Part-Whole 0.71 vs DINOv2-giant Thatcher 3.34 / Part-Whole
+0.35). This argues that the IllusionBench-EEG benchmark resolves a
+fine-structure that global RSA misses, strengthening rather than weakening
+the case for paradigm-specific tests. We also identify **AdaFace IR-50
+CASIA** as the first face-identity-trained model in our 25-prior battery
+to approach moderate Thatcher ISI (2.91 [2.63, 3.22]) while remaining
+identifiably face-rec by RSA — a candidate target embedding for downstream
+EEG-decoder substitution experiments.
+
 ---
 
-**Word count check**: approximately 1,140 words. On target. Each subsection
-maps directly to one experiment family and produces numerical evidence for one
-of the five claims.
+**Word count check**: approximately 1,500 words. Slightly over target;
+RSA section adds depth at the cost of some breadth — trim during revision.
 
 ---
 

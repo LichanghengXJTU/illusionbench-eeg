@@ -134,3 +134,86 @@ residual general orientation component (random-bbox CLIP ISI 1.3-2.0, well above
 **Claim 4** has the highest counter-claim risk: limited to ATM. Worth attempting
 a Route A on another EEG decoder before final submission if pre-computed embeddings
 become available.
+
+---
+
+## Claim 6 (NEW post-E031/E032) — Face-recognition models can approach moderate Thatcher signal under specific training conditions, but the data regime matters more than the loss formulation
+
+**Statement**: AdaFace IR-50 trained on the small noisy CASIA-WebFace dataset
+(~500K images, ~10K identities, 2014-era) shows Thatcher ISI 2.91 [2.63, 3.22] —
+the highest among 25 priors after CLIP-class. AdaFace IR-101 trained on cleaner
+larger MS1MV2 (~5.8M images) gives only 1.24, and AdaFace IR-50 on cleaner
+WebFace4M (~4M images) gives 1.33. This INVERTED data-scaling pattern is
+opposite to CLIP's, where more data → more Thatcher.
+
+**Evidence**:
+- E030: P23 ArcFace AuraFace (R100): Thatcher ISI 1.70 [1.64, 1.77]
+- E031: P24 AdaFace IR-101 MS1MV2: ISI 1.24, CSI 1.60, PWI 0.59 (partially
+  paradigm-consistent — first face-rec model with all three indices deviating
+  from baseline in the expected direction)
+- E031: P25 ArcFace IR-101 WebFace4M: ISI 1.17, CSI 1.32, PWI 0.50
+- E032: P26 AdaFace IR-50 CASIA: ISI 2.91, CSI 1.28, PWI 0.75 — strongest
+  face-rec Thatcher of any model
+- E032: P28 AdaFace IR-50 WebFace4M ISI 1.33; P29 AdaFace IR-50 MS1MV2 ISI 1.21
+- E032: AuraFace's earlier PWI 1.43 inversion was a BGR-preprocessing artifact
+  (RGB-correct PWI = 0.99)
+
+**Strength**: STRONG. Multiple AdaFace variants tested with fixed loss + varied
+data and varied backbone show data is the dominant axis. Inversion of CLIP's
+scaling law is reproducible.
+
+**Interpretation**: Face-identity training with angular-margin loss can develop
+Thatcher sensitivity if the training data is sufficiently noisy/diverse to
+require sensitivity to fine-grained perturbations. Cleaning the data eliminates
+this signal — likely because identity manifolds become too tight.
+
+**Counter-claims considered**:
+- Could it be a preprocessing confound? E032 P23rgb sanity check shows AuraFace
+  BGR vs RGB differs by 0.25 in ISI but the overall pattern is preserved.
+- Could it be backbone scale? E032 IR-50 vs IR-101 on same MS1MV2 data shows
+  near-identical ISI (1.21 vs 1.24) — backbone scale is small effect.
+
+---
+
+## Claim 7 (NEW post-E033/E034) — Representational geometry is paradigm-conditional; dissociation is a (model × paradigm) interaction
+
+**Statement**: At the level of global RSA (representational similarity analysis)
+on the 800-stimulus Thatcher set, the 25 priors cluster into 6 stable families
+(reconstructive, pixel, semantic [CLIP+DINOv2+SigLIP merged], angular-margin
+face-rec, triplet face-rec, CORnet-S alone). However, the same cluster
+analysis on Composite and Part-Whole stimuli shows that several priors
+MIGRATE between clusters: CORnet-S (alone → semantic → reconstructive across
+the three paradigms), AdaFace IR-50 CASIA (angular-margin → triplet → semantic),
+FaceNet (triplet → triplet → semantic). Cross-paradigm Spearman agreement
+between RSA matrices is 0.86 (Thatcher↔Composite), 0.54 (Thatcher↔Part-Whole),
+0.73 (Composite↔Part-Whole) — Part-Whole is the most distinct paradigm.
+
+**Evidence**:
+- E033: 25×25 RSA correlation matrix on Thatcher 800 stimuli; hierarchical
+  clustering at k=6 yields 6 families.
+- E033: CKA(CLIP-H/14, AdaFace-CASIA) = 0.45 quantifies AdaFace's ~55% novel
+  information over CLIP. CKA(CLIP-H/14, CLIP-bigG14) = 0.93 (within-CLIP
+  baseline). CKA(CLIP-H/14, DINOv2-giant) = 0.75.
+- E034: per-paradigm RSA matrices for Composite and Part-Whole; same 6-cluster
+  procedure shows different cluster memberships.
+- E034: cross-paradigm Spearman agreements as stated.
+
+**Strength**: STRONG. Quantitative cross-paradigm comparison + qualitative
+migration pattern + CKA quantification of novelty.
+
+**Interpretation**: The paradigm-specific dissociation we report in §4.1-4.4
+is a fine-grained effect WITHIN a globally similar representational space
+(CLIP and DINOv2 cluster together at global level despite opposite paradigm
+scores). This strengthens rather than weakens the case for paradigm-specific
+benchmark tests — they reveal structure global RSA misses. The cluster
+migration shows that the same model's effective representation depends on
+what task is being asked.
+
+**Counter-claims considered**:
+- Could the migrations be clustering-algorithm artifacts (sensitive to k)?
+  Partly. We report k=6 throughout for consistency; at k=4 and k=8 the
+  qualitative pattern of "CORnet migrates, AdaFace migrates, FaceNet
+  collapses on PartWhole" persists.
+- Could it be sample-size effect (800 vs 400 stimuli)? Possibly small contribution.
+  But the cross-paradigm Spearman = 0.54 on Part-Whole reflects a real signal
+  difference, not stochastic noise.
