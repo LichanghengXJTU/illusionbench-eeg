@@ -1,45 +1,42 @@
 # State
 
-**Tick #**: 51
-**Last updated**: 2026-05-22 ~12:48 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net is the project's headline
-(user directive 2026-05-22); the full bio-fidelity architecture is now UNBLOCKED
-— E042 root-caused the earlier training failure to an AdaFace loss bug (already
-fixed), NOT the bio components.
-**Last action**: Tick 51 — audited `holo_net/{model,losses,train}.py`; diagnosed
-the v1 failure; launched the FULL HOLO-Net (all bio components, fixed loss) as a
-controlled re-test (E042); confirmed it starts at identity loss 13.20 ≈ the
-minimal model's 13.13.
-**Last action outcome**: CONFIRMED — bio components are not the blocker; HOLO-Net
-trains cleanly. Q014 answered.
+**Tick #**: 52
+**Last updated**: 2026-05-22 ~13:05 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net is the headline; the full
+architecture is training (E042) and this tick built the evaluation harness so a
+result can be computed the moment a checkpoint is ready.
+**Last action**: Tick 52 — wrote `holo_net/eval_extract.py` (loads a HOLO-Net
+checkpoint, emits one repo-standard NPZ per brain-region layer so the existing
+`analysis/compute_metrics.py` computes Thatcher ISI unchanged); located the four
+IllusionBench stimulus manifests on the server.
+**Last action outcome**: artifact delivered (eval harness). Training healthy.
 **Running tasks** (on server, H100 80GB):
-  - PID 44488 — minimal-mode run (E040), step ~21K/30K, identity ~4, ETA ~20 min.
-    Repurposed as the "minus all bio components" ablation arm.
-  - PID 47222 — **FULL HOLO-Net run (E042)**, step ~150/30K, identity 13.2.
-    Output `/workspace/holo_net_full_v1/`. step_t ~0.8s (GPU shared).
+  - PID 44488 — minimal-mode run (E040 / "minus all bio components" ablation),
+    step ~22.5K/30K, identity ~3.3. checkpoint.pt auto-saved every 5K steps.
+  - PID 47222 — **FULL HOLO-Net run (E042)**, step ~2K/30K, identity 13.2→12.2,
+    predcode 4.2→1.2, descending past warmup. Output `/workspace/holo_net_full_v1/`.
 **Stuck streak**: 0
-**Planned next action** (tick 52): poll both runs; confirm full-model loss
-descent. When minimal finishes → E041 (evaluate it on IllusionBench = the
-all-components-off baseline). When the FULL run finishes → evaluate the full
-checkpoint on IllusionBench per-layer = the HOLO-Net falsification test
-(FFA-layer ISI≥3 / CSI≥1.5 / PWI≤0.5 / random-bbox≤1.5).
+**Planned next action** (tick 53): run `eval_extract.py` on the best available
+minimal checkpoint → `compute_metrics.py` → first per-layer Thatcher ISI
+(E041 — preliminary, partial-training). Also locate the composite-CSI /
+part-whole-PWI metric code (not in `analysis/`).
 **Confidence in current best idea**:
-  - **Idea-003 (HOLO-Net)**: **~7.5/10** — feasibility restored (4→7): the
-    architecture is proven to train. Remaining uncertainty is purely scientific
-    (does it pass the falsification criteria), not an engineering blocker.
-  - **Idea-001**: 9.3/10 — theoretical groundwork, stable, not the loop's focus.
+  - **Idea-003 (HOLO-Net)**: ~7.5/10 — architecture trains; awaiting the
+    falsification-criteria evaluation.
+  - **Idea-001**: 9.3/10 — groundwork, stable.
 
 ## Strategic note (user directive 2026-05-22)
-Idea-001 (IllusionBench-EEG benchmark) is theoretical groundwork; **Idea-003
-(HOLO-Net) is the headline novelty and the loop's primary focus**. Full autonomy
-granted on Idea-003 direction. Build / train / validate HOLO-Net continuously.
-If compute becomes the blocker, write a NEED to `NOTES_FOR_USER.md` — the user
-will rent more GPU. Keep looping; commit + push every tick.
+Idea-001 is theoretical groundwork; **Idea-003 (HOLO-Net) is the headline and
+the loop's primary focus**. Full autonomy on Idea-003 direction. Build / train /
+validate HOLO-Net continuously. If compute becomes the blocker, write a NEED to
+`NOTES_FOR_USER.md` — the user will rent more GPU. Keep looping; commit+push and
+report status every tick.
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`
 - Server: `/workspace/illusionbench-eeg/` (plain dir, not git)
 - HOLO-Net runs: `/workspace/holo_net_stage2/` (minimal/E040),
   `/workspace/holo_net_full_v1/` (full/E042)
+- Stimulus manifests (server): `data/stimuli_ffhq{,_composite,_partwhole,_randombbox}/thatcher_manifest.csv`
 - Server SSH: `ssh -i ~/.ssh/id_ed25519 -p 11022 root@103.207.149.173`
 - GitHub: https://github.com/LichanghengXJTU/illusionbench-eeg
