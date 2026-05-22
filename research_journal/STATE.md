@@ -1,23 +1,23 @@
 # State
 
-**Tick #**: 61
-**Last updated**: 2026-05-23 ~02:47 (Asia/Hong_Kong)
+**Tick #**: 62
+**Last updated**: 2026-05-23 ~03:18 (Asia/Hong_Kong)
 **Current focus** (one sentence): Idea-003 / HOLO-Net — v5 (full model + all
-fixes) training; the gate.detach() fix is confirmed (orientation now learns);
-v5 is the falsification-test candidate.
-**Last action**: Tick 61 — monitored v5 at step 5550. Orientation loss
-0.71→0.01 by step 1350 (v4 was flat) → `gate.detach()` fix CONFIRMED working.
-Identity 12.56, in the normal bounce.
-**Last action outcome**: v5 on track — functional gate + on-track identity
-training (first run with both).
+fixes) training on track; the falsification-eval wrapper is now written and
+ready for when v5 finishes.
+**Last action**: Tick 62 — wrote `holo_net/eval_falsification.py` (orchestrates
+eval_extract + compute_metrics over all 4 stimulus sets per layer, pixel-
+corrects, prints the FFA-layer §6 verdict). Monitored v5 at step ~10650:
+identity ~8.6 (tracking minimal), orientation 0.12 (gate working).
+**Last action outcome**: eval wrapper ready; v5 on track.
 **Running tasks** (on server, H100 80GB):
   - **v5 — full HOLO-Net + all fixes (E042)** — `/workspace/holo_net_full_v5/`,
-    30000 steps, seed 20260521. step ~5550, ~2.5 h to completion.
+    30000 steps, seed 20260521. step ~10650, ~1.9 h to completion.
 **Stuck streak**: 0
-**Planned next action** (tick 62): v5 still mid-bounce — write the v5
-falsification-eval wrapper (eval_extract + compute_metrics over all 4 stimulus
-sets, per layer, with pixel-correction) so the evaluation is one clean command
-when v5 finishes. Judge v5 identity at step ~15000+; full eval when complete.
+**Planned next action** (tick 63): monitor v5 (~step 15000 — the identity
+verdict point; minimal there was 6.3). When v5 finishes → scp
+`eval_falsification.py` to server, run it on the v5 final checkpoint = the
+HOLO-Net falsification test.
 **Confidence in current best idea**:
   - **Idea-003 (HOLO-Net)**: ~7.5/10 — the architecture is confirmed trainable
     (Q017); the gate fix is well-founded (v2 proved the gate learns when the
