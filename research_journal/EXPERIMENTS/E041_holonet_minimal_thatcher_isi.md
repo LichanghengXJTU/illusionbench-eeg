@@ -75,3 +75,36 @@ and afp rows are identical. atl = the AdaFace head embedding.)
 - Checkpoint: `/workspace/holo_net_stage2/ckpt_minimal_step25000.pt` (frozen).
 - NPZ: `/workspace/.../outputs/embeddings/thatcher_holonet_minimal/` (server;
   `*.npz` gitignored). ISI table: `outputs/tables/holonet_minimal_thatcher_isi.csv`.
+
+---
+
+## Addendum — tick 59: composite + part-whole completed → full 3-paradigm ablation baseline
+
+`compute_metrics.py` computes CSI and PWI too — the composite/part-whole
+generators reuse the V1-V4 condition slots, so the same script + the
+`data/stimuli_ffhq_{composite,partwhole}/thatcher_manifest.csv` manifests work
+unchanged (no separate metric code — that earlier "missing code" worry is
+resolved). Ran the minimal checkpoint (step 25000) on both:
+
+**Composite CSI** (raw; pixel baseline 1.099 → corrected):
+v1 1.254, v2 1.291, v4 1.259, mfp 1.179, afp/ffa 1.310, atl 1.313.
+FFA-layer raw 1.310 → **pixel-corrected ≈ 1.19**.
+
+**Part-Whole PWI** (raw; pixel baseline 1.202 → corrected):
+v1 1.516 (low-level, noisy), v2 0.934, v4 0.812, mfp 0.872, afp/ffa 0.936,
+atl 0.926. FFA-layer raw 0.936 → **pixel-corrected ≈ 0.78**.
+
+**The full ablation floor — minimal HOLO-Net, FFA-layer, all 3 paradigms:**
+
+| Paradigm | minimal HOLO-Net (FFA layer) | falsification threshold | pass? |
+|---|---|---|---|
+| Thatcher ISI | ≈ 1.0 | ≥ 3.0 | ✗ |
+| Composite CSI | ≈ 1.19 (corrected) | ≥ 1.5 | ✗ |
+| Part-Whole PWI | ≈ 0.78 (corrected) | ≤ 0.5 | ✗ |
+
+**[CONFIRMED]** The minimal HOLO-Net (all bio components OFF) fails the
+pre-registered falsification on **all three** paradigms. This is the intended
+ablation floor: if the full HOLO-Net (v4) clears any threshold, it is cleanly
+attributable to the bio-fidelity components, not the CORnet backbone + AdaFace
+training. The 3-paradigm eval pipeline (`eval_extract.py` → `compute_metrics.py`)
+is validated and ready for v4. Tables: `outputs/tables/holonet_minimal_{composite,partwhole}.csv`.

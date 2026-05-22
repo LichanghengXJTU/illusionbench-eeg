@@ -1,44 +1,42 @@
 # State
 
-**Tick #**: 58
-**Last updated**: 2026-05-23 ~00:55 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net — corrected a misjudgment
-(the identity-loss "bounce" is normal, not failure); launched the full model v4
-to run to completion without premature judgment.
-**Last action**: Tick 58 — fetched the minimal run's full trajectory; it bounces
-identity 10-13.6 until ~step 8000 then descends to ~1.5. This means v1/v2/v3 were
-killed mid-bounce, and the tick-55/56 "failure" diagnoses were premature. Killed
-the mis-scoped diagnostics, launched v4 (full HOLO-Net, 30000 steps).
-**Last action outcome**: v4 training (step ~250, identity 10.5, 0.41 s/step,
-full GPU). Verdict deferred to step ~15000+.
+**Tick #**: 59
+**Last updated**: 2026-05-23 ~01:35 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net — v4 (full model) training
+through its normal bounce; tick 59 completed the 3-paradigm ablation baseline
+and validated the eval pipeline for composite + part-whole.
+**Last action**: Tick 59 — resolved the "CSI/PWI metric code" question (it IS
+`compute_metrics.py` — the composite/part-whole generators reuse the V1-V4
+condition slots). Ran the minimal checkpoint on composite + part-whole → the
+full ablation floor (E041).
+**Last action outcome**: minimal HOLO-Net (FFA layer) fails the falsification on
+ALL 3 paradigms — Thatcher ISI ≈1.0, Composite CSI ≈1.19, Part-Whole PWI ≈0.78
+(all corrected; thresholds 3.0 / 1.5 / 0.5). Intended ablation floor confirmed.
 **Running tasks** (on server, H100 80GB):
   - **v4 — full HOLO-Net (E042 / Q017)** — `/workspace/holo_net_full_v4/`,
-    OrientationGate-4×4 + FFA/ATL-additive fixes, all components on, seed
-    20260521, 30000 steps (~3.3 h). step ~250.
+    step ~6300/30000, identity 10.65 (tracking the minimal run's bounce:
+    minimal step 6000 ≈ 11.58). 0.37 s/step, ~2.4 h to completion.
 **Stuck streak**: 0
-**Planned next action** (tick 59): v4 will still be mid-bounce — do the deferred
-non-blocking work instead: re-eval the minimal FINAL checkpoint on Thatcher
-(E041 update), and locate the composite-CSI / part-whole-PWI metric code. Only
-judge v4 at step ~15000+.
+**Planned next action** (tick 60): monitor v4 (~step 10000 — minimal there was
+9.1, descent starting). Judge v4 properly at step ~15000+. When v4 finishes →
+3-paradigm per-layer eval = the HOLO-Net falsification test.
 **Confidence in current best idea**:
-  - **Idea-003 (HOLO-Net)**: ~7/10 — the "3 failed runs" narrative was a
-    misjudgment; whether the full model trains is genuinely still open (Q017),
-    being answered properly by v4 now.
+  - **Idea-003 (HOLO-Net)**: ~7/10 — eval pipeline + ablation floor now fully
+    in place; the decisive v4 verdict is ~1 h away.
   - **Idea-001**: 9.3/10 — groundwork, stable.
 
-## Process lesson (tick 58)
-Never judge a training run without the matched-config reference trajectory.
-Ticks 55-57 misread the normal early identity bounce as failure because the
-minimal-run reference (which also bounces 10-13.6 for ~8000 steps) had not been
-pulled. Cost: 3 premature relaunches. The two model.py fixes from that period
-are still sound (OrientationGate 4×4 = a real confirmed bug fix; FFA/ATL
-additive wiring = a sound design) and are retained in v4.
+## Watch-item (for v4 verdict)
+v4 `orientation` loss flat at ~0.695 through step 6300 (same as v3). Under the
+additive wiring (`atl_input = afp_pooled + gate·ffa_out`), the identity loss can
+minimise by driving the gate→const (clean afp_pooled), which competes with the
+orientation CE loss. If v4's identity descends but orientation stays flat, the
+OrientationGate is inert → the Thatcher mechanism is weakened → a real design
+issue to address AFTER the Q017 identity verdict.
 
-## Deferred (non-blocking)
-- Re-eval minimal FINAL checkpoint on Thatcher; locate composite-CSI /
-  part-whole-PWI metric code (not in `analysis/`).
-- OFA / PFC-Gist face-vs-nonface heads see only faces (no ImageNet non-face mix
-  in `data.py`).
+## Resolved / done
+- CSI & PWI metric code: it is `compute_metrics.py` on the composite/partwhole
+  manifests — no new code needed. 3-paradigm eval pipeline validated.
+- Minimal ablation baseline: complete for all 3 paradigms (E041).
 
 ## Strategic note (user directive 2026-05-22)
 Idea-001 is theoretical groundwork; **Idea-003 (HOLO-Net) is the headline and
@@ -49,7 +47,7 @@ commit+push and report status every tick.
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`
 - Server: `/workspace/illusionbench-eeg/` (plain dir, not git)
-- HOLO-Net: `holo_net_stage2/` (minimal/E040, done, identity→1.5),
-  `holo_net_full_v4/` (full/E042/Q017); v1/v2/v3 + diagA/B/D dead
+- HOLO-Net: `holo_net_stage2/` (minimal/E040-E041, done), `holo_net_full_v4/`
+  (full/E042/Q017, running)
 - Server SSH: `ssh -i ~/.ssh/id_ed25519 -p 11022 root@103.207.149.173`
 - GitHub: https://github.com/LichanghengXJTU/illusionbench-eeg
