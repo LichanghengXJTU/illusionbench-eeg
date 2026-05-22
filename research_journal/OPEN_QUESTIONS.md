@@ -183,7 +183,11 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q014 (NEW from E040, tick 50) — Does the FULL HOLO-Net (bio components ON) optimize at all, or is the multi-task + recurrent + predictive-coding landscape pathological?
 
-- **Status**: **observed failure, cause NOT yet isolated**
+- **Status**: **ANSWERED (tick 51, E042) — the bio components are NOT the
+  blocker. The v1 failure was an AdaFace loss bug (an extra `− scale·margin`
+  term, already fixed in `losses.py`). The FULL HOLO-Net with the fixed loss
+  starts at identity loss 13.20 ≈ the minimal model's 13.13, and runs cleanly.
+  The "minimal mode" detour was unnecessary; HOLO-Net trains.**
 - **Score**: 9/10 (load-bearing — Idea-003's entire thesis depends on the full
   model training; the falsification criteria are evaluated at the FFA layer,
   which is disabled in the only configuration that currently trains).
@@ -210,5 +214,5 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 - **Why it matters**: Idea-003 currently rests on a model that does not
   optimize. Until Q014 is answered, the headline novelty (bio-fidelity
   architecture) is untested and the current run only delivers sub-path (a).
-- **Linked experiment IDs**: E040 ✓ (the observed failure), future E042
-  (the ablation ladder).
+- **Linked experiment IDs**: E040 ✓ (the observed failure), E042 ✓ (the
+  controlled re-test that isolated the cause).

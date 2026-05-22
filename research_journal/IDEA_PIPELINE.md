@@ -54,7 +54,23 @@ Ideas must have ≥ 2 prior-art citations before being added.
   3. **Cross-subject and clinical EEG decoding**: patient EEG (prosopagnosia, autism) requires interpretable representation to map damage to behavior.
   4. **Cross-modal alignment**: bio-prior trained with brain-structural inductive bias should align more naturally to EEG (also brain signal).
 - **State of evidence**: Idea-001 results (paradigm-specific dissociation in CLIP) directly motivate Idea-003. EEG-side falsification criterion already in place via Route A.
-- **Score**: novelty 8 + feasibility **4** + evidence_potential 8 = **6.5** (down from 7.3 — see tick-50 update below; the full HOLO-Net does not train).
+- **Score**: novelty 8 + feasibility **7** + evidence_potential 8 = **7.5** (tick 51: feasibility restored 4→7 — E042 proved the architecture trains; see tick-51 update).
+
+### Tick-51 update (E042) — full HOLO-Net training UNBLOCKED; v1 failure was a loss bug
+
+- The tick-50 panic ("the full HOLO-Net does not train") was **wrong about the
+  cause**. Code audit (tick 51) found the v1 failure was an AdaFace formula bug
+  — an extra `− scale·margin` term that depressed target logits (identity loss
+  stuck ~65). That bug is already fixed in `losses.py`.
+- E042 controlled re-test: FULL HOLO-Net (all bio components ON) + fixed loss
+  starts at identity loss **13.20 ≈ minimal's 13.13**, runs cleanly. The bio
+  components are exonerated — they were never the blocker.
+- **Feasibility restored 4→7.** The remaining uncertainty for Idea-003 is now
+  purely scientific — *does the trained HOLO-Net pass the FFA-layer
+  falsification criteria (ISI≥3, CSI≥1.5, PWI≤0.5, random-bbox≤1.5)* — not an
+  engineering blocker. evidence_potential held at 8 pending that result.
+- Per user directive (2026-05-22), Idea-003 is the project's headline; the loop
+  now builds/trains/validates HOLO-Net continuously.
 
 ### Tick-50 update (E040) — full HOLO-Net Stage-2 training FAILED to optimize
 

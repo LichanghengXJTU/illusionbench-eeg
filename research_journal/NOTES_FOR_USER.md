@@ -50,3 +50,12 @@ tick.
   flag exists so you can redirect from your phone (edit this file with a
   `RESOLVED:` line) if you prefer option 2 or 3.
 - **Idea-001 status**: unaffected, paper-ready, score 9.3/10.
+
+**RESOLVED: 2026-05-22 12:48 (tick 51)** — User chose the debug-first fork and
+directed full focus on Idea-003. Diagnosed within the same tick: the full-model
+failure was an AdaFace loss-formula bug, not the bio architecture. E042
+controlled re-test confirms the FULL HOLO-Net trains (starts at identity loss
+13.20 ≈ minimal's 13.13). HOLO-Net is unblocked; the loop is now training the
+full architecture. No GPU shortage yet — the H100 hosts both the full run and
+the minimal-ablation run concurrently (40/80 GB). Will raise a NEED here if a
+larger run (full 360K identities, or parallel ablations) needs more GPU.

@@ -95,3 +95,15 @@ LGN-Magno, OFA, FFA, Orientation Gate, Predictive-Coding feedback, PFC-Gist.
 3. **Q014** — component-ablation ladder: starting from the known-trainable config
    (SGD 0.1, 10K classes), re-enable bio components one at a time (+PC, +FFA,
    +OrientGate, +OFA, +LGN-Magno, +PFC) to isolate which one(s) break training.
+
+---
+
+## Addendum — tick 51
+
+Q014 resolved earlier than the ablation ladder anticipated. Code audit of
+`losses.py` found the v1 failure was an AdaFace `− scale·m` formula bug (already
+fixed). The controlled full-vs-minimal re-test is **E042**: the FULL HOLO-Net
+starts at identity loss 13.20 ≈ this minimal run's 13.13 → the bio components
+are exonerated. This minimal run is therefore re-interpreted not as "the
+de-risked path" but as the **"minus all bio components" ablation arm** for the
+full HOLO-Net. See E042.

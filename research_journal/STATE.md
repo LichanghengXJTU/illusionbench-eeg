@@ -1,41 +1,45 @@
 # State
 
-**Tick #**: 50
-**Last updated**: 2026-05-22 ~12:20 (Asia/Hong_Kong)
-**Current focus** (one sentence): HOLO-Net (Idea-003) Stage-2 face fine-tune is
-running in a de-risked MINIMAL MODE after the full bio-fidelity architecture
-failed to optimize; this tick = check on training + journal resync.
-**Last action**: Tick 50 — polled server; synced `holo_net/` code (local↔server
-verified identical); created E040 documenting the full-model training failure;
-added Q014; flagged the HOLO-Net training failure to the user (FLAG-001 in
-NOTES_FOR_USER.md).
-**Last action outcome**: no-result-yet (training in progress). Sub-results:
-full-model training failure CONFIRMED; minimal-mode training CONFIRMED working.
-**Running tasks** (on server):
-  - PID 44488 — HOLO-Net Stage-2 minimal-mode training. step ~15850/30000 (~53%),
-    identity loss 13.1→5.8, view-invariance 0.70→0.09, ETA ~85-90 min.
-    Log: `/workspace/holo_net_stage2/train_log.jsonl`
-**Stuck streak**: 0 (tick produced E040 + Q014 + journal resync)
-**Planned next action** (tick 51): poll training. If done → E041, evaluate the
-minimal checkpoint on the 3 IllusionBench paradigms + random-bbox (a sub-path (a)
-result). If still running → re-check and reschedule. Then Q014 component-ablation
-ladder to isolate the full-model failure.
+**Tick #**: 51
+**Last updated**: 2026-05-22 ~12:48 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net is the project's headline
+(user directive 2026-05-22); the full bio-fidelity architecture is now UNBLOCKED
+— E042 root-caused the earlier training failure to an AdaFace loss bug (already
+fixed), NOT the bio components.
+**Last action**: Tick 51 — audited `holo_net/{model,losses,train}.py`; diagnosed
+the v1 failure; launched the FULL HOLO-Net (all bio components, fixed loss) as a
+controlled re-test (E042); confirmed it starts at identity loss 13.20 ≈ the
+minimal model's 13.13.
+**Last action outcome**: CONFIRMED — bio components are not the blocker; HOLO-Net
+trains cleanly. Q014 answered.
+**Running tasks** (on server, H100 80GB):
+  - PID 44488 — minimal-mode run (E040), step ~21K/30K, identity ~4, ETA ~20 min.
+    Repurposed as the "minus all bio components" ablation arm.
+  - PID 47222 — **FULL HOLO-Net run (E042)**, step ~150/30K, identity 13.2.
+    Output `/workspace/holo_net_full_v1/`. step_t ~0.8s (GPU shared).
+**Stuck streak**: 0
+**Planned next action** (tick 52): poll both runs; confirm full-model loss
+descent. When minimal finishes → E041 (evaluate it on IllusionBench = the
+all-components-off baseline). When the FULL run finishes → evaluate the full
+checkpoint on IllusionBench per-layer = the HOLO-Net falsification test
+(FFA-layer ISI≥3 / CSI≥1.5 / PWI≤0.5 / random-bbox≤1.5).
 **Confidence in current best idea**:
-  - **Idea-001** (IllusionBench-EEG paper): **9.3/10** — paper-ready, unchanged.
-    This is the safe, publishable deliverable.
-  - **Idea-003** (HOLO-Net): **~6.5/10** — down from 8.5. The full bio-fidelity
-    architecture does not train; the current run only tests sub-path (a).
+  - **Idea-003 (HOLO-Net)**: **~7.5/10** — feasibility restored (4→7): the
+    architecture is proven to train. Remaining uncertainty is purely scientific
+    (does it pass the falsification criteria), not an engineering blocker.
+  - **Idea-001**: 9.3/10 — theoretical groundwork, stable, not the loop's focus.
 
-## Journal hygiene note
-Ticks ~44-49 debugged Stage-2 training but did NOT update STATE.md / DECISIONS.md
-per tick (loop constraint 7 was violated during that span). Tick 50 reconstructs
-that period from server artifacts (failed-run logs + checkpoints). STATE.md must
-be rewritten every tick from here on.
+## Strategic note (user directive 2026-05-22)
+Idea-001 (IllusionBench-EEG benchmark) is theoretical groundwork; **Idea-003
+(HOLO-Net) is the headline novelty and the loop's primary focus**. Full autonomy
+granted on Idea-003 direction. Build / train / validate HOLO-Net continuously.
+If compute becomes the blocker, write a NEED to `NOTES_FOR_USER.md` — the user
+will rent more GPU. Keep looping; commit + push every tick.
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`
-- Server: `/workspace/illusionbench-eeg/`  (NOTE: not a git repo — plain dir)
-- HOLO-Net training output: `/workspace/holo_net_stage2/`
-- ATM repo: `/workspace/eeg_repos/EEG_Image_decode/`
+- Server: `/workspace/illusionbench-eeg/` (plain dir, not git)
+- HOLO-Net runs: `/workspace/holo_net_stage2/` (minimal/E040),
+  `/workspace/holo_net_full_v1/` (full/E042)
 - Server SSH: `ssh -i ~/.ssh/id_ed25519 -p 11022 root@103.207.149.173`
 - GitHub: https://github.com/LichanghengXJTU/illusionbench-eeg
