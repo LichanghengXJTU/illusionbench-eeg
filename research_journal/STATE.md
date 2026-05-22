@@ -1,14 +1,14 @@
 # State
 
-**Tick #**: 37 (Abstract v3 + E035 integration)
+**Tick #**: 38 (TLDR_FOR_PI refresh)
 **Last updated**: 2026-05-22 (Asia/Hong_Kong)
-**Current focus** (one sentence): Paper-finishing tick — drafted ABSTRACT v3 (218 words) reflecting the 25-prior 7-claim story; appended per-subject E035 paragraph to PAPER_DRAFT §4.5 (now "Figure 4b" reference).
-**Last action**: ABSTRACT.md: added v3, kept v2 for comparison; PAPER_DRAFT.md §4.5: added per-subject consistency paragraph (~150 words) referencing E035.
-**Last action outcome**: Abstract now mentions AdaFace IR-50 CASIA discovery (ISI 2.91, data-scaling inversion), CORnet-S bio-inspired (PWI 0.21), paradigm-conditional cluster migration, and per-subject EEG consistency. §4.5 EEG-side section explicitly closes the subject-averaging counter-claim.
+**Current focus** (one sentence): Refreshed TLDR_FOR_PI.md to reflect the 25-prior 7-claim story; updated artifact priority list, what-we-built, what-we-found, future-work sections.
+**Last action**: Wrote TLDR_FOR_PI.md v3 from scratch (was tick-17 vintage). Sections covered: project intro, 25-prior model zoo, RSA cluster taxonomy, 7 findings (was 3), priority artifact list with 10 entries (was 6), Idea-001 score raised to 9.3/10, mentions Idea-003 sub-path (a) as most promising future direction.
+**Last action outcome**: PI / lab now has a current "at a glance" entry point reflecting all tick 26-37 findings. Read time ~5 min, links to all 5 polished figures (Figure 1, 2, 3, 4b, 5).
 **Running tasks** (on server): none
 **Stuck streak**: 0
-**Planned next action** (tick 38): Could now (a) check Claim 6 robustness with another small face dataset (e.g., LFW), (b) consolidate TLDR_FOR_PI.md with current 7-claim story, (c) produce a combined Figure 4 panel (Route A scatter + E035 distribution), (d) draft submission-ready intro/discussion text. (b) is highest-leverage for the user reading at a glance — TLDR_FOR_PI may be the most-used artifact.
-**Confidence in current best idea**: **9.3/10 for Idea-001** (paper-ready with refined abstract); 8.2/10 for Idea-003.
+**Planned next action** (tick 39): Could now (a) update OPEN_QUESTIONS.md to mark Q010 (bio-inspired) and add new Q011-Q012, (b) produce a combined Figure 4 (Route A scatter + E035 per-subject panel), (c) draft submission-ready Introduction (Section 1) since current draft is from tick 13. (c) is highest leverage for paper submission.
+**Confidence in current best idea**: 9.3/10 for Idea-001 (paper-ready with TLDR refreshed); 8.2/10 for Idea-003.
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`

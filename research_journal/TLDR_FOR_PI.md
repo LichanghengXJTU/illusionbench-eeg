@@ -1,6 +1,6 @@
 # TL;DR for PI / lab — IllusionBench-EEG
 
-**Read time**: ~5 minutes. Built by an autonomous research loop (20 ticks,
+**Read time**: ~5 minutes. Built by an autonomous research loop (38 ticks,
 2026-05-21 → 22) under HKUST EEG-decoding lab.
 
 ---
@@ -21,94 +21,142 @@ signal preserve that signature through the EEG-to-CLIP projection?**
 - **IllusionBench-EEG**: a 3-paradigm stimulus battery at FFHQ-1024 native
   resolution — Thatcher illusion, composite-face, part-whole — with pixel-
   baseline-verified metrics (Thatcher pixel ISI = 1.000 exact).
-- **17-prior model zoo** across 6 training paradigms (CLIP variants, SigLIP,
-  MetaCLIP, DINOv2, MAE, VAE, FaceNet identity-trained, controls).
-- **Route A EEG analysis**: per-CLIP-dimension preservation on ATM's
-  pre-computed test EEG embeddings for all 10 THINGS-EEG2 subjects.
+- **25-prior model zoo** across 8 training paradigms:
+  CLIP × 5, SigLIP/MetaCLIP × 3, DINOv2 × 3, MAE, SDXL-VAE,
+  Face-triplet (FaceNet × 2), **Face angular-margin (ArcFace + AdaFace × 7)**,
+  **Bio-inspired (CORnet-S)**, untrained ViT, raw pixel.
+- **Route A EEG analysis**: per-CLIP-dim preservation on ATM's pre-computed
+  test EEG embeddings for all 10 THINGS-EEG2 subjects. **Now also per-subject
+  individually** (E035, tick 36).
+- **Representational similarity (RSA + CKA)**: 25×25 pairwise RSA matrices
+  across all 3 paradigms; cluster taxonomy at k=6 (E033, E034).
 - All experiments reproducible from seed 20260521.
 
 ---
 
-## What we found (3 headline findings)
+## What we found (7 main findings)
 
-1. **Training-objective × paradigm dissociation** (the headline figure).
-   - Thatcher: CLIP family wins (ISI 4-7, in or above the Carbon 2005 human
-     range of 4-5). DINOv2 partial. FaceNet flat.
-   - Composite: DINOv2 family wins (CSI 1.4-1.7 pixel-corrected). CLIP
-     weaker. FaceNet flat.
-   - Part-whole: DINOv2 lowest PWI (0.31-0.40 = most spatially-holistic).
-     FaceNet flat.
+1. **Training-objective × paradigm dissociation** (Figure 1).
+   - Thatcher: CLIP family dominates (ISI 4-7, near-human range 4-5).
+   - Composite: DINOv2 + MetaCLIP-H/14 + CLIP-L/14 highest (CSI 1.4-1.7).
+   - Part-whole: DINOv2 + **CORnet-S** lowest PWI (0.21-0.40 = most
+     spatially-holistic).
 
-2. **Face-identification training shows NO holistic effect on any paradigm**
-   despite explicit identity supervision on millions of pairs. The
-   pose-invariance objective actively suppresses the orientation-dependent
-   configural features that emerge under other training paradigms.
+2. **Face-triplet identification (FaceNet) shows NO holistic effect on any
+   paradigm** despite explicit identity supervision. Pose-invariance
+   objective suppresses orientation-dependent configural features.
 
-3. **EEG bottleneck is uniform low-pass** (ATM Route A). Per-CLIP-H/14
-   dimension preservation r ≈ 0.158 averaged across 10 subjects, with NO
-   dimension-specific structure (Spearman ρ vs Thatcher loading = −0.029,
-   p = 0.35) and NO face-category-specific structure (face-subset 0.150 vs
-   random-subset 0.145, p = 0.37). The CLIP-side Thatcher signal collapses
-   non-specifically through ATM's EEG pipeline; predicted EEG-side ISI ≈ 1.7
-   (vs CLIP image-side 5.5).
+3. **Face-feature-specificity (random-bbox control)**: face-Thatcher ISI is
+   60-77% face-feature-localized in CLIP-class priors. The signal is real,
+   not a general orientation bias.
+
+4. **EEG bottleneck is uniform low-pass** (ATM Route A). Mean per-CLIP-H/14
+   dim r ≈ 0.158 across 10 subjects with no dimension-specific (Spearman
+   ρ = −0.029, p = 0.35) or face-category-specific (p = 0.37) structure.
+   **NEW (E035)**: the uniform low-pass holds **individually** for each of
+   10 subjects (all |Spearman| < 0.07, 8/10 negative, 9/10 p > 0.1) — not a
+   subject-averaging artifact.
+
+5. **Combination claim**: current EEG decoders cannot reproduce holistic
+   face processing on any paradigm. (Follows from 1+4.)
+
+6. **Face-recognition data-inversion (NEW post-tick-30)**: AdaFace IR-50
+   trained on the small noisy CASIA-WebFace dataset gives Thatcher ISI 2.91
+   — the **highest among any face-rec model**, comparable to DINOv2-large.
+   Larger cleaner datasets (MS1MV2, WebFace4M) give LOWER ISI (1.21-1.33).
+   Smaller, noisier data → more Thatcher signal — **opposite of CLIP
+   scaling laws**.
+
+7. **Paradigm-conditional cluster migration (NEW post-tick-32)**: RSA shows
+   25 priors form 6 clean clusters on Thatcher stimuli, but **the clusters
+   change by paradigm**. CORnet-S migrates "alone → semantic →
+   reconstructive" across Thatcher/Composite/Part-Whole; AdaFace-CASIA
+   migrates "angular-margin → triplet → semantic"; FaceNet migrates "triplet
+   → semantic" on Part-Whole. **Dissociation is a (model × paradigm)
+   interaction, not fixed model-identity.** Cross-paradigm Spearman agreement:
+   0.86 (Thatcher↔Composite), **0.54** (Thatcher↔Part-Whole), 0.73 (C↔PW).
 
 ---
 
 ## What to look at, in priority order
 
-1. **`outputs/figures/three_paradigm_polished.png`** — the headline figure.
-   17 priors × 3 paradigms, color-coded by training paradigm. The
-   dissociation is visually unmistakable.
-2. **`research_journal/ABSTRACT.md`** — v2 (190 words) for the quick read.
-3. **`research_journal/TABLES.md`** — Table 1 full numerical matrix with CIs.
-4. **`research_journal/PAPER_DRAFT.md`** — single ~5,400-word paper draft if
-   you want to read the whole thing.
-5. **`research_journal/CLAIMS_SKELETON.md`** — 5 main claims with
-   evidence audit; useful for sanity-checking interpretation.
-6. **`research_journal/DECISIONS.md`** — tick-by-tick log of what happened
-   when. Useful as a project diary.
+1. **`figures/exports/three_paradigm_polished_v2.png`** — headline figure
+   (Figure 1). 25 priors × 3 paradigms, color-coded by 9 training-class
+   families. The dissociation is visually unmistakable. AdaFace-IR50-CASIA
+   visibly the strongest face-rec model (Thatcher ISI ≈ 3); CORnet-S the
+   most spatially-holistic (PWI 0.21).
+2. **`figures/exports/figure3_rsa_3panel.png`** — RSA cluster taxonomy
+   across all 3 paradigms (Figure 3). Shows the (model × paradigm)
+   interaction directly.
+3. **`figures/exports/face_vs_randombbox_polished_v2.png`** — Figure 2
+   (face-specificity controls).
+4. **`figures/exports/scaling_law_v2.png`** — Figure 5 (image-text + DINOv2
+   scaling curves; face-rec data-inversion outlier visible).
+5. **`figures/exports/e035_per_subject_routea.png`** — Figure 4b
+   (per-subject Route A consistency).
+6. **`research_journal/ABSTRACT.md`** — **v3 (218 words)** is the current
+   canonical version reflecting all tick 26-37 findings.
+7. **`research_journal/TABLES.md`** — Table 1 full 25-prior numerical
+   matrix with bootstrap 95% CIs.
+8. **`research_journal/PAPER_DRAFT.md`** — single ~6,000-word paper draft
+   with new §4.6 representational geometry section.
+9. **`research_journal/CLAIMS_SKELETON.md`** — **7 main claims** (was 5
+   before tick 33) with evidence audit and counter-claim analysis.
+10. **`research_journal/DECISIONS.md`** — tick-by-tick log of what happened
+    when (38 ticks documented).
 
 ---
 
 ## What's the implication for the lab
 
-The paper writes itself as a NeurIPS 2026 Evaluations & Datasets track or
-ICLR 2027 workshop / main contribution: **the first systematic mapping of
-holistic-face illusion sensitivity across modern visual priors AND the
-first per-CLIP-dim EEG-bottleneck analysis on a publicly-released decoder**.
-Idea-001 internal score is 8.7/10.
+The paper writes itself as a NeurIPS 2026 Datasets & Benchmarks track or
+ICLR 2027 main contribution: **the first systematic mapping of holistic-
+face illusion sensitivity across 25 modern visual priors (including
+bio-inspired and 7 angular-margin face-recognition variants), THE FIRST
+per-CLIP-dim EEG-bottleneck analysis on a publicly-released decoder, and
+THE FIRST paradigm-conditional representational-similarity migration
+analysis.** Idea-001 internal score: **9.3/10**.
 
-**Architectural prediction for future EEG decoders**: dimension-fine
-perceptual preservation (not single CLIP-cluster anchoring) is required to
-recover human-aligned holistic processing. Multi-prior anchoring (CLIP +
-DINOv2) and explicit dimension-preserving alignment objectives are the
-suggested directions.
+**Architectural predictions for future EEG decoders**:
+- Dimension-fine perceptual preservation, not single CLIP-cluster
+  anchoring, is required to recover human-aligned holistic processing.
+- AdaFace-CASIA (or similar small-data-trained face-rec) adds ~55% novel
+  information over CLIP per CKA, motivating multi-prior anchoring.
+- Bio-inspired architectures (CORnet-S) plus angular-margin loss is a
+  candidate design space for future bio-aligned visual priors (Idea-003,
+  score 8.2).
 
 ---
 
 ## What we did NOT do (and what would help)
 
-- **Could not extend Route A to AVDE / ENIGMA**: their pre-computed
-  embeddings are not publicly released; cross-decoder Route A is a
+- **Could not extend Route A to NICE / AVDE / ENIGMA / ViEEG**: their
+  pre-computed embeddings are not publicly released (NICE-EEG releases
+  weights only at eeyhsong/NICE; we'd need the ~20 GB preprocessed
+  THINGS-EEG2 EEG dataset for inference). Cross-decoder Route A is a
   future-work item.
 - **Did not collect EEG of Thatcher / composite / part-whole stimuli**:
   predicted EEG-side ISI is inferred from per-dim preservation × CLIP-side
   ISI multiplication. Direct measurement requires a face-illusion EEG
   collection.
 - **Harmonized (Serre lab) perception-aligned baseline blocked** by
-  TF/Keras 3 compatibility (see `NOTES_FOR_USER.md` NEED-001). Suggested
-  fallback: DINOv2 + THINGS-similarity fine-tune.
+  TF/Keras 3 compatibility (NEED-001 in `NOTES_FOR_USER.md`). DINOv2 +
+  THINGS-similarity fine-tune is a tractable alternative.
+- **Did not train a custom face-CORnet** — Idea-003 sub-path (a) is now
+  the most promising direction (AdaFace's quality-adaptive margin + CORnet
+  anatomy + face-data). Estimated 1-3 days GPU.
 
 ---
 
 ## How to engage with this artifact
 
-- **5 min**: read this TL;DR + look at the headline figure
-- **15 min**: + read Abstract v2 + scan Table 1
-- **30 min**: + read full Discussion section (5.1-5.3)
-- **1 hour**: + full PAPER_DRAFT.md
-- **2 hours**: + walk through journal experiments E001-E025 to see the
-  thought process
+- **5 min**: read this TL;DR + look at the headline Figure 1 (v2)
+- **15 min**: + read ABSTRACT v3 + scan Table 1
+- **30 min**: + read full Discussion section (PAPER_DRAFT §5)
+- **1 hour**: + full PAPER_DRAFT.md (≈6,000 words)
+- **2 hours**: + walk through E001-E035 (35 experiments documented)
+- **a day**: + run a quick reproduction on the server (registry + analysis
+  scripts + 25-prior batch)
 
 ---
 
@@ -116,5 +164,6 @@ suggested directions.
 
 https://github.com/LichanghengXJTU/illusionbench-eeg
 
-Every tick of work is a separate commit; the commit message is a one-line
-summary. Look at the commit log for a chronological history.
+Every tick of work is a separate commit (38 ticks → 38 commits); the commit
+message is a one-line summary. Look at the commit log for a chronological
+history of decisions.
