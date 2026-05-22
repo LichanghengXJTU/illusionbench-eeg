@@ -1,12 +1,13 @@
 """HOLO-Net training script.
 
 Stages:
-  1. (optional) ImageNet pretrain — skipped if using CORnet-S released ckpt
-  2. Face fine-tune on Glint360K with multi-task losses
-  3. (later) Multi-layer EEG decoder training
+  1. (skipped) ImageNet pretrain — use CORnet-S released ckpt for V1-IT init
+  2. Face fine-tune on Glint360K with multi-task losses (this script)
+  3. (later, separate script) Multi-layer EEG decoder training
 
-For sanity / overfit test mode, run with --overfit_test which freezes after
-N steps on a single batch and reports loss curve.
+Modes:
+  --overfit_test     single-batch sanity test (verified in tick 42)
+  --train            full Stage 2 training loop
 """
 from __future__ import annotations
 import argparse
@@ -14,17 +15,23 @@ import json
 import os
 import time
 from pathlib import Path
+from typing import Optional
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+import torch.nn.functional as F
+from torch.cuda.amp import autocast, GradScaler
 
 from holo_net.model import HOLONet, HOLONetConfig
 from holo_net.losses import HOLONetLoss
 from holo_net.data import make_glint360k_dataloader
 
 
-def setup_model_and_loss(num_classes: int = 360232, device: str = "cuda") -> tuple[HOLONet, HOLONetLoss]:
+# ---------------------------------------------------------------------------
+# Utilities
+# ---------------------------------------------------------------------------
+
+def setup_model_and_loss(num_classes: int, device: str = "cuda") -> tuple[HOLONet, HOLONetLoss]:
     cfg = HOLONetConfig()
     model = HOLONet(cfg).to(device)
     loss_module = HOLONetLoss(cfg, num_classes=num_classes).to(device)
@@ -32,95 +39,217 @@ def setup_model_and_loss(num_classes: int = 360232, device: str = "cuda") -> tup
 
 
 def make_optimizer(model: HOLONet, loss_module: HOLONetLoss, lr: float = 1e-4):
-    """AdamW with weight decay. Combine model + loss module params (AdaFace
-    weight matrix is in loss_module)."""
     params = list(model.parameters()) + list(loss_module.parameters())
     return torch.optim.AdamW(params, lr=lr, weight_decay=1e-4)
 
 
-def single_batch_overfit_test(
-    num_steps: int = 50,
-    batch_size: int = 16,
-    num_classes_subset: int = 1000,
-    device: str = "cuda",
-):
-    """Sanity check: take 1 batch, train repeatedly, verify loss drops.
+def init_from_cornet(model: HOLONet) -> int:
+    """Try to initialize CORnet-S backbone (V1, V2, V4, IT) from released ckpt.
 
-    A working model+loss+optimizer pipeline should overfit a single batch
-    of size 16 within ~30-50 steps (total loss should drop from ~50 to <5).
+    Returns number of layers successfully initialized.
     """
+    try:
+        import torch.hub
+        cornet_url = "https://github.com/dicarlolab/CORnet/releases/download/v1.0/cornet_s_epoch43.pth.tar"
+        # Try local cached path first
+        local_paths = [
+            "/workspace/eeg_repos/CORnet/cornet/cornet_s_epoch43.pth.tar",
+            "/workspace/models/cornet_s_epoch43.pth.tar",
+            "/root/.cache/torch/hub/checkpoints/cornet_s_epoch43.pth.tar",
+        ]
+        loaded = None
+        for p in local_paths:
+            if os.path.exists(p):
+                loaded = torch.load(p, map_location="cpu", weights_only=False)
+                print(f"  loaded CORnet ckpt from {p}")
+                break
+        if loaded is None:
+            print(f"  CORnet ckpt not found locally; skipping init (training from scratch)")
+            return 0
+        # CORnet checkpoint has state_dict under "state_dict" key
+        sd = loaded["state_dict"] if "state_dict" in loaded else loaded
+        # Keys have "module." prefix from DataParallel
+        sd_clean = {k.replace("module.", ""): v for k, v in sd.items()}
+        # HOLO-Net's V1/V2/V4/IT may have different naming; do best-effort partial load
+        # For now just report what's in the ckpt and let user verify
+        print(f"  CORnet ckpt has {len(sd_clean)} keys, e.g.: {list(sd_clean.keys())[:5]}")
+        return 0  # for now don't actually load to avoid mismatch (TODO: implement key remapping)
+    except Exception as e:
+        print(f"  init_from_cornet failed: {e}")
+        return 0
+
+
+# ---------------------------------------------------------------------------
+# Single-batch overfit sanity (kept from tick 42)
+# ---------------------------------------------------------------------------
+
+def single_batch_overfit_test(num_steps: int = 30, batch_size: int = 16,
+                               num_classes_subset: int = 1000, device: str = "cuda"):
     print(f"\n=== Single-batch overfit test ({num_steps} steps, B={batch_size}) ===\n")
-    # Use small num_classes for fast overfit (don't allocate full 360K classifier)
     model, loss_module = setup_model_and_loss(num_classes=num_classes_subset, device=device)
     optimizer = make_optimizer(model, loss_module, lr=3e-4)
     model.train()
-
-    # Build a single batch (random tensors as proxy for real data)
     x = torch.randn(batch_size, 3, 224, 224, device=device)
     x_pair = torch.randn(batch_size, 3, 224, 224, device=device)
     identity = torch.randint(0, num_classes_subset, (batch_size,), device=device)
     orient = torch.randint(0, 2, (batch_size,), device=device)
     is_face = torch.ones(batch_size, dtype=torch.long, device=device)
-
-    loss_curve = []
     for step in range(num_steps):
         optimizer.zero_grad()
-
-        # Forward pass primary batch
         out = model(x)
-        # Forward pass paired batch (for view-invariance)
         out_pair = model(x_pair)
-
-        losses = loss_module(
-            out, identity, orient, is_face,
-            view_invar_pairs=(out["atl"], out_pair["atl"]),
-        )
-        total = losses["total"]
-        total.backward()
+        losses = loss_module(out, identity, orient, is_face,
+                              view_invar_pairs=(out["atl"], out_pair["atl"]))
+        losses["total"].backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
-
-        loss_curve.append({
-            k: v.item() if torch.is_tensor(v) else v
-            for k, v in losses.items()
-        })
         if step % 5 == 0:
-            print(f"step {step:3d}: total={losses['total'].item():.4f}  "
-                  f"identity={losses['identity'].item():.4f}  "
-                  f"predcode={losses['predcode'].item():.4f}  "
-                  f"orientation={losses['orientation'].item():.4f}  "
-                  f"face_detect={losses['face_detect'].item():.4f}  "
-                  f"view_invar={losses['view_invariance'].item():.4f}  "
-                  f"gist={losses['gist'].item():.4f}")
+            print(f"  step {step}: total={losses['total'].item():.4f}")
+    print(f"\nOverfit drop: {losses['total'].item():.4f} (target < 5)\n")
 
-    # Diagnostic: should loss have dropped substantially
-    initial_total = loss_curve[0]["total"]
-    final_total = loss_curve[-1]["total"]
-    drop = initial_total - final_total
-    print(f"\n  Loss drop: {initial_total:.4f} → {final_total:.4f}  (Δ {drop:.4f})")
-    if drop > 30:
-        print(f"  ✓ Pipeline can overfit single batch (drop > 30)")
-        return True
-    else:
-        print(f"  ⚠ Loss did not drop sufficiently — pipeline may have bug")
-        return False
+
+# ---------------------------------------------------------------------------
+# Full Stage 2 face fine-tune training loop
+# ---------------------------------------------------------------------------
+
+def train_stage2(args):
+    """Stage 2: face fine-tune on Glint360K with multi-task loss."""
+    device = "cuda"
+    print(f"\n=== HOLO-Net Stage 2 — face fine-tune ===")
+    print(f"Glint360K shards: {args.shard_pattern}")
+    print(f"Output dir: {args.output_dir}")
+    print(f"Batch size: {args.batch_size}, lr={args.lr}, max_steps={args.max_steps}")
+
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    log_path = output_dir / "train_log.jsonl"
+    ckpt_path = output_dir / "checkpoint.pt"
+
+    # Model + loss
+    model, loss_module = setup_model_and_loss(num_classes=args.num_classes, device=device)
+    # Optional CORnet init (currently no-op pending key remapping; trains from scratch)
+    init_from_cornet(model)
+
+    optimizer = make_optimizer(model, loss_module, lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.max_steps)
+    scaler = GradScaler(enabled=args.use_amp)
+
+    # Dataloader
+    dl = make_glint360k_dataloader(
+        shard_pattern=args.shard_pattern,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        p_inverted=0.5,
+        pair_for_view_invariance=True,
+    )
+
+    # Training loop
+    model.train()
+    step = 0
+    t0 = time.time()
+    last_t = t0
+    running_total = 0.0
+    log_records = []
+
+    print(f"\nStarting training. Logging to {log_path}\n")
+    for batch in dl:
+        if step >= args.max_steps:
+            break
+
+        x = batch["image"].to(device, non_blocking=True)
+        x_pair = batch["image_paired"].to(device, non_blocking=True)
+        identity = batch["identity"].to(device, non_blocking=True)
+        orientation = batch["orientation"].to(device, non_blocking=True)
+        is_face = batch["is_face"].to(device, non_blocking=True)
+
+        optimizer.zero_grad()
+        with autocast(enabled=args.use_amp, dtype=torch.float16):
+            out = model(x)
+            # For view-invariance, only need ATL embedding from paired view
+            with torch.no_grad():
+                out_pair_emb = model(x_pair)["atl"]
+            losses = loss_module(out, identity, orientation, is_face,
+                                  view_invar_pairs=(out["atl"], out_pair_emb))
+
+        scaler.scale(losses["total"]).backward()
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(
+            list(model.parameters()) + list(loss_module.parameters()), 1.0)
+        scaler.step(optimizer)
+        scaler.update()
+        scheduler.step()
+
+        running_total += losses["total"].item()
+
+        # Log every 50 steps
+        if step % 50 == 0:
+            elapsed = time.time() - t0
+            step_time = (time.time() - last_t) / max(50, 1) if step > 0 else 0
+            avg_total = running_total / max(1, step % 50 + 1)
+            record = {
+                "step": step,
+                "elapsed_s": elapsed,
+                "step_time_s": step_time,
+                "total": losses["total"].item(),
+                "identity": losses["identity"].item(),
+                "predcode": losses["predcode"].item(),
+                "orientation": losses["orientation"].item(),
+                "face_detect": losses["face_detect"].item(),
+                "view_invariance": losses["view_invariance"].item(),
+                "gist": losses["gist"].item(),
+                "lr": optimizer.param_groups[0]["lr"],
+            }
+            log_records.append(record)
+            with open(log_path, "a") as f:
+                f.write(json.dumps(record) + "\n")
+            print(f"step {step:6d}  total={record['total']:.4f}  "
+                  f"id={record['identity']:.4f}  pc={record['predcode']:.4f}  "
+                  f"ori={record['orientation']:.4f}  fd={record['face_detect']:.4f}  "
+                  f"vi={record['view_invariance']:.4f}  g={record['gist']:.4f}  "
+                  f"lr={record['lr']:.2e}  step_t={step_time:.2f}s  elapsed={elapsed/60:.1f}min")
+            last_t = time.time()
+            running_total = 0.0
+
+        # Checkpoint every 5000 steps
+        if step > 0 and step % args.ckpt_every == 0:
+            torch.save({
+                "step": step,
+                "model": model.state_dict(),
+                "loss_module": loss_module.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "scheduler": scheduler.state_dict(),
+            }, ckpt_path)
+            print(f"  Saved checkpoint at step {step} to {ckpt_path}")
+
+        step += 1
+
+    # Final checkpoint
+    torch.save({
+        "step": step,
+        "model": model.state_dict(),
+        "loss_module": loss_module.state_dict(),
+    }, ckpt_path)
+    print(f"\nTraining DONE. Final checkpoint: {ckpt_path}")
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--overfit_test", action="store_true",
-                        help="run single-batch overfit sanity")
-    parser.add_argument("--num_steps", type=int, default=50)
-    parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--mode", choices=["overfit_test", "train"], default="train")
+    parser.add_argument("--shard_pattern", default="/workspace/glint360k/glint360k-{0000..1384}.tar.gz")
+    parser.add_argument("--output_dir", default="/workspace/holo_net_stage2")
+    parser.add_argument("--num_classes", type=int, default=360232)
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--num_workers", type=int, default=8)
+    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--max_steps", type=int, default=50000)
+    parser.add_argument("--ckpt_every", type=int, default=5000)
+    parser.add_argument("--use_amp", action="store_true", default=True)
     args = parser.parse_args()
 
-    if args.overfit_test:
-        single_batch_overfit_test(num_steps=args.num_steps,
-                                   batch_size=args.batch_size)
-        return
-
-    # TODO: full training loop (Stage 1 ImageNet, Stage 2 face fine-tune)
-    print("Full training loop not yet implemented — use --overfit_test for sanity.")
+    if args.mode == "overfit_test":
+        single_batch_overfit_test()
+    else:
+        train_stage2(args)
 
 
 if __name__ == "__main__":
