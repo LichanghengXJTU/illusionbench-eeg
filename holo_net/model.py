@@ -547,13 +547,16 @@ class HOLONet(nn.Module):
         afp_pooled = F.adaptive_avg_pool2d(afp_spatial, 1).flatten(1)
         out["afp"] = afp_pooled
 
-        # Orientation Gate
+        # Orientation Gate — produces a per-sample scalar gate. The gate
+        # modulates how much FFA holistic binding is ADDED into the identity
+        # representation; it does NOT multiplicatively gate the sole identity
+        # path. (Gating the only ATL input zeroed inverted-face identity and
+        # stalled identity training — observed in run v2, tick 55.)
         if self.orient_gate is not None:
             orient_logits, gate = self.orient_gate(afp_spatial)
             out["orientation_logits"] = orient_logits
-            afp_gated_spatial = afp_spatial * gate  # (B, D, H, W) gated
         else:
-            afp_gated_spatial = afp_spatial
+            gate = None
 
         # PFC-Gist
         if self.pfc_gist is not None:
@@ -564,11 +567,21 @@ class HOLONet(nn.Module):
             # If gist disabled, use AFP global pool as query
             gist_token = afp_pooled.unsqueeze(1)
 
-        # FFA: holistic binding via cross-attention
+        # FFA: holistic binding via cross-attention over UNGATED AFP features.
+        # The ATL identity input = afp_pooled (always available, any
+        # orientation) + an orientation-gated FFA holistic term. So upright
+        # faces engage configural binding while inverted faces remain
+        # identifiable from the featural AFP representation. The Thatcher
+        # asymmetry lives in the gate: the holistic term (config-sensitive)
+        # contributes for upright faces and is suppressed for inverted ones.
         if self.ffa is not None:
-            ffa_out = self.ffa(gist_token, afp_gated_spatial)
-            out["ffa"] = ffa_out  # (B, ffa_dim)
-            atl_input = ffa_out
+            ffa_out = self.ffa(gist_token, afp_spatial)  # (B, ffa_dim), ungated
+            if gate is not None:
+                holistic = afp_pooled + gate.view(-1, 1) * ffa_out
+            else:
+                holistic = afp_pooled + ffa_out
+            out["ffa"] = holistic  # orientation-modulated holistic representation
+            atl_input = holistic
         else:
             atl_input = afp_pooled
             out["ffa"] = atl_input

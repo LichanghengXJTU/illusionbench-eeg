@@ -128,3 +128,33 @@ predcode 4.5, step_time 0.38 s (minimal run had finished → full GPU). Orientat
 descent to be confirmed next tick — the gate now has the capacity; with the
 buggy gate it was mathematically impossible.
 
+---
+
+## Addendum — tick 55: gate fix worked but exposed an identity-collapse; run v2 → v3
+
+Run v2 confirmed the OrientationGate fix: `orientation` loss descended
+0.69 → 0.26 by step 1050 (vs dead-flat for 6450 steps in v1). **But the identity
+loss stopped descending** — it bounced 11-14 across 4900 steps (v1, with the
+inert gate, at least drifted 13→11; the minimal run reached ~8 by that step).
+
+Root cause: with a *functional* gate, `afp_gated_spatial = afp_spatial · gate`
+zeroes the FFA input for inverted faces (gate→~0.15), and since
+`atl_input = ffa_out` was the SOLE identity path, inverted faces (50% of every
+batch) became unidentifiable → identity loss ≈ ln(C) on half the batch → no net
+descent. An orientation gate must not multiplicatively gate the only route to
+the identity head.
+
+**Fix** (`model.py` `HOLONet.forward`): FFA now runs on UNGATED `afp_spatial`;
+the ATL identity input is `afp_pooled + gate · ffa_out` — an always-present
+featural identity representation PLUS an orientation-gated additive holistic
+term. Inverted faces stay identifiable (via afp_pooled); upright faces
+additionally engage FFA configural binding. The Thatcher asymmetry now lives in
+the gated additive term (faithful to design §7) without destroying identity
+training. `out["ffa"]` = this orientation-modulated holistic representation.
+
+Run v2 killed at step ~5000; **run v3** launched
+(`/workspace/holo_net_full_v3/`, fixed wiring, seeded). v3 step 250: identity
+10.65, step_time 0.34 s. Identity-loss descent + orientation descent to be
+confirmed next tick. (The minimal-run E041 ablation baseline is unaffected —
+the minimal path `atl_input = afp_pooled` is unchanged by this fix.)
+
