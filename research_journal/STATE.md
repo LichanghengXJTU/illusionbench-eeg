@@ -1,24 +1,21 @@
 # State
 
-**Tick #**: 63
-**Last updated**: 2026-05-23 ~03:52 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net — v5 training on track
-(identity descending like minimal, gate working); the eval wrapper is validated.
-**Last action**: Tick 63 — v5 at step 16250: identity 5.96 (minimal was 6.3 at
-step 15000 → v5 tracks/slightly leads), orientation 0.13 (gate functional).
-Deployed `eval_falsification.py` and launched it on the minimal checkpoint —
-running cleanly (Thatcher paradigm done, composite in progress) → wrapper
-validated.
-**Last action outcome**: v5 fully on track; eval wrapper works end-to-end.
+**Tick #**: 64
+**Last updated**: 2026-05-23 ~04:28 (Asia/Hong_Kong)
+**Current focus** (one sentence): Idea-003 / HOLO-Net — v5 ~70% trained and on
+track; the minimal ablation floor is confirmed; next is v5's falsification test.
+**Last action**: Tick 64 — read the minimal 4-paradigm falsification table
+(`eval_falsification.py` validated end-to-end). v5 at step 21650, identity 3.94.
+**Last action outcome**: minimal ablation floor confirmed — FFA layer ISI 0.975
+/ CSI 1.192 / PWI 0.779 / random-bbox 1.083 → fails 3 of 4, "ALL FOUR: FAIL"
+(only the easy random-bbox control passes). v5 on track.
 **Running tasks** (on server, H100 80GB):
   - **v5 — full HOLO-Net + all fixes (E042)** — `/workspace/holo_net_full_v5/`,
-    step ~16550/30000, identity ~6.3 descending. ~1.4 h to completion.
-  - falsification eval on the minimal checkpoint — `/workspace/falsif_minimal.log`,
-    ~8 min to finish (validates the wrapper + completes the 4-paradigm floor).
+    step ~21650/30000, identity 3.94 descending (tracks minimal). ~50 min left.
 **Stuck streak**: 0
-**Planned next action** (tick 64): read the minimal 4-paradigm falsification
-table from `falsif_minimal.log` (→ E041); monitor v5 (~step 21000). When v5
-finishes → run `eval_falsification.py` on the v5 checkpoint = the HOLO-Net test.
+**Planned next action** (tick 65, ~v5 completion): run `eval_falsification.py`
+on the v5 final checkpoint = **the HOLO-Net falsification test** (FFA layer:
+ISI≥3, CSI≥1.5, PWI≤0.5, random-bbox≤1.5). Compare against the minimal floor.
 **Confidence in current best idea**:
   - **Idea-003 (HOLO-Net)**: ~7.5/10 — the architecture is confirmed trainable
     (Q017); the gate fix is well-founded (v2 proved the gate learns when the

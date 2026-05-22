@@ -108,3 +108,31 @@ ablation floor: if the full HOLO-Net (v4) clears any threshold, it is cleanly
 attributable to the bio-fidelity components, not the CORnet backbone + AdaFace
 training. The 3-paradigm eval pipeline (`eval_extract.py` → `compute_metrics.py`)
 is validated and ready for v4. Tables: `outputs/tables/holonet_minimal_{composite,partwhole}.csv`.
+
+---
+
+## Addendum — tick 64: unified 4-paradigm table via `eval_falsification.py`
+
+Ran `eval_falsification.py` on the minimal checkpoint — validates the wrapper
+end-to-end and gives the definitive minimal ablation floor (pixel-corrected):
+
+```
+layer        ISI     CSI     PWI   ISIrbox
+v1         1.019   1.141   1.261   1.033
+v2         1.037   1.174   0.777   1.018
+v4         1.018   1.145   0.675   1.105
+mfp        0.965   1.073   0.725   1.155
+afp        0.975   1.192   0.779   1.083
+ffa        0.975   1.192   0.779   1.083
+atl        0.975   1.195   0.770   1.081
+```
+
+**FFA-layer verdict vs design §6**: ISI 0.975 (<3 ✗), CSI 1.192 (<1.5 ✗),
+PWI 0.779 (>0.5 ✗), random-bbox 1.083 (≤1.5 ✓) → **ALL FOUR: FAIL**.
+
+The minimal HOLO-Net fails the falsification on Thatcher, composite AND
+part-whole — it only clears the random-bbox control (which merely requires the
+absence of a spurious orientation bias). This is the intended ablation floor:
+any of {ISI, CSI, PWI} that the full v5 model clears is attributable to the
+bio-fidelity components. `eval_falsification.py` validated and ready for v5.
+Tables: `outputs/tables/HOLONET_minimal_{thatcher,composite,partwhole,randombbox}.csv`.
