@@ -76,6 +76,19 @@ signal preserve that signature through the EEG-to-CLIP projection?**
    interaction, not fixed model-identity.** Cross-paradigm Spearman agreement:
    0.86 (Thatcher↔Composite), **0.54** (Thatcher↔Part-Whole), 0.73 (C↔PW).
 
+8. **Architecture test — constructive negative (NEW post-tick-65)**: we built
+   **HOLO-Net**, a strict bio-fidelity face model (LGN→V1→V2→V4→OFA→MFP→AFP
+   →Orientation-Gate→FFA→ATL + PC feedback + magno-PFC gist) with a
+   pre-registered FFA-layer falsification target (ISI≥3 ∧ CSI≥1.5 ∧ PWI≤0.5
+   ∧ random-bbox≤1.5). Trained on Glint360K face identities to a final
+   identity loss of 0.97, HOLO-Net's FFA layer gives **ISI 1.00 / CSI 0.99 /
+   PWI 2.20 / random-bbox 1.08 → fails 3 of 4 (ALL FOUR: FAIL)**. The pattern
+   is FaceNet's (Finding 2): face-identity training gives ISI ≈ 1 regardless
+   of architecture. The FFA module is not inert (it drives PWI mfp 0.75 → ffa
+   2.20, the largest deviation HOLO-Net produces) — just in the wrong
+   direction. **Conclusion: the operative lever for the §4.1 dissociation is
+   the training objective, not architectural bio-fidelity (Claim 8).**
+
 ---
 
 ## What to look at, in priority order

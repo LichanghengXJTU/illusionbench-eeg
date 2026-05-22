@@ -93,3 +93,35 @@ holistic face illusions and tested 17 visual priors plus ATM's pre-computed
 EEG embeddings. CLIP dominates Thatcher, DINOv2 dominates composite + part-
 whole, face-trained networks emerge nothing, and ATM's EEG bottleneck
 uniformly washes out CLIP fine structure regardless of dimension.
+
+---
+
+## v4 (~245 words) — canonical post-E044 (tick 69, adds the architecture test)
+
+Current EEG-to-image decoders (ATM, AVDE, ENIGMA, HVF, ViEEG) universally
+anchor visual prediction to image-text contrastive embeddings, most commonly
+CLIP-ViT-H/14. Whether such pipelines inherit human-aligned holistic face
+processing has not been measured. We introduce **IllusionBench-EEG**, a
+three-paradigm benchmark — Thatcher illusion, composite-face, part-whole —
+constructed at FFHQ-1024 native resolution and tested on **25 visual priors**
+plus ATM's pre-computed EEG embeddings on all 10 THINGS-EEG2 subjects.
+**Image-side**: a training-objective × paradigm dissociation emerges.
+Image-text contrastive priors dominate Thatcher (ISI 4-7, near-human);
+DINOv2-style SSL dominates composite-face + part-whole spatial integration
+(CSI 1.4-1.7, PWI 0.31-0.40); face-identification networks trained with
+triplet loss sit at baseline. Two sub-class dissociations: AdaFace IR-50
+trained on the small noisy CASIA dataset reaches ISI 2.91 — opposite of
+CLIP-style data-scaling — and bio-inspired CORnet-S is the most
+spatially-holistic prior (PWI 0.21). Representational similarity analyses
+show these dissociations are paradigm-conditional, with priors migrating
+between clusters across paradigms. **Architecture test**: we constructively
+rule out architecture as the lever by building **HOLO-Net** — a strict
+bio-fidelity face model with brain-region-mapped layers (LGN → V1 → V2 → V4
+→ OFA → MFP → AFP → FFA → ATL) — and showing that under face-identity
+training it produces ISI ≈ CSI ≈ 1.0 at every layer including its FFA
+module, the same pattern as FaceNet; the operative lever is the training
+objective, not architectural bio-fidelity. **EEG-side**: per-CLIP-dim
+preservation is uniformly r ≈ 0.158 across all 10 subjects with no
+Thatcher-loading structure (Spearman ρ = −0.029). Current EEG decoders
+cannot reproduce holistic face processing on any paradigm; we argue for
+multi-prior, dimension-fine alignment.
