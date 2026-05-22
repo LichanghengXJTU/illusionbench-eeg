@@ -32,14 +32,17 @@ from holo_net.data import make_glint360k_dataloader
 # ---------------------------------------------------------------------------
 
 def setup_model_and_loss(num_classes: int, device: str = "cuda",
-                          minimal: bool = False) -> tuple[HOLONet, HOLONetLoss]:
+                          minimal: bool = False,
+                          enable: set | None = None) -> tuple[HOLONet, HOLONetLoss]:
     """Build model + loss.
     minimal=True disables all bio-fidelity additions (LGN-Magno, OFA, FFA,
-    Orientation Gate, PC feedback, PFC-Gist). Gives a CORnet-S + AFP + AdaFace
-    baseline for debugging.
+    Orientation Gate, PC feedback, PFC-Gist) → CORnet-S + AFP + AdaFace baseline.
+    enable={...} starts from the minimal base and selectively re-enables named
+    components (for component-isolation ablations): any of
+    {magno, ofa, orient, gist, ffa, pc}.
     """
     cfg = HOLONetConfig()
-    if minimal:
+    if minimal or enable:
         cfg.use_magno = False
         cfg.use_ofa_branch = False
         cfg.use_orientation_gate = False
@@ -51,6 +54,23 @@ def setup_model_and_loss(num_classes: int, device: str = "cuda",
         cfg.w_face_detect = 0.0
         cfg.w_view_invariance = 0.0
         cfg.w_gist = 0.0
+    if enable:
+        if "magno" in enable:
+            cfg.use_magno = True
+        if "ofa" in enable:
+            cfg.use_ofa_branch = True
+            cfg.w_face_detect = 0.05
+        if "orient" in enable:
+            cfg.use_orientation_gate = True
+            cfg.w_orientation = 0.1
+        if "gist" in enable:
+            cfg.use_pfc_gist = True
+            cfg.w_gist = 0.05
+        if "ffa" in enable:
+            cfg.use_ffa = True
+        if "pc" in enable:
+            cfg.use_pc_feedback = True
+            cfg.w_predcode = 0.1
     model = HOLONet(cfg).to(device)
     loss_module = HOLONetLoss(cfg, num_classes=num_classes).to(device)
     return model, loss_module
@@ -152,9 +172,13 @@ def train_stage2(args):
     ckpt_path = output_dir / "checkpoint.pt"
 
     # Model + loss
+    enable = set(c.strip() for c in args.enable.split(",") if c.strip()) if args.enable else None
     model, loss_module = setup_model_and_loss(num_classes=args.num_classes,
-                                                device=device, minimal=args.minimal)
-    if args.minimal:
+                                                device=device, minimal=args.minimal,
+                                                enable=enable)
+    if enable:
+        print(f"  ABLATION MODE: minimal base + enabled components: {sorted(enable)}")
+    elif args.minimal:
         print("  MINIMAL MODE: LGN-Magno, OFA, FFA, OrientGate, PC, PFC all disabled")
     # Optional CORnet init (currently no-op pending key remapping; trains from scratch)
     init_from_cornet(model)
@@ -291,6 +315,9 @@ def main():
                         help="weight for view-invariance aux loss. v2 with 0.05 caused embedding collapse — disabled by default until contrastive negatives are added.")
     parser.add_argument("--minimal", action="store_true",
                         help="Strip all bio-fidelity additions; CORnet-S + AFP + AdaFace baseline only")
+    parser.add_argument("--enable", default="",
+                        help="comma-list of components to re-enable on the minimal base "
+                             "(for component-isolation ablations): any of magno,ofa,orient,gist,ffa,pc")
     parser.add_argument("--seed", type=int, default=20260521,
                         help="seed for model init + main-process RNG (the WebDataset "
                              "shardshuffle + multi-worker data stream stays stochastic)")

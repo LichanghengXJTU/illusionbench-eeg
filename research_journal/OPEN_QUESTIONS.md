@@ -247,3 +247,25 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
   `orientation` labels in the batch; consider raising the aux weight or a warmup
   for it). If descending by step 10000 → it was just slow; no action.
 - **Linked experiment IDs**: E042.
+
+---
+
+## Q016 (NEW from E042 runs v1-v3, tick 56) — Which bio component breaks the full HOLO-Net's identity training?
+
+- **Status**: **running** — component-isolation ablation E043 launched (diag-A,
+  diag-B).
+- **Score**: 10/10 — strictly blocking. The minimal HOLO-Net trains identity to
+  loss ~1.8; the full model has failed to descend across 3 runs (v1/v2/v3). No
+  HOLO-Net falsification result is possible until the full model trains.
+- **Background**: v3 identity descended 13→10.6 then rose to 14.1 (step 4550);
+  orientation flat. v1/v2 also failed. The patch-and-relaunch loop did not
+  converge — switched to isolating components on the known-good minimal base.
+- **Discriminating experiment (E043)**: `train.py --enable <components>` —
+  diag-A `+ffa`, diag-B `+pc,ofa,gist,magno`. If one group's identity descends
+  like the minimal run and the other's does not, the culprit group is isolated;
+  then narrow within the group, and test `+orient` separately.
+- **Candidate causes**: FFA holistic term injecting noise into the identity
+  representation; multi-task aux-loss gradient interference on the shared
+  backbone; AdaFace margin warmup (4000 steps) too fast for the slower-learning
+  full model (v3's identity blew up exactly when the margin hit full).
+- **Linked experiment IDs**: E043 (the ablation), E042 (the failing full runs).
