@@ -455,6 +455,18 @@ ISI under this attenuation factor would collapse from the image-side 5.5 to
 approximately 1.7 (assuming linear attenuation as a first-order estimate),
 within sampling noise of the pixel baseline.
 
+**Per-subject consistency (E035, Figure 4b)**. The above analysis pools all
+10 subjects in computing mean per-dim r. To rule out subject-averaging
+artifacts, we repeat the analysis individually for each of the 10
+THINGS-EEG2 subjects. Result: mean per-dim r per subject is tightly bounded
+in [0.126, 0.212] (std = 0.026 across subjects); 8 of 10 subjects show
+NEGATIVE Spearman(r, Thatcher-loading) — opposite of the "Thatcher dims
+preserved" hypothesis — and 9 of 10 have permutation p > 0.1. Only S10
+crosses p < 0.05 (-0.063, p = 0.044), in the negative direction. The pooled
+distribution of all 10240 (dim × subject) r values is roughly Gaussian
+centered at 0.158 with no bimodality. **The uniform low-pass holds
+individually for every subject.**
+
 ## 4.6 Representational similarity analysis: cluster taxonomy and paradigm-conditional migration
 
 The paradigm-specific dissociation results above probe specific perturbation
