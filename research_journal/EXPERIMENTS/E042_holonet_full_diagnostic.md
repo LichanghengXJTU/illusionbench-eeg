@@ -158,3 +158,39 @@ Run v2 killed at step ~5000; **run v3** launched
 confirmed next tick. (The minimal-run E041 ablation baseline is unaffected —
 the minimal path `atl_input = afp_pooled` is unchanged by this fix.)
 
+---
+
+## Addendum — tick 58: CORRECTION — the "identity bounce" is NORMAL; v4 launched to run to completion
+
+Fetching the minimal run's full trajectory (the proper reference, not previously
+on hand) overturns the tick-55/56 interpretation:
+
+```
+minimal identity:  step 0 13.1 → 250 10.5 → 1000 12.4 → 3000 10.2 →
+                   step 4000 13.6 → 5000 12.6 → 7000 11.5 → 8000 10.2 →
+                   9000 9.3 → 12000 7.7 → 15000 6.3 → ... → ~1.5 final
+```
+
+The minimal run — which trains perfectly — ALSO bounces identity 10-13.6 for the
+first ~8000 steps (including a rise to 13.6 at step 4000), and only begins a
+clean monotone descent after ~step 8000. The early bounce is normal here
+(AdaFace margin warmup 0→0.4 over 4000 steps + SGD peak-lr + 10K-class prototype
+organisation).
+
+**Consequence**: v1/v2/v3 were killed at steps ~5000-7000 — squarely inside the
+normal bounce. Their "identity not descending / rose to 14" was NOT failure: it
+matches what the minimal run does at the same steps (v3 step 4000 ≈ 13.7 vs
+minimal step 4000 ≈ 13.6). The tick-55 "v2 identity collapse" and tick-56 "v3
+failed" interpretations were **premature — judged before the descent phase**.
+The three relaunches chased a failure the data did not actually establish.
+
+The two `model.py` fixes are still sound and retained: the OrientationGate 4×4
+pool is a mathematically-confirmed real bug fix (GAP is flip-invariant); the
+FFA/ATL additive wiring (`afp_pooled + gate·ffa_out`) is a sound design even
+though the "collapse" that motivated it was a misread.
+
+**v4** launched — full HOLO-Net (both fixes), 30000 steps, seed 20260521,
+`/workspace/holo_net_full_v4/`. **It will be left to run to completion** and
+judged at step ~15000+ (where minimal is unambiguously descending) and at the
+end — NOT killed during the bounce.
+

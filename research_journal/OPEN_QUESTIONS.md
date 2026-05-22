@@ -252,8 +252,12 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q016 (NEW from E042 runs v1-v3, tick 56) — Which bio component breaks the full HOLO-Net's identity training?
 
-- **Status**: **running** — component-isolation ablation E043 launched (diag-A,
-  diag-B).
+- **Status**: **SUPERSEDED / based on a misjudgment (tick 58).** The premise —
+  that the full model "fails" to train — was wrong: it rested on judging
+  v1/v2/v3 during steps 4000-7000, but the minimal reference trajectory (fetched
+  tick 58) shows identity bounces 10-13.6 until ~step 8000 in EVERY config,
+  including the minimal run that ends at loss ~1.5. No failure was established,
+  so there is nothing to isolate. Replaced by the real question Q017.
 - **Score**: 10/10 — strictly blocking. The minimal HOLO-Net trains identity to
   loss ~1.8; the full model has failed to descend across 3 runs (v1/v2/v3). No
   HOLO-Net falsification result is possible until the full model trains.
@@ -268,4 +272,24 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
   representation; multi-task aux-loss gradient interference on the shared
   backbone; AdaFace margin warmup (4000 steps) too fast for the slower-learning
   full model (v3's identity blew up exactly when the margin hit full).
-- **Linked experiment IDs**: E043 (the ablation), E042 (the failing full runs).
+- **Linked experiment IDs**: E043 (the ablation), E042 (the v1-v3 runs).
+
+---
+
+## Q017 (NEW, tick 58) — Does the full HOLO-Net descend after the normal ~8000-step identity bounce, like the minimal run?
+
+- **Status**: **running** — v4 (full model, 30000 steps) launched; left to run
+  to completion.
+- **Score**: 10/10 — blocking; this is the actual "does HOLO-Net train" question
+  that ticks 51-57 never cleanly answered (every full run was killed mid-bounce).
+- **Background**: the minimal HOLO-Net bounces identity 10-13.6 for ~8000 steps
+  then descends monotonically to ~1.5. The full model was never run past the
+  bounce. v4 = full model (OrientationGate-4×4 + FFA/ATL-additive fixes),
+  num_classes 10000, batch 512, 30000 steps, seed 20260521.
+- **Discriminating outcome**:
+  - SUPPORT (HOLO-Net trains): by step ~15000 identity is clearly < 8 and
+    descending (minimal was ~6.3 at step 15000); orientation descends below ln2.
+  - REFUTE (genuine failure): identity still bouncing ≥ 10 at step 15000+ while
+    the minimal reference is at ~6 — then a real failure IS established and
+    component isolation (a corrected E043) becomes warranted.
+- **Linked experiment IDs**: E042 (v4).

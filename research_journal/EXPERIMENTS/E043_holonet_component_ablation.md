@@ -79,3 +79,26 @@ up (10.6 → 14.1), coinciding with the AdaFace margin warmup completing at step
 Orientation Gate, i.e. `atl_input = afp_pooled + gate·ffa_out` with a real gate
 (v3's holistic mechanism, minus pc/ofa/gist/magno). If diag-A trains but diag-D
 does not, the gate×FFA interaction is the culprit. diag-D step 50, identity 13.3.
+
+---
+
+## Conclusion — tick 58: premise refuted, experiment superseded
+
+E043 asked "which component breaks identity training". That premise — that the
+full model and the partial configs *fail* to train — rested on judging runs
+during steps 4000-7000. The minimal run's full trajectory (fetched tick 58)
+shows identity bounces 10-13.6 until ~step 8000 in this setup, INCLUDING the
+working minimal run that ends at loss ~1.5. Re-read against that reference:
+diag-A (step 4900, id 10.4) and diag-B (step 4450, id 10.8) were tracking the
+minimal run normally — actually slightly *ahead* of it (minimal step 5000 ≈ 12.5).
+Neither was "stuck".
+
+There is no established failure to isolate. E043 is **superseded by v4** (see
+E042), which runs the full HOLO-Net to completion to answer the only real
+question: does it descend after the normal ~8000-step bounce? diag-A/B/D were
+killed — mis-scoped at 8000 steps, they would have ended right at the descent
+onset, before showing anything.
+
+**Lesson**: never judge a training run without the matched-config reference
+trajectory. The bounce was misread as failure because the minimal reference
+(which also bounces) had not been pulled.
