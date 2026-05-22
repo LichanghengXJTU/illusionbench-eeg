@@ -1,24 +1,20 @@
 # State
 
-**Tick #**: 65
-**Last updated**: 2026-05-23 ~05:30 (Asia/Hong_Kong)
-**Current focus** (one sentence): the decisive Idea-003 experiment is done —
-HOLO-Net v1.0 was REFUTED by its pre-registered falsification; a strategic fork
-is open (FLAG-002) and the loop turns to synthesis.
-**Last action**: Tick 65 — v5 finished training (identity 0.97); ran
-`eval_falsification.py` on it (E044). FFA-layer: Thatcher ISI 1.00, Composite
-CSI 0.99, Part-Whole PWI 2.20, Random-bbox 1.08 → fails 3/4, ALL FOUR: FAIL.
-**Last action outcome**: REFUTED — HOLO-Net v1.0 is not paradigm-consistent.
-A rigorous, coherent negative result (the FFA module is not inert — it drives
-PWI to 2.20 — but no Thatcher/composite emerges under identity training).
-**Running tasks** (on server, H100 80GB): none — v5 training + eval both done.
-**Stuck streak**: 0 (tick produced E044, the decisive result)
-**Planned next action** (tick 66): SYNTHESIS — write up the HOLO-Net negative
-result and its connection to Idea-001 (identity-trained ⇒ ISI≈1, per E004; the
-bio-architecture confirms the objective-is-the-lever thesis). Frame the FLAG-002
-fork concretely for the user. Do NOT blindly launch a design-§8 architecture
-revision (likely the wrong lever). Await user steer on FLAG-002; meanwhile
-prepare the integrated Idea-001 + HOLO-Net story.
+**Tick #**: 66
+**Last updated**: 2026-05-23 ~06:06 (Asia/Hong_Kong)
+**Current focus** (one sentence): HOLO-Net experimental arc concluded (v5
+refuted); synthesis written; the strategic direction now awaits a FLAG-002 steer.
+**Last action**: Tick 66 — wrote `research_journal/HOLONET_SYNTHESIS.md`:
+consolidates the E040-E044 arc, the v5 refutation, the diagnosis (objective not
+architecture; the §7 gate flaw), and the integrated Idea-001 + HOLO-Net story.
+**Last action outcome**: synthesis complete; no user reply to FLAG-002 yet.
+**Running tasks** (on server, H100 80GB): none.
+**Stuck streak**: 0
+**Planned next action** (tick 67): if the user has steered FLAG-002 → act on it.
+Else → begin integrating the HOLO-Net result into the paper materials (a new
+"architecture test" claim/section) — option-1 work that is useful regardless of
+the fork, and deepens Idea-001 (the strongest line, 9.3). Do NOT launch a
+design-§8 architecture revision unprompted.
 **Confidence in current best idea**:
   - **Idea-001** (IllusionBench-EEG): **9.3/10** — unaffected, and strengthened:
     the HOLO-Net negative result is architecture-side corroboration of its
