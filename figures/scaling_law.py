@@ -21,14 +21,26 @@ IMAGE_ENCODER_PARAMS_M = {
     "P05_clip_g14":      1012,   # CLIP ViT-g/14 LAION-2B (~1B)
     "P06_clip_bigG14":   1845,   # CLIP ViT-bigG/14 LAION-2B (~1.8B)
     "P19_siglip_base_384": 88,    # SigLIP-base-384
-    "P20_siglip_so400m":   400,   # SigLIP SO400M (the SO=Shape-Optimized 400M)
-    "P21_metaclip_h14":    632,   # MetaCLIP-H/14 same arch as CLIP-H
+    "P20_siglip_so400m":   400,   # SigLIP SO400M
+    "P21_metaclip_h14":    632,
     # DINOv2 self-supervised
     "P07_dinov2_base":   86,
     "P08_dinov2_large":  300,
     "P09_dinov2_giant":  1100,
-    # MAE (not in either curve, but for sanity scatter)
-    "P10_mae_huge":      632,    # ViT-Huge encoder
+    # MAE
+    "P10_mae_huge":      632,
+    # Face-AM angular-margin family (new from E030-E032)
+    "P17_facenet_vggface2":     27,
+    "P18_facenet_casiawebface": 27,
+    "P23_arcface_auraface":     65,     # ResNet-100 (AuraFace)
+    "P23rgb_arcface_auraface_rgb": 65,
+    "P24_adaface_ir101_ms1mv2":   65,   # IR-101 65.2M
+    "P25_arcface_ir101_webface4m": 65,
+    "P26_adaface_ir50_casia":     44,   # IR-50 43.6M
+    "P28_adaface_ir50_webface4m": 44,
+    "P29_adaface_ir50_ms1mv2":    44,
+    # Bio-inspired
+    "P22_cornet_s":               53,   # CORnet-S
 }
 
 FAMILY = {
@@ -40,8 +52,16 @@ FAMILY = {
     "P07_dinov2_base": "DINOv2-SSL", "P08_dinov2_large": "DINOv2-SSL",
     "P09_dinov2_giant": "DINOv2-SSL",
     "P10_mae_huge": "MAE-SSL",
+    "P17_facenet_vggface2": "Face-triplet", "P18_facenet_casiawebface": "Face-triplet",
+    "P23_arcface_auraface": "Face-AM", "P23rgb_arcface_auraface_rgb": "Face-AM",
+    "P24_adaface_ir101_ms1mv2": "Face-AM", "P25_arcface_ir101_webface4m": "Face-AM",
+    "P26_adaface_ir50_casia": "Face-AM", "P28_adaface_ir50_webface4m": "Face-AM",
+    "P29_adaface_ir50_ms1mv2": "Face-AM",
+    "P22_cornet_s": "Bio-inspired",
 }
-FAMILY_COLOR = {"image-text": "#d62728", "DINOv2-SSL": "#ff7f0e", "MAE-SSL": "#bcbd22"}
+FAMILY_COLOR = {"image-text": "#d62728", "DINOv2-SSL": "#ff7f0e",
+                "MAE-SSL": "#bcbd22", "Face-triplet": "#2ca02c",
+                "Face-AM": "#1f9c4d", "Bio-inspired": "#9467bd"}
 
 PRETTY_NAME = {
     "P02_clip_b32": "CLIP-B/32", "P03_clip_l14": "CLIP-L/14",
@@ -52,6 +72,15 @@ PRETTY_NAME = {
     "P07_dinov2_base": "DINOv2-B", "P08_dinov2_large": "DINOv2-L",
     "P09_dinov2_giant": "DINOv2-G",
     "P10_mae_huge": "MAE-H",
+    "P17_facenet_vggface2": "FaceNet-VGG2", "P18_facenet_casiawebface": "FaceNet-CASIA",
+    "P22_cornet_s": "CORnet-S",
+    "P23_arcface_auraface": "ArcFace-R100 BGR",
+    "P23rgb_arcface_auraface_rgb": "ArcFace-R100 RGB",
+    "P24_adaface_ir101_ms1mv2": "AdaFace-IR101 MS1MV2",
+    "P25_arcface_ir101_webface4m": "ArcFace-IR101 WF4M",
+    "P26_adaface_ir50_casia": "AdaFace-IR50 CASIA",
+    "P28_adaface_ir50_webface4m": "AdaFace-IR50 WF4M",
+    "P29_adaface_ir50_ms1mv2": "AdaFace-IR50 MS1MV2",
 }
 
 
@@ -104,6 +133,39 @@ def main(args):
                     fmt="s", color=FAMILY_COLOR["MAE-SSL"], markersize=10,
                     markeredgecolor="black", markeredgewidth=0.8,
                     capsize=4, lw=1.2, zorder=3, label="MAE-SSL (n=1)")
+    # Face-AM scatter (multiple priors at similar size — show data-inversion)
+    sub_am = d[d.family == "Face-AM"]
+    if len(sub_am):
+        ax.errorbar(np.log10(sub_am.params_M.to_numpy()),
+                    sub_am.isi.to_numpy(),
+                    yerr=[sub_am.isi.to_numpy() - sub_am.isi_lo.to_numpy(),
+                          sub_am.isi_hi.to_numpy() - sub_am.isi.to_numpy()],
+                    fmt="D", color=FAMILY_COLOR["Face-AM"], markersize=9,
+                    markeredgecolor="black", markeredgewidth=0.8,
+                    capsize=4, lw=1.2, zorder=3,
+                    label=f"Face-AM (n={len(sub_am)})")
+    # Face-triplet scatter
+    sub_tri = d[d.family == "Face-triplet"]
+    if len(sub_tri):
+        ax.errorbar(np.log10(sub_tri.params_M.to_numpy()),
+                    sub_tri.isi.to_numpy(),
+                    yerr=[sub_tri.isi.to_numpy() - sub_tri.isi_lo.to_numpy(),
+                          sub_tri.isi_hi.to_numpy() - sub_tri.isi.to_numpy()],
+                    fmt="^", color=FAMILY_COLOR["Face-triplet"], markersize=10,
+                    markeredgecolor="black", markeredgewidth=0.8,
+                    capsize=4, lw=1.2, zorder=3,
+                    label=f"Face-triplet (n={len(sub_tri)})")
+    # Bio-inspired (CORnet-S)
+    sub_bio = d[d.family == "Bio-inspired"]
+    if len(sub_bio):
+        ax.errorbar(np.log10(sub_bio.params_M.to_numpy()),
+                    sub_bio.isi.to_numpy(),
+                    yerr=[sub_bio.isi.to_numpy() - sub_bio.isi_lo.to_numpy(),
+                          sub_bio.isi_hi.to_numpy() - sub_bio.isi.to_numpy()],
+                    fmt="p", color=FAMILY_COLOR["Bio-inspired"], markersize=10,
+                    markeredgecolor="black", markeredgewidth=0.8,
+                    capsize=4, lw=1.2, zorder=3,
+                    label=f"Bio-inspired (n={len(sub_bio)})")
 
     # Annotate each point
     for _, r in d.iterrows():
