@@ -335,8 +335,8 @@ covers all five subsections precisely. Can be trimmed during revision.
 
 ## 4.1 Three-paradigm dissociation across visual prior families
 
-Figure 1 (`three_paradigm_panel.pdf`) presents the headline result of this work:
-the ISI / CSI / PWI of all 17 visual priors on Thatcher, composite-face, and
+Figure 1 (`three_paradigm_polished_v2.pdf`) presents the headline result of
+this work: the ISI / CSI / PWI of all 25 visual priors on Thatcher, composite-face, and
 part-whole paradigms, color-coded by training paradigm. A clean
 training-objective × stimulus-paradigm interaction is visible. We summarize the
 pattern in five empirical claims, with the supporting numerical evidence

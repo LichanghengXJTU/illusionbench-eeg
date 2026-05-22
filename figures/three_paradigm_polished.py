@@ -26,18 +26,29 @@ PRIOR_CLASS = {
     "P07_dinov2_base": "DINOv2", "P08_dinov2_large": "DINOv2",
     "P09_dinov2_giant": "DINOv2",
     "P10_mae_huge": "MAE", "P11_sdxl_vae": "VAE",
-    "P17_facenet_vggface2": "Face-trained",
-    "P18_facenet_casiawebface": "Face-trained",
+    "P17_facenet_vggface2": "Face-triplet",
+    "P18_facenet_casiawebface": "Face-triplet",
+    "P22_cornet_s": "Bio-inspired",
+    "P23_arcface_auraface": "Face-AM",
+    "P23rgb_arcface_auraface_rgb": "Face-AM",
+    "P24_adaface_ir101_ms1mv2": "Face-AM",
+    "P25_arcface_ir101_webface4m": "Face-AM",
+    "P26_adaface_ir50_casia": "Face-AM",
+    "P28_adaface_ir50_webface4m": "Face-AM",
+    "P29_adaface_ir50_ms1mv2": "Face-AM",
     "N02_untrained_vit": "Control", "N03_pixel": "Control",
 }
-CLASS_ORDER = ["Control", "VAE", "Face-trained", "MAE", "DINOv2", "SigLIP/MetaCLIP", "CLIP"]
+CLASS_ORDER = ["Control", "VAE", "Face-triplet", "Face-AM", "Bio-inspired",
+               "MAE", "DINOv2", "SigLIP/MetaCLIP", "CLIP"]
 CLASS_COLOR = {
     "CLIP": "#d62728",
     "SigLIP/MetaCLIP": "#a55a4b",
     "DINOv2": "#ff7f0e",
     "MAE": "#bcbd22",
     "VAE": "#7f7f7f",
-    "Face-trained": "#2ca02c",
+    "Face-triplet": "#2ca02c",
+    "Face-AM": "#1f9c4d",
+    "Bio-inspired": "#9467bd",
     "Control": "#cccccc",
 }
 
@@ -57,6 +68,14 @@ PRETTY_NAME = {
     "P11_sdxl_vae": "SDXL-VAE",
     "P17_facenet_vggface2": "FaceNet-VGG2",
     "P18_facenet_casiawebface": "FaceNet-CASIA",
+    "P22_cornet_s": "CORnet-S",
+    "P23_arcface_auraface": "ArcFace-R100 (BGR)",
+    "P23rgb_arcface_auraface_rgb": "ArcFace-R100 (RGB)",
+    "P24_adaface_ir101_ms1mv2": "AdaFace-IR101 MS1MV2",
+    "P25_arcface_ir101_webface4m": "ArcFace-IR101 WF4M",
+    "P26_adaface_ir50_casia": "AdaFace-IR50 CASIA",
+    "P28_adaface_ir50_webface4m": "AdaFace-IR50 WF4M",
+    "P29_adaface_ir50_ms1mv2": "AdaFace-IR50 MS1MV2",
     "N02_untrained_vit": "ViT-untrained",
     "N03_pixel": "Pixel",
 }
