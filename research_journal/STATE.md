@@ -1,44 +1,47 @@
 # State
 
-**Tick #**: 64
-**Last updated**: 2026-05-23 ~04:28 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idea-003 / HOLO-Net — v5 ~70% trained and on
-track; the minimal ablation floor is confirmed; next is v5's falsification test.
-**Last action**: Tick 64 — read the minimal 4-paradigm falsification table
-(`eval_falsification.py` validated end-to-end). v5 at step 21650, identity 3.94.
-**Last action outcome**: minimal ablation floor confirmed — FFA layer ISI 0.975
-/ CSI 1.192 / PWI 0.779 / random-bbox 1.083 → fails 3 of 4, "ALL FOUR: FAIL"
-(only the easy random-bbox control passes). v5 on track.
-**Running tasks** (on server, H100 80GB):
-  - **v5 — full HOLO-Net + all fixes (E042)** — `/workspace/holo_net_full_v5/`,
-    step ~21650/30000, identity 3.94 descending (tracks minimal). ~50 min left.
-**Stuck streak**: 0
-**Planned next action** (tick 65, ~v5 completion): run `eval_falsification.py`
-on the v5 final checkpoint = **the HOLO-Net falsification test** (FFA layer:
-ISI≥3, CSI≥1.5, PWI≤0.5, random-bbox≤1.5). Compare against the minimal floor.
+**Tick #**: 65
+**Last updated**: 2026-05-23 ~05:30 (Asia/Hong_Kong)
+**Current focus** (one sentence): the decisive Idea-003 experiment is done —
+HOLO-Net v1.0 was REFUTED by its pre-registered falsification; a strategic fork
+is open (FLAG-002) and the loop turns to synthesis.
+**Last action**: Tick 65 — v5 finished training (identity 0.97); ran
+`eval_falsification.py` on it (E044). FFA-layer: Thatcher ISI 1.00, Composite
+CSI 0.99, Part-Whole PWI 2.20, Random-bbox 1.08 → fails 3/4, ALL FOUR: FAIL.
+**Last action outcome**: REFUTED — HOLO-Net v1.0 is not paradigm-consistent.
+A rigorous, coherent negative result (the FFA module is not inert — it drives
+PWI to 2.20 — but no Thatcher/composite emerges under identity training).
+**Running tasks** (on server, H100 80GB): none — v5 training + eval both done.
+**Stuck streak**: 0 (tick produced E044, the decisive result)
+**Planned next action** (tick 66): SYNTHESIS — write up the HOLO-Net negative
+result and its connection to Idea-001 (identity-trained ⇒ ISI≈1, per E004; the
+bio-architecture confirms the objective-is-the-lever thesis). Frame the FLAG-002
+fork concretely for the user. Do NOT blindly launch a design-§8 architecture
+revision (likely the wrong lever). Await user steer on FLAG-002; meanwhile
+prepare the integrated Idea-001 + HOLO-Net story.
 **Confidence in current best idea**:
-  - **Idea-003 (HOLO-Net)**: ~7.5/10 — the architecture is confirmed trainable
-    (Q017); the gate fix is well-founded (v2 proved the gate learns when the
-    identity gradient is removed). Decisive falsification result ~3 h out.
-  - **Idea-001**: 9.3/10 — groundwork, stable.
+  - **Idea-001** (IllusionBench-EEG): **9.3/10** — unaffected, and strengthened:
+    the HOLO-Net negative result is architecture-side corroboration of its
+    training-objective thesis.
+  - **Idea-003** (HOLO-Net): **5.0/10** — the pre-registered "first
+    paradigm-consistent model" ambition is refuted; architecture trains fine;
+    a redirect (objective re-aim, or consolidate as a mechanistic negative)
+    is open.
 
-## Resolved / done
-- Q017: the full HOLO-Net trains identity at the minimal run's rate.
-- 3-paradigm eval pipeline + minimal ablation floor (E041) — in place.
-- v1/v2/v3/v4 narrative: v4 vindicated the tick-58 correction (the "bounce" is
-  normal); the only real issues found were the AdaFace loss bug, the
-  OrientationGate GAP flip-blindness, and the gate-detach wiring — all fixed.
+## The HOLO-Net result in one line
+A maximally bio-faithful face architecture, trained on face identity, shows NO
+Thatcher / composite illusion (ISI/CSI ≈ 1.0) — exactly like FaceNet (E004).
+Bio-fidelity of architecture does not substitute for the training objective.
 
 ## Strategic note (user directive 2026-05-22)
-Idea-001 is theoretical groundwork; **Idea-003 (HOLO-Net) is the headline and
-the loop's primary focus**. Full autonomy on Idea-003 direction. If compute
-becomes the blocker, write a NEED to `NOTES_FOR_USER.md`. Keep looping;
-commit+push and report status every tick.
+Idea-003 (HOLO-Net) was designated the headline. The v5 refutation means that,
+as a positive headline, HOLO-Net v1.0 does not deliver — see FLAG-002 for the
+three honest options. Loop continues; full autonomy on direction; will not stop.
 
 ## Working directories
 - Local Mac: `~/Desktop/EEG/illusionbench/`
 - Server: `/workspace/illusionbench-eeg/` (plain dir, not git)
-- HOLO-Net: `holo_net_stage2/` (minimal/E040-E041, done), `holo_net_full_v5/`
-  (full + all fixes/E042, running); v1-v4 dead
+- HOLO-Net: `holo_net_stage2/` (minimal/E040-E041), `holo_net_full_v5/`
+  (full, trained, E042/E044); v1-v4 dead
 - Server SSH: `ssh -i ~/.ssh/id_ed25519 -p 11022 root@103.207.149.173`
 - GitHub: https://github.com/LichanghengXJTU/illusionbench-eeg

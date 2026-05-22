@@ -54,7 +54,26 @@ Ideas must have ≥ 2 prior-art citations before being added.
   3. **Cross-subject and clinical EEG decoding**: patient EEG (prosopagnosia, autism) requires interpretable representation to map damage to behavior.
   4. **Cross-modal alignment**: bio-prior trained with brain-structural inductive bias should align more naturally to EEG (also brain signal).
 - **State of evidence**: Idea-001 results (paradigm-specific dissociation in CLIP) directly motivate Idea-003. EEG-side falsification criterion already in place via Route A.
-- **Score**: novelty 8 + feasibility **7** + evidence_potential 8 = **7.5** (tick 51: feasibility restored 4→7 — E042 proved the architecture trains; see tick-51 update).
+- **Score**: novelty 5 + feasibility 7 + evidence **3** = **5.0** (tick 65: the pre-registered falsification was REFUTED — see tick-65 update).
+
+### Tick-65 update (E044) — HOLO-Net v1.0 falsification REFUTED
+
+- v5 (fully-trained full HOLO-Net, identity loss 0.97, functional gate) was
+  evaluated on the pre-registered §6 falsification. FFA-layer result: Thatcher
+  ISI 1.00, Composite CSI 0.99, Part-Whole PWI 2.20, Random-bbox 1.08 →
+  **fails 3 of 4; ALL FOUR: FAIL.** HOLO-Net v1.0 is NOT a paradigm-consistent
+  model.
+- Best reading: HOLO-Net is trained with a face-IDENTITY objective; Idea-001
+  (E004) already showed identity-trained models give ISI ≈ 1. The bio-fidelity
+  architecture does not substitute for the training objective. The negative
+  result CONFIRMS Idea-001's thesis from the architecture side.
+- The FFA module is not inert — it drives Part-Whole PWI to 2.20 (vs minimal
+  floor 0.78), the largest deviation HOLO-Net produces — but opposite to the
+  ≤0.5 criterion.
+- Score → 5.0: the original "first paradigm-consistent model" ambition is
+  refuted (evidence 3). The architecture trains fine (feasibility 7). A redirect
+  (re-aim at the training objective, or consolidate as a mechanistic negative
+  alongside Idea-001) remains open — see NOTES_FOR_USER FLAG-002.
 
 ### Tick-51 update (E042) — full HOLO-Net training UNBLOCKED; v1 failure was a loss bug
 

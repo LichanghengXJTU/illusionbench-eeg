@@ -59,3 +59,52 @@ controlled re-test confirms the FULL HOLO-Net trains (starts at identity loss
 full architecture. No GPU shortage yet — the H100 hosts both the full run and
 the minimal-ablation run concurrently (40/80 GB). Will raise a NEED here if a
 larger run (full 360K identities, or parallel ablations) needs more GPU.
+
+---
+
+## FLAG-002 — 2026-05-23 05:30 — HOLO-Net v5 was REFUTED by its own pre-registered falsification; strategic fork (loop is proceeding on a synthesis tick — not a resource NEED)
+
+- **What happened**: v5 — the fully-trained full HOLO-Net (identity loss 0.97,
+  functional Orientation Gate, all 3 bug fixes) — was evaluated on the
+  pre-registered falsification (E044). FFA-layer result: Thatcher ISI 1.00,
+  Composite CSI 0.99, Part-Whole PWI 2.20, Random-bbox 1.08 → **fails 3 of 4
+  criteria; ALL FOUR: FAIL.** HOLO-Net v1.0 is not the "first paradigm-consistent
+  model" the design hoped for. The eval pipeline is validated (it gave the
+  expected ablation-floor result for the minimal model) — this is a real
+  negative result, not a measurement artifact.
+
+- **Why (best current reading)**: HOLO-Net is trained with a face-IDENTITY
+  objective (AdaFace). IllusionBench-EEG (Idea-001) already established that
+  face-identity-trained models (FaceNet) show ISI ≈ 1.0, while image-text
+  contrastive training emerges ISI 4-7. So a bio-faithful architecture trained
+  on identity giving ISI ≈ 1.0 is consistent: **the training objective, not
+  architectural bio-fidelity, is the lever.** The HOLO-Net negative result
+  *confirms Idea-001's central thesis from the architecture side.*
+
+- **The fork (your call; the loop continues meanwhile on a synthesis tick)**:
+  1. **Reframe & consolidate (loop's tentative lean)** — make it ONE paper:
+     IllusionBench-EEG (the benchmark + dissociation) + the HOLO-Net result as
+     a rigorous mechanistic negative ("a maximally bio-faithful face model,
+     trained on identity, does NOT develop configural-illusion sensitivity →
+     the effect is objective-driven"). Honest, coherent, publishable — but
+     HOLO-Net is a *supporting* negative result, not the headline positive.
+  2. **Re-aim HOLO-Net at the objective** — retrain the HOLO-Net architecture
+     with an image-text contrastive objective (the lever Idea-001 identifies)
+     instead of / alongside AdaFace identity. If configural illusions then
+     emerge, HOLO-Net *can* be a positive headline. Cost: needs face
+     image-text/caption data or a CLIP-distillation target (HOLO-Net currently
+     trains on Glint360K identity labels only — no captions); ~1 day to set up
+     + train. This is the scientifically-motivated next experiment.
+  3. **Design-§8 architecture revisions** (6-step FFA, Capsule/GLOM). The loop's
+     honest assessment: likely the WRONG lever — if the objective drives
+     emergence (per 1 above), more architecture under the same identity
+     objective will still give ISI ≈ 1. Not recommended as the first move.
+
+- **What blocks if not decided**: nothing immediately — the loop will spend the
+  next tick(s) on a synthesis (per-layer diagnosis, the Idea-001 connection,
+  integrated write-up) which is useful under ANY of the three options. But the
+  direction (especially option 2, which needs a data decision) wants your
+  steer. Edit this file with a `RESOLVED:` line, or reply.
+
+- **Idea-001 status**: unaffected and strengthened — the HOLO-Net result is
+  corroborating evidence for it. Idea-001 score 9.3/10.
