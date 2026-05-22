@@ -278,8 +278,13 @@ model-level (no brain inference; see `feedback-scientific-stance` memory).
 
 ## Q017 (NEW, tick 58) — Does the full HOLO-Net descend after the normal ~8000-step identity bounce, like the minimal run?
 
-- **Status**: **running** — v4 (full model, 30000 steps) launched; left to run
-  to completion.
+- **Status**: **ANSWERED — YES (tick 60, E042 v4).** v4's identity loss
+  descended 13→8.47 by step 11400, tracking the minimal run almost exactly
+  (minimal ≈8.5 at the same step). The full HOLO-Net trains identity at the
+  minimal model's rate. The tick-55/56 "failure" calls were premature judgments
+  of the normal bounce. — Follow-on issue: v4's OrientationGate stayed inert
+  (orientation loss flat at ln2); fixed via `gate.detach()`, being verified by
+  v5. See E042 tick-60 addendum.
 - **Score**: 10/10 — blocking; this is the actual "does HOLO-Net train" question
   that ticks 51-57 never cleanly answered (every full run was killed mid-bounce).
 - **Background**: the minimal HOLO-Net bounces identity 10-13.6 for ~8000 steps

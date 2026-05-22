@@ -194,3 +194,36 @@ though the "collapse" that motivated it was a misread.
 judged at step ~15000+ (where minimal is unambiguously descending) and at the
 end — NOT killed during the bounce.
 
+---
+
+## Addendum — tick 60: v4 verdict — HOLO-Net DOES train (Q017 = yes); gate inert → gate.detach() fix → v5
+
+v4 ran to step 11400. Identity: 13.1 → bounce (13.8 @ step 3800) → 11.2 (5700)
+→ 9.5 (8550) → **8.47 (11400)**. The minimal run at the same steps: 11.6 (6000),
+9.1 (10000), 8.78 (11000). **v4 tracks the minimal run almost exactly.**
+predcode converged 4.1→0.017.
+
+**Q017 ANSWERED — yes: the full HOLO-Net trains identity at the same rate as the
+minimal model.** The tick-58 correction is fully validated — v1/v2/v3 were
+killed prematurely during the normal bounce; the architecture was never broken.
+
+**But v4's `orientation` loss is flat at 0.696 for all 11400 steps** — the
+OrientationGate never learned. Cause (the tick-57 hypothesis, now confirmed):
+under the additive wiring `atl_input = afp_pooled + gate·ffa_out`, the identity
+loss has a strong DIRECT gradient into the gate (the gate scales `ffa_out`),
+overwhelming the orientation CE (weight 0.1) → the gate collapses to a constant.
+An inert gate = no orientation asymmetry = the Thatcher mechanism (design §7)
+defeated.
+
+**Fix** (`model.py`): `gate.detach()` in the holistic combination — the gate
+still modulates `ffa_out` in the forward pass, but the identity loss no longer
+backprops into it, so the OrientationGate is trained by the orientation CE
+alone. v2 is the existence proof (v2's gate, under weak identity pressure, DID
+learn: orientation 0.69→0.26 by step 1050).
+
+v4 killed at step 11400 — past the bounce, descending fine; killed not in doubt
+but because it would only confirm the predictable inert-gate outcome. **v5**
+launched — full HOLO-Net + gate.detach(), 30000 steps, seed 20260521,
+`/workspace/holo_net_full_v5/`. Expected: identity descends like v4/minimal AND
+orientation now descends. v5 is the candidate for the falsification test.
+

@@ -577,7 +577,16 @@ class HOLONet(nn.Module):
         if self.ffa is not None:
             ffa_out = self.ffa(gist_token, afp_spatial)  # (B, ffa_dim), ungated
             if gate is not None:
-                holistic = afp_pooled + gate.view(-1, 1) * ffa_out
+                # gate.detach(): the gate still modulates the holistic term in
+                # the forward pass, but the identity loss does NOT backprop into
+                # the gate. Otherwise the strong, direct identity gradient
+                # (the gate scales ffa_out) drives the gate to a constant and
+                # the orientation CE (weight 0.1) cannot make it
+                # orientation-discriminative — observed: v3/v4 orientation loss
+                # flat at ln 2 for 11k steps. With the detach the OrientationGate
+                # is trained by the orientation CE alone (v2 confirmed the gate
+                # then learns: orientation 0.69 → 0.26 by step 1050).
+                holistic = afp_pooled + gate.detach().view(-1, 1) * ffa_out
             else:
                 holistic = afp_pooled + ffa_out
             out["ffa"] = holistic  # orientation-modulated holistic representation
