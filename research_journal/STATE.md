@@ -1,15 +1,14 @@
 # State
 
-**Tick #**: 86 (completed) — paper outline v2
-**Last updated**: 2026-05-23 ~22:15 (Asia/Hong_Kong)
-**Current focus** (one sentence): Wrote `PAPER_OUTLINE_v2.md` integrating all
-post-tick-8 evidence (HOLO-Net 3-variant negatives + Stage 3 decoder + transfer
-vindication + MLP sub-finding). v1 outline (tick 8) preserved as
-`PAPER_OUTLINE.md`. v2 has updated abstract (270 words), 5 contributions
-re-formulated, 10-section structure (intro / related / benchmark / image-side /
-HOLO-Net / EEG / sub-finding / discussion / future / conclusion), figures and
-tables inventories updated, 4 user-decision points flagged (single vs 2 papers,
-companion PWI paper, run v2.2 first?, run Stage 4 first?).
+**Tick #**: 87 (completed) — Gen 1 v2.2 part-aware FTPC
+**Last updated**: 2026-05-23 ~22:45 (Asia/Hong_Kong)
+**Current focus** (one sentence): v2.2 (K=4 part-aware FTPC) result MIXED:
+**ISI 0.901 → 0.981 (no more anti-Thatcher, good)** but CSI 1.300 → 1.017
+and PWI 0.446 → 0.617 REGRESSED (part decomposition severs holistic context).
+ISIrbox 0.139 PASS but suspiciously low (over-face-centric readout). 1/4 PASS
+(worse than v3's 2/4). Diagnosis: part-aware alone is strict regression on
+CSI/PWI; need to keep global readout + add orientation channel. v2.3 design
+locked: hybrid global + orientation-aware via vflip second-forward.
 **Last action**: Tick 85 — wrote `eeg_decoder/stage3_mlp.py` (2-layer MLP
 1024→512→384 with GELU+dropout, cosine loss, AdamW, early-stop). Ran on H100:
 10 subjects × ~7s each = 78s total. Retrieval: top-1 0.181 ± 0.039 (vs ridge
@@ -31,15 +30,14 @@ PWI partially recoverable with non-linear decoder (cognitive sub-finding);
 4/4 PASS unreachable for any decoder we've tried (benchmark sharpness holds)."
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 87, immediate): **user redirected post-tick-86
-— paper headline must be a WORKING model, not "benchmark vindicated"**
-(see NOTES_FOR_USER RESOLVED note 2026-05-23 ~22:20). Iterate HOLO-Net
-designs across Gen 1-4 ladder until §6 4/4 image-side + EEG-decoded PWI +
-ISIrbox PASS. Tick 87 starts Gen 1 v2.2 (K=4 part-aware FTPC) — same
-implementation I had planned but now framed as "first variant in an
-iteration ladder, not an image-side complement". Per-generation reporting
-format committed (see NOTES_FOR_USER). Compute escalation criterion: will
-request 8-GPU box if Gen 1-2 exhausted without ISI > 1.2.
+**Planned next action** (tick 88, ~20 min): implement v2.3 = global FTPC
+(from v3) + orientation-aware readout via vflip(x) second-forward through
+frozen DINOv2. Concat δ_global + δ_orient → 768-d FFA. Pre-registered
+predictions: ISI 1.5-3.0, CSI ≥ 1.3, PWI ≤ 0.5, ISIrbox PASS. Cost: 2×
+forward at inference; template training reuses v3's existing T.
+**Compute trigger**: still on 1× H100. If v2.3 + v2.4 (dual-template) both
+don't lift ISI past 1.2, will write NEED-002 for 8-GPU box for Gen 3
+(from-scratch backbone retrain).
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
