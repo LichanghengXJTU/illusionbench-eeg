@@ -108,3 +108,15 @@ larger run (full 360K identities, or parallel ablations) needs more GPU.
 
 - **Idea-001 status**: unaffected and strengthened — the HOLO-Net result is
   corroborating evidence for it. Idea-001 score 9.3/10.
+
+**RESOLVED: 2026-05-23 09:30 (tick 71)** — User picked a 4th option:
+**diagnostic-first**. Hold off on a new training run; deeply analyse whether
+v5 failed because the brain-science mechanism wasn't well imitated, or for
+some other reason. The loop is now writing `HOLONET_DIAGNOSTIC.md` — a
+neuroscience-grounded per-component critique. First-pass finding (lit-grounded):
+HOLO-Net's design §7 Thatcher mechanism is **not faithful** to the actual
+neural mechanism (Psalta et al. 2014 attribute Thatcher to orientation-
+sensitive LOCAL feature detectors, not a global up/down gate; the
+illusion-specific signal lives in fSTS, which HOLO-Net does not have at all).
+Architecture-implementation flaws appear primary. Detailed write-up + a
+proposed v2.0 redesign coming this tick / next.

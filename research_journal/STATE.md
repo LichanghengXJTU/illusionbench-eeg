@@ -1,21 +1,27 @@
 # State
 
-**Tick #**: 70
-**Last updated**: 2026-05-23 ~08:23 (Asia/Hong_Kong)
-**Current focus** (one sentence): Idle waiting on user's FLAG-002 decision —
-user is back and actively engaged; cadence slowed accordingly.
-**Last action**: Tick 70 — user returned and asked which decision FLAG-002
-needs; I restated the 3 options + recommendation. No code/paper changes this
-tick (the §5 polish was deferred — better to know the direction first).
-**Last action outcome**: idle, waiting on user.
+**Tick #**: 71
+**Last updated**: 2026-05-23 ~09:30 (Asia/Hong_Kong)
+**Current focus** (one sentence): User picked FLAG-002 option 4 — diagnostic
+first; wrote `HOLONET_DIAGNOSTIC.md` (literature-grounded per-component
+critique + a HOLO-Net v2.0 design sketch).
+**Last action**: Tick 71 — web-searched the actual Thatcher neural mechanism
+(Psalta et al. 2014; Taubert 2015 monkey; Boutsen 2006 N170 ERP); identified
+3 concrete bio-mechanism implementation gaps in v1.0 (Thatcher mechanism =
+wrong locus; missing fSTS analogue; FFA self-attention lacks the second-
+order relational primitive); sketched HOLO-Net v2.0 — 3 targeted revisions
+(local orientation-tuned feature module; fSTS-style upright-grotesqueness
+branch; Capsule-style routing-by-agreement FFA).
+**Last action outcome**: diagnostic done. Leading reading: implementation
+gap (A) is real and primary; training-objective (B) is also plausible but
+not yet cleanly tested without a properly bio-faithful architecture.
 **Running tasks** (on server, H100 80GB): none.
-**Stuck streak**: 0 (the HOLO-Net arc + paper integration produced real
-artifacts; idle is by design, not stuck)
-**Planned next action** (tick 71+): act on whichever FLAG-002 option the user
-picks: (1) finalise the consolidated paper draft; (2) draft a concrete
-data-and-setup spec for re-aiming HOLO-Net at an image-text/CLIP-distillation
-objective; (3) NOT recommended.
-**Cadence**: slowed to ~50 min fallback heartbeat now that user is driving.
+**Stuck streak**: 0
+**Planned next action** (tick 72): await user confirmation to build v2.0
+(~1 day work + 3 h training). If confirmed → implement
+LocalOrientationModule + fSTS branch + Capsule FFA, train, evaluate. If user
+prefers a different v2.0 scope, adjust.
+**Cadence**: ~50 min fallback heartbeat; user is driving.
 **Confidence in current best idea**:
   - **Idea-001** (IllusionBench-EEG): **9.3/10** — unaffected, and strengthened:
     the HOLO-Net negative result is architecture-side corroboration of its
