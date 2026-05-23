@@ -1,26 +1,26 @@
 # State
 
-**Tick #**: 75
-**Last updated**: 2026-05-23 ~12:35 (Asia/Hong_Kong)
+**Tick #**: 76
+**Last updated**: 2026-05-23 ~13:00 (Asia/Hong_Kong)
 **Current focus** (one sentence): EDA done + ImageNet-1K download started in
 background; `data_v2.py` next tick.
-**Last action**: Tick 75 — fixed disk issue (HF cache default = root partition,
-30 G, filled at first download attempt) by clearing `/root/.cache/huggingface`
-(freed 28 G) and relaunching the download with `HF_HOME=/workspace/.hf_cache`
-(1.7 TB free). Wrote `holo_net/data_v2.py` (DINOv2 multi-crop: 2 global ×
-224² + 8 local × 96² + ImageNet-norm + RandomHFlip + ColorJitter +
-RandomGrayscale; per-worker MediaPipe lazy-init; collate produces per-view
-batched tensors + face_mask + labels). Deployed to server.
-**Last action outcome**: data_v2.py ready; download at 73 % (38/52 files,
-~3 min ETA for train + a moment for val). Sanity check pending download completion.
-**Running tasks** (on server, H100 80GB):
-  - ImageNet download (PID re-launched). ~3-5 min to complete.
+**Last action**: Tick 76 — ImageNet-1K download DONE (1,281,167 train + 50,000
+val, 24 G in /workspace/.hf_cache). `data_v2.py` sanity on real data passed
+(face_mask hit-rate ~11% averaged over 2 batches of B=64 — matches Yang 2022
+~17% within sample variance; labels diverse → shuffle working). Wrote
+`holo_net/train_v2.py` (DINO teacher-student, DINOLoss with centering +
+sharpening, AdamW + cosine warmup, AMP fp16, teacher EMA momentum 0.996,
+PC-loss-on-face-mask + template EMA, checkpoint every 5 ep). Deployed +
+import-tested on server.
+**Last action outcome**: all three v2 components in place (model_v2 + data_v2
++ train_v2). Ready to launch.
+**Running tasks** (on server, H100 80GB): none.
 **Stuck streak**: 0
-**Planned next action** (tick 76): verify download done, run `data_v2.py`
-sanity check; if OK → start writing `train_v2.py` (DINO teacher-student EMA +
-DINO KL loss + PC loss + template EMA update + cosine LR + warmup).
-Tick 77 = launch SSL training (invoke **`experiment-run` SKILL**, ~24-30 h
-H100 for 100 epochs on ImageNet-1K).
+**Planned next action** (tick 77): invoke **`experiment-run` SKILL** to
+launch the SSL training: 1-step sanity (verify forward+backward+EMA flow)
+then nohup the full 100-epoch run. Estimate ~24-40 h H100 single-GPU
+(batch 256, AMP fp16, CORnet-S backbone). Then daily-cadence monitoring
+ticks until training completes; intermediate checkpoint eval at epoch ~25.
 **User directive (tick 75)**: 全权 / 持续 loop / 主线 = EEG 关联 + 模型设计 +
 公平严格 / 主动调用科研 SKILLS.
 **Confidence in current best idea**:
