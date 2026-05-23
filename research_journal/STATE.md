@@ -1,16 +1,15 @@
 # State
 
-**Tick #**: 89 (completed) — Gen 1 v2.4 sweep, **Gen 1 EXHAUSTED**
-**Last updated**: 2026-05-23 ~23:35 (Asia/Hong_Kong)
-**Current focus** (one sentence): v2.4 sweep done (6 α values + 1 face-
-restricted variant). **ISI ceiling = 1.082** at α=2.0 (PWI fails); strict
-Pareto frontier between ISI and PWI on the orient-weight axis. v2.4b face-
-restricted catastrophic on ISIrbox (4.348 — vflip moves random-bbox into
-face region). **Gen 1 OFFICIALLY EXHAUSTED** per pre-registered ISI ≤ 1.2
-trigger. Root cause: frozen DINOv2 has orientation-invariant features;
-heads can't create what isn't in the backbone. MILESTONE-006 logged for
-user with Option A (Gen 3 + NEED-002 compute escalation) vs Option B
-(Gen 2 v3.0 first, ~5 min cost, then escalate).
+**Tick #**: 90 (completed) — Gen 2 v3.0 dual-template, **escalation triggered**
+**Last updated**: 2026-05-24 ~00:00 (Asia/Hong_Kong)
+**Current focus** (one sentence): v3.0 dual asymmetric templates FAILED in
+unexpected direction: ffa ISI = 0.753 (vs v3's 0.901; **WORSE** anti-Thatcher),
+caused by T_inv channel reinforcing anti-Thatcher signal (mechanism in E052).
+2/4 PASS (PWI 0.408, ISIrbox 0.541). **Gen 1 + Gen 2 escalation criterion
+NOW FIRED**: cumulative best ISI = 1.082 across 6 variants, well below the
+1.2 trigger. **NEED-002 written** requesting 8× H100 box (~$250-400, 12-18h)
+for Gen 3 from-scratch backbone retrain. Loop proceeds in parallel writing
+Gen 3 training code on current 1× H100.
 **Last action**: Tick 85 — wrote `eeg_decoder/stage3_mlp.py` (2-layer MLP
 1024→512→384 with GELU+dropout, cosine loss, AdamW, early-stop). Ran on H100:
 10 subjects × ~7s each = 78s total. Retrieval: top-1 0.181 ± 0.039 (vs ridge
@@ -32,14 +31,19 @@ PWI partially recoverable with non-linear decoder (cognitive sub-finding);
 4/4 PASS unreachable for any decoder we've tried (benchmark sharpness holds)."
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 90, ~10 min): default = Option B from
-MILESTONE-006 → implement Gen 2 v3.0 (dual asymmetric templates T_upright
-+ T_inverted). EMA training on detected upright face samples for T_upright;
-EMA on vflip(detected face samples) for T_inverted. ffa = concat(δ_upright,
-δ_inverted) → 768-d. Reuses v3's training pipeline with a 2nd template.
-~5 min total. If v3.0 ISI ≤ 1.2 → write NEED-002 for 8× H100 + start
-writing Gen 3 from-scratch backbone training code on current 1× H100
-while waiting for compute.
+**Planned next action** (tick 91, ~30 min): write Gen 3 from-scratch
+backbone training code (`holo_net/gen3_train_backbone.py`):
+- ViT-S/14 architecture (same as DINOv2 ViT-S/14)
+- DINOv2-style SSL + orientation-aux classification head (0°/180° on
+  detected face samples)
+- Augmentation pipeline: ALL standard except vflip is REMOVED
+- Data: ImageNet-1K train (already downloaded) + optional CelebA face addon
+- Sanity-test on tiny subset (n=32, 5 steps) on current 1× H100 to verify
+  no shape/loss bugs
+- Then idle until 8× H100 box decision (NEED-002 in NOTES_FOR_USER).
+
+Backup plan if user prefers Gen 1.5 (swap backbone to CLIP) instead of
+Gen 3: ~30 min implementation, ~5 min eval, but limits novelty of framework.
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct

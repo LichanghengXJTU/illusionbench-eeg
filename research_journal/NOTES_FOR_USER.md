@@ -381,3 +381,69 @@ Awaiting: rental box from user
 
 **RESOLVED**: edit this line with your choice (A or B). Loop will continue
 on B by default if no response in ~2 ticks.
+
+**LOOP-EXECUTED (no user override received): Option B ran in tick 90.**
+v3.0 dual-template FAILED — ffa ISI = 0.753 (WORSE than v3's 0.901), 2/4
+PASS. T_inv channel reinforced anti-Thatcher direction instead of mitigating
+it. Escalation trigger fired → see NEED-002 below.
+
+---
+
+## NEED-002 — 2026-05-24 00:00 — Gen 3 compute escalation (8× H100 box)
+
+- **Why needed**: Gen 1 (5 head-only variants) + Gen 2 v3.0 (dual templates)
+  all fail the pre-registered ISI > 1.2 threshold. Best ISI across all 6
+  variants = 1.082 (v2.4a α=2.0, but PWI fails). Mechanism analysis: frozen
+  DINOv2 backbone has orientation-invariant features (SSL on LVD-142M with
+  all-orientation augmentation). Head-only and template-only changes cannot
+  create orientation-asymmetric processing; the BACKBONE has to be retrained.
+
+- **What I tried first** (per autonomy mandate, exhaust cheap options):
+  - 5 Gen 1 head-only variants (v3 global FTPC, v2.2 part-aware FTPC,
+    v2.3 orient-via-vflip, v2.4a α-sweep weighted concat 6 values,
+    v2.4b face-restricted orient)
+  - 1 Gen 2 variant (v3.0 dual asymmetric templates)
+  - All on the existing 1× H100 box; all failed ISI > 1.2
+
+- **What is now needed**: a Gen 3 from-scratch backbone retrain
+  - Architecture: ViT-S/14 (same as DINOv2 ViT-S/14, for fair comparison)
+  - Training data: natural images (LVD-style or ImageNet-1K) + face data
+    (FFHQ-natural, CelebA, CASIA-WebFace) — NO illusion stimuli, NO FFHQ test
+    set used in IllusionBench
+  - Augmentation: **EXCLUDES vertical flip** (the lever for orientation bias)
+  - Objective: SSL (DINOv2-style or MoCo or iBOT) + **orientation classification
+    auxiliary head** (0° vs 180° prediction on a subset of samples)
+  - Compute estimate:
+    - Single H100: 3-5 days
+    - **8× H100 box: ~12-18 hours**
+    - The 5× speedup from 8 GPUs makes 8× H100 the right call
+
+- **Estimated cost**:
+  - RunPod 8× H100 80GB: ~$25/hour spot, ~$15/hour on long reservation
+    → ~$200-300 for 12-18h run
+  - Lambda Labs / Vast.ai similar pricing
+  - On-prem cluster: free if available
+  - **Concrete ask**: $250-400 for a 16-hour 8× H100 reservation, with
+    contingency for 1 retry if first run collapses (SSL from-scratch
+    historically collapse-prone, e.g. v2 collapse ×3 in this project)
+
+- **What blocks if not provided**:
+  - The "we propose a working framework that passes §6" headline ambition
+    (per your tick-86 directive) cannot be delivered with current compute
+  - Paper falls back to "benchmark + 3-layer negative results" (the v1
+    outline) — which you explicitly rejected as the headline
+  - Could still proceed with a single-H100 Gen 3 run taking ~5 days,
+    but with high risk of needing several retry runs if first one collapses
+
+- **What I am doing in the meantime** (~1-3 ticks while awaiting your reply):
+  - Write Gen 3 from-scratch training code on current 1× H100
+    (DINOv2-style + orient-aux + no-vflip aug pipeline)
+  - Sanity-test on a tiny subset locally
+  - When 8× H100 box arrives: SCP code over, launch
+
+- **Awaiting**: your decision — fund the 8× H100 box (mention which provider
+  and any access credentials I need); OR approve the 5-day single-H100 run
+  on current box; OR fall back to a more pragmatic "swap backbone for CLIP"
+  Gen 1.5 variant (cheap but limits the novelty of our framework).
+
+**RESOLVED**: edit this line when you've decided.
