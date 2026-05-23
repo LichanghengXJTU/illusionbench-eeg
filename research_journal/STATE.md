@@ -1,14 +1,15 @@
 # State
 
-**Tick #**: 87 (completed) — Gen 1 v2.2 part-aware FTPC
-**Last updated**: 2026-05-23 ~22:45 (Asia/Hong_Kong)
-**Current focus** (one sentence): v2.2 (K=4 part-aware FTPC) result MIXED:
-**ISI 0.901 → 0.981 (no more anti-Thatcher, good)** but CSI 1.300 → 1.017
-and PWI 0.446 → 0.617 REGRESSED (part decomposition severs holistic context).
-ISIrbox 0.139 PASS but suspiciously low (over-face-centric readout). 1/4 PASS
-(worse than v3's 2/4). Diagnosis: part-aware alone is strict regression on
-CSI/PWI; need to keep global readout + add orientation channel. v2.3 design
-locked: hybrid global + orientation-aware via vflip second-forward.
+**Tick #**: 88 (completed) — Gen 1 v2.3 orientation-aware FTPC
+**Last updated**: 2026-05-23 ~23:10 (Asia/Hong_Kong)
+**Current focus** (one sentence): v2.3 (global FTPC + vflip orient channel)
+**ISI 1.010 — crossed to neutral, +0.11 vs v3** but PWI lost PASS (0.446 →
+0.543) and ISIrbox margin shrank substantially (0.654 → 0.996); CSI nudged
+1.300 → 1.317. Analytical prediction direction-correct, magnitude undershoot.
+Diagnosis: vflip(x) is a noisy proxy — captures spatial-layout-change more
+than face-orientation. 1/4 PASS again. v2.4 designed (two parallel variants:
+weighted concat, face-restricted orient). Gen 1 best ISI = 1.01 cumulative;
+if v2.4 stays ≤ 1.2, declare Gen 1 exhausted and jump to Gen 2/3.
 **Last action**: Tick 85 — wrote `eeg_decoder/stage3_mlp.py` (2-layer MLP
 1024→512→384 with GELU+dropout, cosine loss, AdamW, early-stop). Ran on H100:
 10 subjects × ~7s each = 78s total. Retrieval: top-1 0.181 ± 0.039 (vs ridge
@@ -30,14 +31,18 @@ PWI partially recoverable with non-linear decoder (cognitive sub-finding);
 4/4 PASS unreachable for any decoder we've tried (benchmark sharpness holds)."
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 88, ~20 min): implement v2.3 = global FTPC
-(from v3) + orientation-aware readout via vflip(x) second-forward through
-frozen DINOv2. Concat δ_global + δ_orient → 768-d FFA. Pre-registered
-predictions: ISI 1.5-3.0, CSI ≥ 1.3, PWI ≤ 0.5, ISIrbox PASS. Cost: 2×
-forward at inference; template training reuses v3's existing T.
-**Compute trigger**: still on 1× H100. If v2.3 + v2.4 (dual-template) both
-don't lift ISI past 1.2, will write NEED-002 for 8-GPU box for Gen 3
-(from-scratch backbone retrain).
+**Planned next action** (tick 89, ~15 min): implement v2.4 in two parallel
+variants:
+- **v2.4a Weighted concat**: ffa = concat(δ_global, α × δ_orient), sweep
+  α ∈ {0.25, 0.5, 0.75}
+- **v2.4b Face-restricted orient**: orient channel only over v2.2's 4 part
+  regions (face-specific orient asymmetry, reduces non-face noise)
+
+Both reuse v3's checkpoint (and v2.2's checkpoint for v2.4b's part templates).
+No retraining; ~5-10 min to run both. After v2.4 results: if ISI > 1.5 we
+have signal to keep pushing Gen 1; if ISI ≤ 1.2 then **Gen 1 exhausted →
+write NEED-002 for 8× H100 and start Gen 3** (from-scratch ViT-S/14 retrain
+with no-vflip aug + orientation classification aux task).
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
