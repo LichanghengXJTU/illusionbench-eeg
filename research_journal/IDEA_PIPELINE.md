@@ -54,7 +54,7 @@ Ideas must have ≥ 2 prior-art citations before being added.
   3. **Cross-subject and clinical EEG decoding**: patient EEG (prosopagnosia, autism) requires interpretable representation to map damage to behavior.
   4. **Cross-modal alignment**: bio-prior trained with brain-structural inductive bias should align more naturally to EEG (also brain signal).
 - **State of evidence**: Idea-001 results (paradigm-specific dissociation in CLIP) directly motivate Idea-003. EEG-side falsification criterion already in place via Route A.
-- **Score**: novelty 5 + feasibility 7 + evidence **3** = **5.0** (tick 65: the pre-registered falsification was REFUTED — see tick-65 update).
+- **Score**: novelty **7** + feasibility 7 + evidence **5** = **6.3** (tick 73: redirected as v2.1 FTPC + dual EEG decoder; spec finalised, code scaffolded, evidence pending; the redirect is brain-grounded and EEG-centric, headline ambition back).
 
 ### Tick-65 update (E044) — HOLO-Net v1.0 falsification REFUTED
 

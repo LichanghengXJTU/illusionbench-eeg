@@ -264,3 +264,36 @@ And it satisfies the user's invariants: no gates, normal-task performance
 preserved (ventral path untouched, α starts at 0), holistic-processing
 grounded (template = upright-face Gestalt), and proposes the
 *illusion-transmission mechanism* explicitly (the anomaly signal δ).
+
+---
+
+## Supersedes — v2.1 (tick 73, per user feedback ticks 73-74)
+
+The above v2.0 is **superseded** by v2.1; final spec lives in
+`holo_net/model_v2.py` (module docstring + code). Changes vs. v2.0:
+
+- **NO synthetic anomaly augmentation, NO supervised anomaly head loss**
+  (user: "我们的训练集不是正常图片吗?"). Template + δ emerge purely from
+  natural-data exposure and an optional self-supervised PC loss
+  ‖AFP_spatial − T‖² on face-detected samples.
+- **NO α back-modulation** of AFP by δ. δ is pure read-out at test time;
+  the identity path is untouched, period.
+- **NO anomaly conv layers**. δ is just `AFP_spatial − T` followed by an
+  adaptive average pool to a `(B, D)` vector for downstream eval.
+- **Training data: ImageNet-1K** (natural images with faces in distribution),
+  NOT face-only Glint360K. Bio-faithful (humans aren't trained face-only).
+  Auto-fixes the Stage 3 EEG-decoder dataset-match problem.
+- **Training objective: DINOv2-style SSL** (no labels). Idea-001 already
+  shows SSL emerges composite + part-whole; FTPC's template adds the
+  Thatcher mechanism.
+- **EEG decoder Stage 3 (dual)**: Decoder A = THINGS-EEG2 → FTPC AFP
+  features (matches ATM baseline); Decoder B = a public face-EEG dataset
+  → FTPC AFP features (EEG-centric augment). Both via ATM architecture;
+  Route A evaluation against FTPC's FFHQ Thatcher loading.
+- **Honest limitation**: no public Thatcher-EEG anywhere → strongest claim
+  is Route-A-style "per-dim preservation × image-side loading → predicted
+  EEG-side ISI/CSI/PWI".
+- **Strict fairness protocol (7 code asserts)**: no FFHQ in any training
+  set; no identity overlap with FFHQ-Thatcher's 200 ids; zero illusion
+  stimuli in training, ever; subject hold-out; no leak across stages;
+  matched hyperparameters between Decoder A and B; fixed seed 20260521.
