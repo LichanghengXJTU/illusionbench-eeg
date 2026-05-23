@@ -447,3 +447,13 @@ it. Escalation trigger fired → see NEED-002 below.
   Gen 1.5 variant (cheap but limits the novelty of our framework).
 
 **RESOLVED**: edit this line when you've decided.
+
+**RESOLVED 2026-05-24 ~00:30 (synchronous user input)** — User approved
+single-H100 path (existing box, $0 marginal). Acknowledged collapse risk;
+loop committed to:
+  - Write Gen 3 training code on current 1× H100
+  - Tiny sanity test (n=128, 50 steps) before full launch
+  - Background full run (24-48h ETA), monitor every ~30 min for early
+    collapse signs (L_dino stuck at ln(out_dim))
+  - Hard limit: 2 attempts. If both collapse, escalate to 8× H100 box
+  - 持续监控承诺: every tick reports training state + action

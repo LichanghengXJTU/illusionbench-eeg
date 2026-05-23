@@ -1,15 +1,14 @@
 # State
 
-**Tick #**: 90 (completed) — Gen 2 v3.0 dual-template, **escalation triggered**
-**Last updated**: 2026-05-24 ~00:00 (Asia/Hong_Kong)
-**Current focus** (one sentence): v3.0 dual asymmetric templates FAILED in
-unexpected direction: ffa ISI = 0.753 (vs v3's 0.901; **WORSE** anti-Thatcher),
-caused by T_inv channel reinforcing anti-Thatcher signal (mechanism in E052).
-2/4 PASS (PWI 0.408, ISIrbox 0.541). **Gen 1 + Gen 2 escalation criterion
-NOW FIRED**: cumulative best ISI = 1.082 across 6 variants, well below the
-1.2 trigger. **NEED-002 written** requesting 8× H100 box (~$250-400, 12-18h)
-for Gen 3 from-scratch backbone retrain. Loop proceeds in parallel writing
-Gen 3 training code on current 1× H100.
+**Tick #**: 91 (completed) — Gen 3 v4.0 LAUNCHED
+**Last updated**: 2026-05-24 ~00:25 (Asia/Hong_Kong)
+**Current focus** (one sentence): **Gen 3 v4.0 training STARTED on 1× H100**
+(user approved single-card path); ViT-S/14 from scratch + DINOv2-style SSL
++ NO vflip aug + orient classification aux head. Wrote 3 new files
+(gen3_data.py, gen3_model.py, gen3_train.py); fixed torch.amp→torch.cuda.amp
+API; sanity bs=64 passed, bs=256 timing 1.2 s/step; launched 30 epochs in
+background (ETA ~2.1 days). E053 written with pre-registered checkpoints
+at steps 5000/25000/100000. Monitoring committed every 30 min.
 **Last action**: Tick 85 — wrote `eeg_decoder/stage3_mlp.py` (2-layer MLP
 1024→512→384 with GELU+dropout, cosine loss, AdamW, early-stop). Ran on H100:
 10 subjects × ~7s each = 78s total. Retrieval: top-1 0.181 ± 0.039 (vs ridge
@@ -31,19 +30,19 @@ PWI partially recoverable with non-linear decoder (cognitive sub-finding);
 4/4 PASS unreachable for any decoder we've tried (benchmark sharpness holds)."
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 91, ~30 min): write Gen 3 from-scratch
-backbone training code (`holo_net/gen3_train_backbone.py`):
-- ViT-S/14 architecture (same as DINOv2 ViT-S/14)
-- DINOv2-style SSL + orientation-aux classification head (0°/180° on
-  detected face samples)
-- Augmentation pipeline: ALL standard except vflip is REMOVED
-- Data: ImageNet-1K train (already downloaded) + optional CelebA face addon
-- Sanity-test on tiny subset (n=32, 5 steps) on current 1× H100 to verify
-  no shape/loss bugs
-- Then idle until 8× H100 box decision (NEED-002 in NOTES_FOR_USER).
+**Planned next action** (tick 92, ~30 min from launch): **first monitor
+checkpoint** of Gen 3 v4.0 training.
+- SSH to server, check process alive
+- Read last ~10 lines of train_log.jsonl
+- Pre-registered step-5000 checkpoint: L_dino < 9.0, L_orient < 0.4,
+  orient_acc > 0.8. If criteria fail → COLLAPSE detected, kill + diagnose.
+  If healthy → continue.
+- Report to user.
 
-Backup plan if user prefers Gen 1.5 (swap backbone to CLIP) instead of
-Gen 3: ~30 min implementation, ~5 min eval, but limits novelty of framework.
+Subsequent ticks: monitor every 30-60 min until either (a) collapse +
+restart with revised recipe, (b) step 100K healthy → schedule longer
+intervals while training completes, or (c) training done → run §6 eval
+on the new backbone via FTPC pipeline.
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
