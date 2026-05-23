@@ -1,29 +1,30 @@
 # State
 
-**Tick #**: 73
-**Last updated**: 2026-05-23 ~11:10 (Asia/Hong_Kong)
-**Current focus** (one sentence): v2.1 implementation started — `model_v2.py`
-written + sanity-tested on server (forward / backward / EMA update / per-layer
-readout all OK).
-**Last action**: Tick 73 — wrote `holo_net/model_v2.py` (HOLO-Net v2.1 / FTPC):
-ventral backbone (V1-V2-V4-IT-AFP, reusing v1 bricks) + learnable face
-template T + δ = AFP_spatial − T pure read-out (no anomaly conv, no α
-back-modulation) + DINOv2-style projection head for SSL. Per-layer aliases
-match `eval_extract.py` (ffa → δ-pooled = fSTS-analogue; atl → afp_pooled).
-Sanity check ran on server: all shapes correct, backward flows, EMA template
-update verified.
-**Last action outcome**: 76.05M params (53.44M backbone + 22.6M SSL head);
-model is ready for data-pipeline + SSL training next tick.
-**Running tasks** (on server, H100 80GB): none.
+**Tick #**: 74
+**Last updated**: 2026-05-23 ~12:00 (Asia/Hong_Kong)
+**Current focus** (one sentence): EDA done + ImageNet-1K download started in
+background; `data_v2.py` next tick.
+**Last action**: Tick 74 — invoked **`dataset-inspect` SKILL**: ran MediaPipe
+face detection on a streamed ImageNet-1K sample (twice — first attempt was
+biased by HF sequential streaming hitting only class-0 "tench" / first-20
+bird+fish classes, giving misleading 62%/1.6%). Cross-referenced literature:
+[Yang et al. 2022 FAccT](https://dl.acm.org/doi/10.1145/3531146.3534615)
+reports **~17% ImageNet face-containment rate** (MTCNN) — my biased samples
+bracket this (62% high on people-rich classes, 1.6% on bird/fish). MediaPipe
+pipeline verified working (confident detections, mean score 0.85 on faces).
+Committed to **`evanarlian/imagenet_1k_resized_256`** (non-gated, 256-resized,
+~70 GB) and started the HF download in background.
+**Last action outcome**: face_mask design defensible (at batch 1024, expect
+~170 face-samples/batch → template EMA will converge in <1 epoch). Dataset
+acquisition path clear, download progressing (7/52 files in 2 min, ETA ~20 min).
+**Running tasks** (on server, H100 80GB):
+  - ImageNet download (background, PID 66574). ETA ~20 min.
 **Stuck streak**: 0
-**Planned next action** (tick 74): write `holo_net/data_v2.py` —
-ImageNet-1K dataloader with multi-crop DINO augmentation + MediaPipe face
-detector providing the per-sample face_mask. Will invoke the
-**`dataset-inspect` SKILL** to do an EDA pass on ImageNet face-detection
-hit-rate first (sanity that we'll get enough face-containing samples for
-template EMA to learn). Tick 75 = write `train_v2.py` (DINO teacher-student
-+ PC loss + EMA template update); tick 76 = launch training (invoke
-**`experiment-run` SKILL**).
+**Planned next action** (tick 75): write `holo_net/data_v2.py` —
+DINOv2-style multi-crop augmentation (2 global + 6 local crops) + MediaPipe
+face-mask in DataLoader workers; verify against the downloaded dataset.
+Then tick 76 = `train_v2.py` (DINO teacher-student + PC loss + EMA template
+update); tick 77 = launch SSL training (invoke **`experiment-run` SKILL**).
 **User directive (tick 75)**: 全权 / 持续 loop / 主线 = EEG 关联 + 模型设计 +
 公平严格 / 主动调用科研 SKILLS.
 **Confidence in current best idea**:
