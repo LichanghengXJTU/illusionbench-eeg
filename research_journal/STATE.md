@@ -1,26 +1,32 @@
 # State
 
-**Tick #**: 76
-**Last updated**: 2026-05-23 ~13:00 (Asia/Hong_Kong)
+**Tick #**: 77
+**Last updated**: 2026-05-23 ~13:30 (Asia/Hong_Kong)
 **Current focus** (one sentence): EDA done + ImageNet-1K download started in
 background; `data_v2.py` next tick.
-**Last action**: Tick 76 — ImageNet-1K download DONE (1,281,167 train + 50,000
-val, 24 G in /workspace/.hf_cache). `data_v2.py` sanity on real data passed
-(face_mask hit-rate ~11% averaged over 2 batches of B=64 — matches Yang 2022
-~17% within sample variance; labels diverse → shuffle working). Wrote
-`holo_net/train_v2.py` (DINO teacher-student, DINOLoss with centering +
-sharpening, AdamW + cosine warmup, AMP fp16, teacher EMA momentum 0.996,
-PC-loss-on-face-mask + template EMA, checkpoint every 5 ep). Deployed +
-import-tested on server.
-**Last action outcome**: all three v2 components in place (model_v2 + data_v2
-+ train_v2). Ready to launch.
-**Running tasks** (on server, H100 80GB): none.
+**Last action**: Tick 77 — invoked **`experiment-run` SKILL**. Caught + fixed
+a real bug in 3-step smoke at batch 256: template T shape (D, 7, 7) only
+matches AFP_spatial on global views (224→7²); local views (96→3²) caused
+shape mismatch in `δ = afp_spatial - T`. Fix (`model_v2.py`): compute δ only
+when AFP shape matches T's; local views skip δ (the PC loss + template EMA
+were already global-only by design). Smoke re-ran: L_dino 10.65 / L_pc 1.30 /
+26-of-256 faces (10%) / T_ema norm 50.71. **Launched full 100-ep SSL run**:
+`/workspace/runs/2026-05-23_holonet-v2-ftpc_seed20260521/` (snapshot files
+staged: hypothesis.md, cmd.txt, env.txt, git.txt). 500,400 total steps.
+**Last action outcome**: training RUNNING; GPU 27.4 G / 80 G at 100% util;
+19 procs.
+**Running tasks** (on server, H100 80GB):
+  - **HOLO-Net v2.1 SSL on ImageNet-1K** —
+    `/workspace/runs/2026-05-23_holonet-v2-ftpc_seed20260521/`. 100 ep × 5004
+    steps/ep = 500,400 steps; wall-clock ETA TBD after first 100 steps.
 **Stuck streak**: 0
-**Planned next action** (tick 77): invoke **`experiment-run` SKILL** to
-launch the SSL training: 1-step sanity (verify forward+backward+EMA flow)
-then nohup the full 100-epoch run. Estimate ~24-40 h H100 single-GPU
-(batch 256, AMP fp16, CORnet-S backbone). Then daily-cadence monitoring
-ticks until training completes; intermediate checkpoint eval at epoch ~25.
+**Planned next action** (tick 78, ~30 min): first monitoring tick — read
+`train_log.jsonl` for steady-state step_time → real ETA; verify L_dino is
+descending and L_pc is non-NaN; check T_ema norm growing as expected. If
+steady-state too slow (>3 s/step), consider reducing local crops / batch.
+Subsequent ticks: hourly monitor, then 1× intermediate eval at epoch ~25
+(`eval_falsification.py` on early checkpoint, partial IllusionBench signal
+check).
 **User directive (tick 75)**: 全权 / 持续 loop / 主线 = EEG 关联 + 模型设计 +
 公平严格 / 主动调用科研 SKILLS.
 **Confidence in current best idea**:

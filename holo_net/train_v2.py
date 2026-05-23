@@ -140,6 +140,8 @@ def train(args):
                          num_workers=args.num_workers)
     n_per_epoch = len(dl)
     total_steps = args.epochs * n_per_epoch
+    if args.max_steps is not None and args.max_steps > 0:
+        total_steps = min(total_steps, args.max_steps)
     warmup_steps = args.warmup_epochs * n_per_epoch
     print(f"[data] {len(dl.dataset):,} samples × {args.epochs} ep / batch {args.batch_size} "
           f"→ {n_per_epoch} steps/ep, total {total_steps:,}")
@@ -299,6 +301,8 @@ def parse_args():
     p.add_argument("--ckpt_every_epoch", type=int, default=5)
     p.add_argument("--seed", type=int, default=20260521)
     p.add_argument("--resume", action="store_true")
+    p.add_argument("--max_steps", type=int, default=None,
+                   help="optional hard cap on total steps (for smoke testing)")
     return p.parse_args()
 
 

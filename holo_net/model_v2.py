@@ -186,19 +186,28 @@ class HOLONetV2(nn.Module):
         afp_spatial = self.afp(it)
         afp_pooled = F.adaptive_avg_pool2d(afp_spatial, 1).flatten(1)
 
-        # Template mismatch — pure read-out, no learned conv on δ
+        # Template mismatch — only valid when AFP_spatial matches the template's
+        # spatial size (i.e. only on 224×224 global views). For multi-crop local
+        # views (96×96 → AFP 3×3), skip δ; the template + PC loss + template-EMA
+        # are designed for the global-view scale (the canonical face Gestalt).
         T = self.face_template()
-        delta = afp_spatial - T[None]                            # (B, D, H, W)
-        delta_pooled = F.adaptive_avg_pool2d(delta, 1).flatten(1)  # (B, D)
+        delta = delta_pooled = None
+        if afp_spatial.shape[-2:] == T.shape[-2:]:
+            delta = afp_spatial - T[None]                              # (B, D, H, W)
+            delta_pooled = F.adaptive_avg_pool2d(delta, 1).flatten(1)  # (B, D)
 
         out = {
             "v1": v1, "v2": v2, "v4": v4, "mfp": it,
             "afp_spatial": afp_spatial, "afp_pooled": afp_pooled,
             "afp": afp_pooled,            # alias
-            "delta": delta, "delta_pooled": delta_pooled,
-            "ffa": delta_pooled,          # alias for eval: fSTS-analogue
             "atl": afp_pooled,            # alias for eval: no AdaFace
         }
+        if delta is not None:
+            out["delta"] = delta
+            out["delta_pooled"] = delta_pooled
+            out["ffa"] = delta_pooled     # alias for eval: fSTS-analogue
+        else:
+            out["ffa"] = afp_pooled       # fallback alias when δ undefined (local view)
         if return_ssl:
             out["ssl_out"] = self.ssl_head(afp_pooled)
         return out
