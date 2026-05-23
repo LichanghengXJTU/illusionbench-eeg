@@ -56,6 +56,25 @@ Ideas must have ≥ 2 prior-art citations before being added.
 - **State of evidence**: Idea-001 results (paradigm-specific dissociation in CLIP) directly motivate Idea-003. EEG-side falsification criterion already in place via Route A.
 - **Score**: novelty **7** + feasibility 7 + evidence **5** = **6.3** (tick 73: redirected as v2.1 FTPC + dual EEG decoder; spec finalised, code scaffolded, evidence pending; the redirect is brain-grounded and EEG-centric, headline ambition back).
 
+### Tick-80 update (E045) — HOLO-Net v3 (frozen DINOv2 + global FTPC): 2/4 PASS, FAIL overall
+
+- After 3× from-scratch SSL collapses (runs 1-3 of v2 instantiation), pivoted
+  to option D = frozen pre-trained DINOv2 ViT-S/14 + FTPC head (T learnable +
+  EMA over 13,586 ImageNet face samples in 3.4 min). Ran §6 4-paradigm eval.
+- FFA-layer verdict: ISI 0.901 FAIL (need ≥3.0), CSI 1.300 FAIL (need ≥1.5,
+  within 0.2), PWI 0.446 PASS (need ≤0.5; v1's 2.20 dramatically reversed),
+  ISIrbox 0.654 PASS (need ≤1.5). **2/4 PASS** — best HOLO-Net so far, but
+  ALL-FOUR-simultaneously: FAIL.
+- Mechanistic finding: δ_pooled (ffa) and afp_pooled (raw DINOv2) 95% CIs
+  overlap on every paradigm → the 2/4 PASS is DINOv2-backbone-driven, not
+  FTPC-driven. A single global 16×16 template cannot encode local feature
+  orientation (the Psalta 2014 Thatcher mechanism). **Architectural fix**:
+  v2.2 with K=4 part-aware sub-templates (eyes/nose/mouth/chin) + per-region
+  δ aggregation. Reviewer-defensible, principled, single-tick scaffold.
+- Score → **5.5**: partial progress (evidence 4: 2/4 pass + one paradigm flipped
+  + one within striking distance), well-defined next iteration (feasibility 7:
+  v2.2 design tight, no engineering risk), novelty unchanged (7).
+
 ### Tick-65 update (E044) — HOLO-Net v1.0 falsification REFUTED
 
 - v5 (fully-trained full HOLO-Net, identity loss 0.97, functional gate) was

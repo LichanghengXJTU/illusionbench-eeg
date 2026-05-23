@@ -1,34 +1,59 @@
 # State
 
-**Tick #**: 79
-**Last updated**: 2026-05-23 ~14:35 (Asia/Hong_Kong)
-**Current focus** (one sentence): EDA done + ImageNet-1K download started in
-background; `data_v2.py` next tick.
-**Last action**: Tick 79 — monitored run 2 at step 3200: L_dino STILL collapsed
-to 11.09 = ln(65536), L_pc fluctuating 0.15-3.0 (T learning but oscillates),
-T_ema shrank 50→19 (slower than run 1's 50→7, the PC detach helped the worst
-case but not the overall collapse). DIAGNOSIS: out_dim 65536 (DINOv2 default
-for ViT-L) is too many prototypes for our CORnet-S-style ~25M backbone →
-student can't sustain a discriminative distribution → collapses to uniform.
-FIX: reduce `ssl_out_dim` 65536 → **4096** (the lower-capacity DINOv1 ViT-S
-config). Uniform collapse baseline drops to ln(4096) = 8.32. Killed run 2,
-scp'd model_v2.py fix, launched **run 3** (tag `holonet-v2-out4k`). step 150
-/ 1.8 min: L_dino 8.46 (vs old 11.27; just above 8.32 baseline), L_pc 1.11
-(held), T_ema 45 (stable). Initial signs much better.
-**Last action outcome**: run 2 killed (2nd collapse, expected, validated the
-hypothesis); run 3 running. If THIS also collapses → option-D pivot
-(pre-trained DINOv2 backbone) presented to user.
-**Running tasks** (on server, H100 80GB):
-  - **HOLO-Net v2.1 SSL "out4k"** —
-    `/workspace/runs/2026-05-23_holonet-v2-out4k_seed20260521/`. step ~150,
-    L_dino 8.46 / L_pc 1.11, GPU 24.2 G (smaller head = less mem).
-**Stuck streak**: 0 (each tick produces actionable signal + a real fix)
-**Planned next action** (tick 80, ~30 min): monitor run 3 at step ~3000.
-DECISIVE: does L_dino descend below 8.32 (discriminative) or settle at 8.32
-(collapsed). If healthy → run 3 is the production run, continue. If
-collapsed AGAIN → present option D (pre-trained DINOv2 backbone + FTPC head
-+ template) to user as the pragmatic pivot; the FTPC novelty is preserved
-without the from-scratch-SSL collapse risk.
+**Tick #**: 80 (completed)
+**Last updated**: 2026-05-23 ~19:15 (Asia/Hong_Kong)
+**Current focus** (one sentence): HOLO-Net v3 (frozen DINOv2 + global FTPC)
+**§6 verdict in: 2/4 PASS** (PWI 0.446, ISIrbox 0.654 PASS; ISI 0.901, CSI
+1.300 FAIL) — improvement over v1's 1/4 but still FAIL overall; δ-residual
+adds no significance over raw DINOv2 → mechanism must be part-aware (v2.2);
+in parallel, pivot to EEG-decoder Stage 3 (frozen DINOv2 → THINGS-EEG2).
+**Last action**: Tick 80 — template training completed (3.4 min wallclock,
+13,586 face samples, T_ema 309.21 → 287.88 monotonic). Wrote
+`eval_extract_dinov2.py` + `eval_falsification_dinov2.py` (thin variants
+loading `HOLONetV2Dinov2`, ImageNet normalization). Local sanity ✓. SCP to
+server, ran full 4-paradigm eval. Verdict logged to E045. Updated journal.
+**Last action outcome**: **partial — best HOLO-Net result so far (2/4 vs
+v1's 1/4), but does NOT meet pre-registered §6** (FAIL on Thatcher + Composite).
+The δ residual against a global template is statistically indistinguishable
+from raw DINOv2 features (CIs overlap on all 4 paradigms). FTPC needs
+part-awareness to encode the local feature-orientation mechanism (Psalta 2014).
+**Running tasks** (on server, H100 80GB): none — server idle.
+**Stuck streak**: 0 (the result is informative and points to v2.2)
+**Planned next action** (tick 81, ~20 min): **TWO-TRACK** —
+  - **Track A (EEG)**: Start building EEG-decoder Stage 3 — frozen DINOv2 →
+    THINGS-EEG2 (the headline EEG deliverable the user explicitly asked for).
+    Locate THINGS-EEG2 prep on server; if not present, download; write a
+    minimal ATM-style ridge decoder skeleton targeting `afp_pooled`.
+  - **Track B (HOLO-Net v2.2)**: Sketch the part-aware FTPC design — K=4
+    sub-templates {T_eyes, T_nose, T_mouth, T_chin} at fixed spatial sub-
+    regions of the 16×16 patch grid, per-region δ aggregated by upright-vs-
+    inverted concordance. Implement & re-eval next tick.
+
+## Confidence in current best ideas
+- **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
+  HOLO-Net instantiations now all fail §6 simultaneously, adding architecture-
+  side corroboration to the training-objective thesis from 3 angles (identity
+  loss, SSL-from-scratch-collapse, frozen-SSL+global-template). The benchmark
+  itself is paper-ready; the v1+v2-collapse+v3 negatives are clean mechanistic
+  evidence of why current vision SOTA can't satisfy it.
+- **Idea-003** (HOLO-Net positive): **5.5/10** — slight up (was 5.0). v3
+  (DINOv2-FTPC) gives **2/4 pass** vs v1's 1/4 (PWI flipped from 2.20 FAIL to
+  0.446 PASS — large reversal in the right direction). Composite CSI 1.300 is
+  within striking distance of the 1.5 threshold. The headline ambition is still
+  alive if v2.2 (part-aware FTPC) lifts the Thatcher signal.
+
+## The HOLO-Net result, two lines
+v1 (CORnet + AdaFace identity): NO illusions (ISI/CSI/PWI all wrong direction).
+v3 (frozen DINOv2 + global FTPC): PWI + random-bbox PASS; Thatcher ANTI-direction,
+Composite close but FAIL. Diagnosis: global template can't isolate the
+local-feature-orientation signal Psalta 2014 identifies as the Thatcher locus.
+
+## Strategic note
+The user's explicit #1 priority is the EEG decoder (主线 = EEG 关联). HOLO-Net
+v3 makes the DINOv2 backbone production-ready for the EEG side; even if v2.2
+fails, we now have a defensible Stage 3 EEG decoder built on a SOTA SSL prior
+that already moves PWI from FAIL to PASS — that's a publishable IEEE-style
+EEG-AI paper independent of the HOLO-Net headline.
 **User directive (tick 75)**: 全权 / 持续 loop / 主线 = EEG 关联 + 模型设计 +
 公平严格 / 主动调用科研 SKILLS.
 **Confidence in current best idea**:

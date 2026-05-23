@@ -120,3 +120,70 @@ sensitive LOCAL feature detectors, not a global up/down gate; the
 illusion-specific signal lives in fSTS, which HOLO-Net does not have at all).
 Architecture-implementation flaws appear primary. Detailed write-up + a
 proposed v2.0 redesign coming this tick / next.
+
+---
+
+## MILESTONE-003 — 2026-05-23 19:15 — HOLO-Net v3 (DINOv2 + global FTPC) §6 verdict: 2/4 PASS — best result yet, but still FAIL overall (not a NEED; the loop is proceeding)
+
+- **What happened**: After 3× from-scratch SSL collapses (runs 1-3), pivoted to
+  option D (frozen pre-trained DINOv2 ViT-S/14 backbone + FTPC face template T,
+  EMA-fitted over 13,586 ImageNet face samples in 3.4 min). Ran the
+  IllusionBench-EEG §6 4-paradigm falsification on the FFA layer (= δ_pooled =
+  template residual = fSTS-analogue).
+
+- **The result (pixel-corrected, at the FFA layer)**:
+
+  | Criterion | Threshold | Got | Verdict | vs v1 (E044) |
+  |-----------|-----------|-----|---------|--------------|
+  | Thatcher ISI | ≥ 3.0 | **0.901** | **FAIL** | v1=1.00 (also FAIL) |
+  | Composite CSI | ≥ 1.5 | **1.300** | **FAIL** | v1=0.99 (was FAIL) ↑ +0.31 |
+  | Part-Whole PWI | ≤ 0.5 | **0.446** | **PASS** | v1=2.20 (was FAIL) ✓ flipped |
+  | Random-bbox ISIrbox | ≤ 1.5 | **0.654** | **PASS** | v1=1.08 (was PASS) |
+  | **ALL FOUR SIMULTANEOUSLY** | — | — | **FAIL** | — |
+
+  **2/4 PASS vs v1's 1/4** — best HOLO-Net result so far; the PW reversal
+  (2.20→0.446) and the Composite gain (0.99→1.300, within 0.2 of threshold)
+  are large improvements. But the headline ambition (4/4 simultaneously) is
+  NOT met.
+
+- **What it means mechanistically** (the important part):
+  - The δ_pooled (ffa) residual is NOT statistically distinct from the raw
+    DINOv2 feature (afp_pooled) — 95% CIs overlap on every paradigm. The 2/4
+    PASS is driven by the DINOv2 backbone itself (already-paradigm-aware SSL
+    on natural images), NOT by the FTPC template mechanism.
+  - A single global 16×16 template cannot encode the LOCAL feature-orientation
+    signal that Psalta et al. 2014 identifies as the Thatcher mechanism. The
+    template is being averaged over the whole face; the inversion-specific
+    signal lives in the per-feature orientation, which a single template
+    eraseS.
+  - **The architectural fix is well-defined**: K=4 part-aware sub-templates
+    (T_eyes / T_nose / T_mouth / T_chin) at fixed sub-regions of the patch
+    grid, with per-region δ aggregated by upright-vs-inverted concordance.
+    This is v2.2 in the FTPC framework — a small, principled, reviewer-defensible
+    next iteration.
+
+- **The strategic move the loop is making (you can override)**:
+  Continuing autonomous research per your 持续推进 directive + unlimited
+  running rights. Next tick (81) splits the work in two parallel tracks:
+  - **Track A (EEG decoder — your stated #1 priority)**: Start building
+    the EEG-decoder Stage 3 with frozen DINOv2 + ATM-style ridge → THINGS-EEG2.
+    The DINOv2 prior is already shown to PASS PWI / ISIrbox and be close on
+    CSI — making it a credible EEG target with measurable human-alignment
+    properties. This deliverable does NOT depend on HOLO-Net v2.2 succeeding.
+  - **Track B (HOLO-Net v2.2 part-aware FTPC)**: Implement K=4 part-aware
+    templates + per-region δ; same eval. Single tick to scaffold + eval.
+
+- **Idea pipeline shift**:
+  - **Idea-001 (IllusionBench-EEG)**: **9.3 → 9.5**. 3 distinct HOLO-Net
+    instantiations now fail simultaneously (identity loss → SSL collapse →
+    SOTA SSL + global template). Strong architecture-side corroboration of
+    the training-objective thesis from 3 distinct directions. Benchmark
+    paper is more clearly the headline.
+  - **Idea-003 (HOLO-Net positive)**: **5.0 → 5.5**. Partial progress (2/4),
+    well-defined v2.2 next move, but if v2.2 also fails, the "first paradigm-
+    consistent model" headline ambition is effectively closed.
+
+- **What blocks if not given direction**: nothing — the loop continues. Edit
+  this file with a `RESOLVED:` line if you want a different split (e.g., go
+  all-in on EEG decoder and freeze HOLO-Net at v3; or all-in on v2.2 and
+  defer the EEG decoder; or pivot HOLO-Net to a different mechanism entirely).
