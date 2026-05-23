@@ -1,33 +1,34 @@
 # State
 
-**Tick #**: 78
-**Last updated**: 2026-05-23 ~14:05 (Asia/Hong_Kong)
+**Tick #**: 79
+**Last updated**: 2026-05-23 ~14:35 (Asia/Hong_Kong)
 **Current focus** (one sentence): EDA done + ImageNet-1K download started in
 background; `data_v2.py` next tick.
-**Last action**: Tick 78 — first monitor on run 1 caught COLLAPSE at step
-3200 (~33 min): L_dino stuck at 11.09 = ln(out_dim) (uniform student
-collapse); L_pc collapsed to ~0.001 (degenerate AFP↔T trivial match); T_ema
-shrank 50→7 (AFP magnitude shrinking). DIAGNOSIS: PC loss `‖AFP − T‖²` had
-gradient through BOTH AFP and T → trivial co-collapse. FIX (`model_v2.py`):
-`face_afp = afp_spatial[face_mask].detach()` in `pc_loss` — predictive-
-coding-correct (T learns to predict AFP; AFP shaped only by SSL). Killed
-run 1, scp'd fix, launched **run 2** (tag `holonet-v2-pc-detach`) in fresh
-dir. step 150 / 1.8 min: L_dino 11.27 (slightly above 11.09 baseline = NOT
-yet collapsed), L_pc 1.18 (HOLDING, not collapsing to 0), T_ema 48 stable,
-template_norm 3.16 (T learnable training healthily). Fix working at init.
-**Last action outcome**: run 1 killed (expected, caught the bug); run 2
-running healthily; pre-collapse signals NOT present.
+**Last action**: Tick 79 — monitored run 2 at step 3200: L_dino STILL collapsed
+to 11.09 = ln(65536), L_pc fluctuating 0.15-3.0 (T learning but oscillates),
+T_ema shrank 50→19 (slower than run 1's 50→7, the PC detach helped the worst
+case but not the overall collapse). DIAGNOSIS: out_dim 65536 (DINOv2 default
+for ViT-L) is too many prototypes for our CORnet-S-style ~25M backbone →
+student can't sustain a discriminative distribution → collapses to uniform.
+FIX: reduce `ssl_out_dim` 65536 → **4096** (the lower-capacity DINOv1 ViT-S
+config). Uniform collapse baseline drops to ln(4096) = 8.32. Killed run 2,
+scp'd model_v2.py fix, launched **run 3** (tag `holonet-v2-out4k`). step 150
+/ 1.8 min: L_dino 8.46 (vs old 11.27; just above 8.32 baseline), L_pc 1.11
+(held), T_ema 45 (stable). Initial signs much better.
+**Last action outcome**: run 2 killed (2nd collapse, expected, validated the
+hypothesis); run 3 running. If THIS also collapses → option-D pivot
+(pre-trained DINOv2 backbone) presented to user.
 **Running tasks** (on server, H100 80GB):
-  - **HOLO-Net v2.1 SSL "pc-detach"** —
-    `/workspace/runs/2026-05-23_holonet-v2-pc-detach_seed20260521/`. step ~150,
-    L_dino 11.27 / L_pc 1.18, step_t ~0.62s. ETA 3.6 d at current rate.
-**Stuck streak**: 0 (tick produced a real bug-fix + re-launch)
-**Planned next action** (tick 79, ~30 min): monitor run 2 (~step 3000) —
-verify L_dino starts descending below 11.09 (no collapse) AND L_pc stays
-in healthy range (0.5-1.5, T learning T_face statistic, not zero), AND
-T_ema stays in ~40-60 range (AFP not shrinking). If all 3 healthy → fix
-works, continue running. If L_dino still flat → DINO setup itself needs
-work (center momentum / teacher temp / different SSL impl).
+  - **HOLO-Net v2.1 SSL "out4k"** —
+    `/workspace/runs/2026-05-23_holonet-v2-out4k_seed20260521/`. step ~150,
+    L_dino 8.46 / L_pc 1.11, GPU 24.2 G (smaller head = less mem).
+**Stuck streak**: 0 (each tick produces actionable signal + a real fix)
+**Planned next action** (tick 80, ~30 min): monitor run 3 at step ~3000.
+DECISIVE: does L_dino descend below 8.32 (discriminative) or settle at 8.32
+(collapsed). If healthy → run 3 is the production run, continue. If
+collapsed AGAIN → present option D (pre-trained DINOv2 backbone + FTPC head
++ template) to user as the pragmatic pivot; the FTPC novelty is preserved
+without the from-scratch-SSL collapse risk.
 **User directive (tick 75)**: 全权 / 持续 loop / 主线 = EEG 关联 + 模型设计 +
 公平严格 / 主动调用科研 SKILLS.
 **Confidence in current best idea**:

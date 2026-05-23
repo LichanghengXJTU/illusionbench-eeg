@@ -66,7 +66,12 @@ class HOLONetV2Config:
     pc_loss_weight: float = 0.1
 
     # DINOv2-style SSL projection head (operates on AFP-pooled feature)
-    ssl_out_dim: int = 65536
+    # NOTE (tick 79): 65536 is the DINOv2 default — calibrated for ViT-L (~300M).
+    # Our backbone is CORnet-S-style (~25M); 65536 prototypes is too many for
+    # that capacity and the student collapses to uniform output (verified in
+    # run 1 and run 2 — both hit L_dino = ln(65536) = 11.09 = uniform).
+    # 4096 is the lower-capacity default (used in some DINO ViT-S configs).
+    ssl_out_dim: int = 4096
     ssl_hidden_dim: int = 2048
     ssl_bottleneck_dim: int = 256
 
