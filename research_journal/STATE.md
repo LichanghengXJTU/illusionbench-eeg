@@ -1,35 +1,40 @@
 # State
 
-**Tick #**: 81 (completed)
-**Last updated**: 2026-05-23 ~19:55 (Asia/Hong_Kong)
-**Current focus** (one sentence): EEG-decoder Stage 3 scaffold landed —
-design doc locked, ATM features (train+test, 10 subjects) + ViT-H-14 image
-features downloaded (2.8 GB), `eeg_decoder/{__init__,data}.py` module
-created, sanity ✓ (22 expected files present, 2 expected-missing for tick 82).
-**Last action**: Tick 81 — server reachable / GPU idle / disk fine. Probed
-THINGS-EEG2 data on server: ATM EEG _test_ features present from earlier
-ticks, but no train EEG features, no raw EEG, no THINGS images, no DINOv2
-features. Decided pragmatic Stage-3 path: skip raw EEG (100 GB, multi-day
-download + ATM-style training); reuse ATM's pre-computed EEG features as
-the EEG-side source (per-subject 1024-d, CLIP-H/14-aligned), train per-
-subject ridge mapping ATM-EEG → DINOv2; this isolates the "EEG bottleneck
-through DINOv2 substrate" question without an ATM-retrain confound.
-Downloaded full ATM EEG features for all 10 subjects (train (66160, 1024)
-+ test (200, 1024)) + ViT-H-14 train+test image features (74 MB + 1.6 MB)
-from HF. Wrote `EEG_DECODER_STAGE3_DESIGN.md` (full pre-registration with
-predictions). Wrote `eeg_decoder/__init__.py` + `data.py` (loaders +
-sanity_check). SCP'd, ran sanity on server: 22 files present, 2 expected-
-missing for DINOv2 features tick 82 will produce.
-**Last action outcome**: scaffold complete; data inventory passes sanity;
-design pre-registered with retrieval + IllusionBench-transfer predictions.
+**Tick #**: 82 (completed)
+**Last updated**: 2026-05-23 ~20:25 (Asia/Hong_Kong)
+**Current focus** (one sentence): THINGS images downloaded + DINOv2 features
+extracted (train 12.2s, test 1.4s, all on H100); EEG-decoder Stage 3 data
+inventory fully populated (24/24 expected files present); ready for tick-83
+ridge training + retrieval eval.
+**Last action**: Tick 82 — discovered THINGS-EEG2 stimulus images are bundled
+with the HF dataset (`images_set.tar.gz`, 0.78 GB) — saved a separate OSF
+download trip. Downloaded (29s) + extracted (18,604 entries: 1654 train
+concept dirs × 10 images + 200 test concept dirs × 1 image + metadata +
+test_images_tensor pre-cooked). Verified directory schema matches the
+ATM index convention (alphabetical 1..1654 outer, alphabetical 1..10 inner;
+metadata.npy provides explicit `{train,test}_img_{concepts,files}` lists).
+Wrote `eeg_decoder/extract_dinov2_things.py` (frozen DINOv2 ViT-S/14 +
+`mean`-pooled patch tokens matching the FFA-layer `afp_pooled` convention
+used in tick-80 IllusionBench eval, so the same feature space is used
+across the EEG and IllusionBench measurements). SCP'd, ran on server:
+test 200 imgs in 1.4 s (6.89 ms/img), train 16,540 imgs in 12.2 s (0.74
+ms/img). Outputs saved to `data/things_features/dinov2_vits14_{test,train}.pt`
+shape (200, 384) and (16540, 384). Sanity check via `data.py`:
+**24/24 expected files present**; ATM↔DINOv2 alignment verified by index;
+DINOv2 train feature norms 20.4–45.0 (mean 29.7) = healthy unnormalized
+ViT-S features.
+**Last action outcome**: all Stage-3 inputs locked in.
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 82, ~30 min): download THINGS images from
-official OSF (~2 GB for 1854 concepts) + write `extract_dinov2_things.py`
-(frozen DINOv2 ViT-S/14 forward, save dinov2_vits14_{train,test}.pt to
-`data/things_features/`). Should complete in one tick.
-Then tick 83: train ridge + evaluate retrieval. Then tick 84: IllusionBench
-transfer (the headline).
+**Planned next action** (tick 83, ~15 min — work is small, can pace fast):
+write `eeg_decoder/stage3_ridge.py` — per-subject ridge ATM-EEG (16540×1024)
+→ DINOv2 (16540×384), closed-form solution + λ sweep on a held-out fold;
+evaluate top-K retrieval (K=1, 5, 10) on the 200 test stimuli using cosine
+similarity in DINOv2 space; record per-subject distribution + summarize.
+Compare to ATM's published CLIP retrieval as sanity. Then tick 84:
+`illusionbench_transfer.py` — apply trained ridge to project Thatcher /
+Composite / Part-Whole / Random-bbox DINOv2 features to EEG-decoded space,
+measure ISI/CSI/PWI/random-bbox (the headline).
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
