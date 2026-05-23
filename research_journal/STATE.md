@@ -1,33 +1,35 @@
 # State
 
-**Tick #**: 80 (completed)
-**Last updated**: 2026-05-23 ~19:15 (Asia/Hong_Kong)
-**Current focus** (one sentence): HOLO-Net v3 (frozen DINOv2 + global FTPC)
-**§6 verdict in: 2/4 PASS** (PWI 0.446, ISIrbox 0.654 PASS; ISI 0.901, CSI
-1.300 FAIL) — improvement over v1's 1/4 but still FAIL overall; δ-residual
-adds no significance over raw DINOv2 → mechanism must be part-aware (v2.2);
-in parallel, pivot to EEG-decoder Stage 3 (frozen DINOv2 → THINGS-EEG2).
-**Last action**: Tick 80 — template training completed (3.4 min wallclock,
-13,586 face samples, T_ema 309.21 → 287.88 monotonic). Wrote
-`eval_extract_dinov2.py` + `eval_falsification_dinov2.py` (thin variants
-loading `HOLONetV2Dinov2`, ImageNet normalization). Local sanity ✓. SCP to
-server, ran full 4-paradigm eval. Verdict logged to E045. Updated journal.
-**Last action outcome**: **partial — best HOLO-Net result so far (2/4 vs
-v1's 1/4), but does NOT meet pre-registered §6** (FAIL on Thatcher + Composite).
-The δ residual against a global template is statistically indistinguishable
-from raw DINOv2 features (CIs overlap on all 4 paradigms). FTPC needs
-part-awareness to encode the local feature-orientation mechanism (Psalta 2014).
+**Tick #**: 81 (completed)
+**Last updated**: 2026-05-23 ~19:55 (Asia/Hong_Kong)
+**Current focus** (one sentence): EEG-decoder Stage 3 scaffold landed —
+design doc locked, ATM features (train+test, 10 subjects) + ViT-H-14 image
+features downloaded (2.8 GB), `eeg_decoder/{__init__,data}.py` module
+created, sanity ✓ (22 expected files present, 2 expected-missing for tick 82).
+**Last action**: Tick 81 — server reachable / GPU idle / disk fine. Probed
+THINGS-EEG2 data on server: ATM EEG _test_ features present from earlier
+ticks, but no train EEG features, no raw EEG, no THINGS images, no DINOv2
+features. Decided pragmatic Stage-3 path: skip raw EEG (100 GB, multi-day
+download + ATM-style training); reuse ATM's pre-computed EEG features as
+the EEG-side source (per-subject 1024-d, CLIP-H/14-aligned), train per-
+subject ridge mapping ATM-EEG → DINOv2; this isolates the "EEG bottleneck
+through DINOv2 substrate" question without an ATM-retrain confound.
+Downloaded full ATM EEG features for all 10 subjects (train (66160, 1024)
++ test (200, 1024)) + ViT-H-14 train+test image features (74 MB + 1.6 MB)
+from HF. Wrote `EEG_DECODER_STAGE3_DESIGN.md` (full pre-registration with
+predictions). Wrote `eeg_decoder/__init__.py` + `data.py` (loaders +
+sanity_check). SCP'd, ran sanity on server: 22 files present, 2 expected-
+missing for DINOv2 features tick 82 will produce.
+**Last action outcome**: scaffold complete; data inventory passes sanity;
+design pre-registered with retrieval + IllusionBench-transfer predictions.
 **Running tasks** (on server, H100 80GB): none — server idle.
-**Stuck streak**: 0 (the result is informative and points to v2.2)
-**Planned next action** (tick 81, ~20 min): **TWO-TRACK** —
-  - **Track A (EEG)**: Start building EEG-decoder Stage 3 — frozen DINOv2 →
-    THINGS-EEG2 (the headline EEG deliverable the user explicitly asked for).
-    Locate THINGS-EEG2 prep on server; if not present, download; write a
-    minimal ATM-style ridge decoder skeleton targeting `afp_pooled`.
-  - **Track B (HOLO-Net v2.2)**: Sketch the part-aware FTPC design — K=4
-    sub-templates {T_eyes, T_nose, T_mouth, T_chin} at fixed spatial sub-
-    regions of the 16×16 patch grid, per-region δ aggregated by upright-vs-
-    inverted concordance. Implement & re-eval next tick.
+**Stuck streak**: 0
+**Planned next action** (tick 82, ~30 min): download THINGS images from
+official OSF (~2 GB for 1854 concepts) + write `extract_dinov2_things.py`
+(frozen DINOv2 ViT-S/14 forward, save dinov2_vits14_{train,test}.pt to
+`data/things_features/`). Should complete in one tick.
+Then tick 83: train ridge + evaluate retrieval. Then tick 84: IllusionBench
+transfer (the headline).
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
