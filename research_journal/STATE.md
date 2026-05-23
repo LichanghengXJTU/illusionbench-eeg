@@ -1,47 +1,44 @@
 # State
 
-**Tick #**: 84 (completed) — **THE HEADLINE TICK**
-**Last updated**: 2026-05-23 ~21:20 (Asia/Hong_Kong)
-**Current focus** (one sentence): **IllusionBench-EEG transfer DONE**. 0/10
-subjects pass 4/4 §6 criteria; aggregate gives **1/4 PASS (only ISIrbox)**;
-3/10 subjects scrape 2/4 (PWI + ISIrbox). **PWI flipped from raw DINOv2
-PASS (0.397) to EEG-decoded FAIL (0.537 aggregate; 3 subjects with best
-r_d preserve PWI).** ISI worsens slightly (0.811 vs 0.908 raw, more
-anti-Thatcher). CSI ≈ unchanged (1.275 vs 1.282). ISIrbox preserved for all
-10 subjects — control criterion robust. **THE BENCHMARK'S PRE-REGISTERED
-SHARP PREDICTION IS VINDICATED**: even the best EEG decoder + best target
-(DINOv2 + ridge) cannot deliver the human-aligned §6 PASS profile.
-**Last action**: Tick 84 — wrote `eeg_decoder/illusionbench_transfer.py` —
-per-dim r_d filter applied to IllusionBench DINOv2 features (raw mean-pooled
-features at FFA layer = E045 baseline), per subject + aggregate + raw control;
-then re-ran `analysis.compute_metrics` on each. Pixel-corrected.
-**Result table (aggregate r_d; pixel-corrected at FFA = EEG-decoded DINOv2)**:
-- ISI = 0.811 (raw 0.908; **anti-direction worse**; need ≥3.0 → FAIL)
-- CSI = 1.275 (raw 1.282; essentially preserved; need ≥1.5 → FAIL)
-- PWI = 0.537 (raw 0.397; **flipped PASS→FAIL**; need ≤0.5 → FAIL)
-- ISIrbox = 0.603 (raw 0.662; control passes; need ≤1.5 → PASS)
-- **ALL FOUR: FAIL (1/4 pass; only ISIrbox)**
-
-Per-subject: 7/10 give 1/4 pass (ISIrbox only); 3/10 give 2/4 (PWI + ISIrbox);
-**0/10 give 3+/4**. The 3 PWI-pass subjects (04, 08, 10) have the highest
-per-dim r_d means (0.342-0.354), confirming a clean dose-response.
-E047 written with full results + interpretation + idea-pipeline impact.
-**Last action outcome**: the IllusionBench-EEG benchmark's pre-registered
-sharp prediction is **VINDICATED**: even the best EEG decoder + best target
-combination we found cannot deliver the §6 human-aligned PASS profile.
+**Tick #**: 85 (completed) — MLP sensitivity check
+**Last updated**: 2026-05-23 ~21:50 (Asia/Hong_Kong)
+**Current focus** (one sentence): **MLP sensitivity result in**: retrieval
+≈ ridge (top-1 18.1 vs 18.9%, per-dim r_d 0.324 vs 0.315); IllusionBench
+transfer shows MLP **partially recovers PWI** (aggregate 0.479 PASS vs
+ridge's 0.537 FAIL; 7/10 vs 3/10 subjects pass PWI); ISI/CSI unchanged →
+**confirms "ISI/CSI fundamentally bottlenecked by EEG (decoder-family
+invariant)" + reveals "PWI has non-linear EEG structure missed by ridge"**.
+0/10 subjects achieve 4/4 with either decoder — benchmark sharpness
+robust. Strengthens AND refines the headline.
+**Last action**: Tick 85 — wrote `eeg_decoder/stage3_mlp.py` (2-layer MLP
+1024→512→384 with GELU+dropout, cosine loss, AdamW, early-stop). Ran on H100:
+10 subjects × ~7s each = 78s total. Retrieval: top-1 0.181 ± 0.039 (vs ridge
+0.189 ± 0.038), top-5 0.430 (vs 0.436), top-10 0.566 (vs 0.565) — ESSENTIALLY
+IDENTICAL to ridge on top-K. Per-dim r_d mean 0.324 (vs ridge 0.315) — also
+≈ same. Re-ran `illusionbench_transfer.py` with MLP per-dim r_d.
+**MLP IllusionBench §6 verdict (aggregate)**:
+- ISI = 0.814 (vs ridge 0.811; raw 0.908) FAIL — unchanged
+- CSI = 1.273 (vs ridge 1.275; raw 1.282) FAIL — unchanged
+- **PWI = 0.479 PASS (vs ridge 0.537 FAIL; raw 0.397)** — MLP recovers PWI
+- ISIrbox = 0.603 (vs ridge 0.603; raw 0.662) PASS — unchanged
+- ALL FOUR: FAIL (2/4 pass — better than ridge's 1/4)
+**Per-subject**: 7/10 pass PWI (vs ridge's 3/10); 0/10 achieve 4/4 (same).
+Wrote E048 capturing: ISI/CSI bottlenecked decoder-family-invariantly (strong
+result); PWI has non-linear EEG structure (sub-finding); 0/10 4/4 robust.
+**Last action outcome**: headline strengthened and refined. Story:
+"ISI/CSI fundamentally bottlenecked by EEG (decoder-family-invariant);
+PWI partially recoverable with non-linear decoder (cognitive sub-finding);
+4/4 PASS unreachable for any decoder we've tried (benchmark sharpness holds)."
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 85, ~25 min): two-track —
-  - **Track 1 (Paper consolidation)**: outline the IllusionBench-EEG paper
-    with the 3 lines of evidence now in hand (image-side priors, HOLO-Net
-    3× negatives, EEG-side transfer vindication). The story is complete
-    enough to start drafting.
-  - **Track 2 (Stage-3b sensitivity)**: try MLP mapping instead of ridge to
-    test the [CONJECTURE] in E047 that non-linear decoders could recover
-    PWI structure that linear-attenuation destroys. If MLP also fails, the
-    "EEG bottleneck is fundamental" conclusion is much stronger.
-  - **Track 3 (deferred)**: HOLO-Net v2.2 part-aware FTPC (image-side
-    complement; lower priority now that the EEG-side headline is complete).
+**Planned next action** (tick 86, ~25 min): **paper outline** — story is
+complete (3 evidence lines + ridge/MLP comparison + 4-layer narrative arc).
+Will draft `research_journal/PAPER_OUTLINE_v1.md`: title, abstract,
+contributions, sections (image-side dissociation; HOLO-Net architectural
+negatives; EEG decoder Stage 3; IllusionBench-EEG transfer; sub-finding on
+PWI non-linearity), figures inventory, comparisons to claim, related work
+checklist. Then tick 87 onward: HOLO-Net v2.2 part-aware FTPC (image-side
+complement) OR paper section drafts (whichever the user prefers).
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
