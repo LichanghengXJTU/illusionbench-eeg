@@ -1,30 +1,26 @@
 # State
 
-**Tick #**: 74
-**Last updated**: 2026-05-23 ~12:00 (Asia/Hong_Kong)
+**Tick #**: 75
+**Last updated**: 2026-05-23 ~12:35 (Asia/Hong_Kong)
 **Current focus** (one sentence): EDA done + ImageNet-1K download started in
 background; `data_v2.py` next tick.
-**Last action**: Tick 74 — invoked **`dataset-inspect` SKILL**: ran MediaPipe
-face detection on a streamed ImageNet-1K sample (twice — first attempt was
-biased by HF sequential streaming hitting only class-0 "tench" / first-20
-bird+fish classes, giving misleading 62%/1.6%). Cross-referenced literature:
-[Yang et al. 2022 FAccT](https://dl.acm.org/doi/10.1145/3531146.3534615)
-reports **~17% ImageNet face-containment rate** (MTCNN) — my biased samples
-bracket this (62% high on people-rich classes, 1.6% on bird/fish). MediaPipe
-pipeline verified working (confident detections, mean score 0.85 on faces).
-Committed to **`evanarlian/imagenet_1k_resized_256`** (non-gated, 256-resized,
-~70 GB) and started the HF download in background.
-**Last action outcome**: face_mask design defensible (at batch 1024, expect
-~170 face-samples/batch → template EMA will converge in <1 epoch). Dataset
-acquisition path clear, download progressing (7/52 files in 2 min, ETA ~20 min).
+**Last action**: Tick 75 — fixed disk issue (HF cache default = root partition,
+30 G, filled at first download attempt) by clearing `/root/.cache/huggingface`
+(freed 28 G) and relaunching the download with `HF_HOME=/workspace/.hf_cache`
+(1.7 TB free). Wrote `holo_net/data_v2.py` (DINOv2 multi-crop: 2 global ×
+224² + 8 local × 96² + ImageNet-norm + RandomHFlip + ColorJitter +
+RandomGrayscale; per-worker MediaPipe lazy-init; collate produces per-view
+batched tensors + face_mask + labels). Deployed to server.
+**Last action outcome**: data_v2.py ready; download at 73 % (38/52 files,
+~3 min ETA for train + a moment for val). Sanity check pending download completion.
 **Running tasks** (on server, H100 80GB):
-  - ImageNet download (background, PID 66574). ETA ~20 min.
+  - ImageNet download (PID re-launched). ~3-5 min to complete.
 **Stuck streak**: 0
-**Planned next action** (tick 75): write `holo_net/data_v2.py` —
-DINOv2-style multi-crop augmentation (2 global + 6 local crops) + MediaPipe
-face-mask in DataLoader workers; verify against the downloaded dataset.
-Then tick 76 = `train_v2.py` (DINO teacher-student + PC loss + EMA template
-update); tick 77 = launch SSL training (invoke **`experiment-run` SKILL**).
+**Planned next action** (tick 76): verify download done, run `data_v2.py`
+sanity check; if OK → start writing `train_v2.py` (DINO teacher-student EMA +
+DINO KL loss + PC loss + template EMA update + cosine LR + warmup).
+Tick 77 = launch SSL training (invoke **`experiment-run` SKILL**, ~24-30 h
+H100 for 100 epochs on ImageNet-1K).
 **User directive (tick 75)**: 全权 / 持续 loop / 主线 = EEG 关联 + 模型设计 +
 公平严格 / 主动调用科研 SKILLS.
 **Confidence in current best idea**:
