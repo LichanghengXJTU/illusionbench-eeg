@@ -215,12 +215,20 @@ class HOLONetV2(nn.Module):
     def pc_loss(self, afp_spatial: torch.Tensor,
                 face_mask: torch.Tensor) -> torch.Tensor:
         """Self-supervised face-template predictive-coding loss:
-            L_pc = mean_{i in faces} ‖AFP_spatial_i − T‖²
+            L_pc = mean_{i in faces} ‖stop_grad(AFP_spatial_i) − T‖²
         face_mask: (B,) bool — True for face-detected samples in the batch.
-        Returns 0 when no face samples (safe no-op)."""
+        Returns 0 when no face samples (safe no-op).
+
+        **AFP is DETACHED** here (tick-78 fix). PC theory: the top-down prior
+        (T) learns to predict the bottom-up observation (AFP); the observation
+        is NOT pulled toward the prior. Without this detach, both T and AFP
+        get gradient from ‖AFP−T‖² and trivially collapse toward each other
+        (and toward zero). Run 1 (without detach) showed exactly this:
+        L_pc → ~0.001, AFP magnitude shrinking, and L_dino consequently
+        collapsed to ln(out_dim) (uniform student output)."""
         if not bool(face_mask.any()):
             return torch.zeros((), device=afp_spatial.device)
-        face_afp = afp_spatial[face_mask]
+        face_afp = afp_spatial[face_mask].detach()        # ← stop grad on AFP
         T = self.face_template()
         diff = face_afp - T[None]
         return diff.pow(2).mean()

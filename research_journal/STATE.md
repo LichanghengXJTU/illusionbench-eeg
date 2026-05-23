@@ -1,32 +1,33 @@
 # State
 
-**Tick #**: 77
-**Last updated**: 2026-05-23 ~13:30 (Asia/Hong_Kong)
+**Tick #**: 78
+**Last updated**: 2026-05-23 ~14:05 (Asia/Hong_Kong)
 **Current focus** (one sentence): EDA done + ImageNet-1K download started in
 background; `data_v2.py` next tick.
-**Last action**: Tick 77 — invoked **`experiment-run` SKILL**. Caught + fixed
-a real bug in 3-step smoke at batch 256: template T shape (D, 7, 7) only
-matches AFP_spatial on global views (224→7²); local views (96→3²) caused
-shape mismatch in `δ = afp_spatial - T`. Fix (`model_v2.py`): compute δ only
-when AFP shape matches T's; local views skip δ (the PC loss + template EMA
-were already global-only by design). Smoke re-ran: L_dino 10.65 / L_pc 1.30 /
-26-of-256 faces (10%) / T_ema norm 50.71. **Launched full 100-ep SSL run**:
-`/workspace/runs/2026-05-23_holonet-v2-ftpc_seed20260521/` (snapshot files
-staged: hypothesis.md, cmd.txt, env.txt, git.txt). 500,400 total steps.
-**Last action outcome**: training RUNNING; GPU 27.4 G / 80 G at 100% util;
-19 procs.
+**Last action**: Tick 78 — first monitor on run 1 caught COLLAPSE at step
+3200 (~33 min): L_dino stuck at 11.09 = ln(out_dim) (uniform student
+collapse); L_pc collapsed to ~0.001 (degenerate AFP↔T trivial match); T_ema
+shrank 50→7 (AFP magnitude shrinking). DIAGNOSIS: PC loss `‖AFP − T‖²` had
+gradient through BOTH AFP and T → trivial co-collapse. FIX (`model_v2.py`):
+`face_afp = afp_spatial[face_mask].detach()` in `pc_loss` — predictive-
+coding-correct (T learns to predict AFP; AFP shaped only by SSL). Killed
+run 1, scp'd fix, launched **run 2** (tag `holonet-v2-pc-detach`) in fresh
+dir. step 150 / 1.8 min: L_dino 11.27 (slightly above 11.09 baseline = NOT
+yet collapsed), L_pc 1.18 (HOLDING, not collapsing to 0), T_ema 48 stable,
+template_norm 3.16 (T learnable training healthily). Fix working at init.
+**Last action outcome**: run 1 killed (expected, caught the bug); run 2
+running healthily; pre-collapse signals NOT present.
 **Running tasks** (on server, H100 80GB):
-  - **HOLO-Net v2.1 SSL on ImageNet-1K** —
-    `/workspace/runs/2026-05-23_holonet-v2-ftpc_seed20260521/`. 100 ep × 5004
-    steps/ep = 500,400 steps; wall-clock ETA TBD after first 100 steps.
-**Stuck streak**: 0
-**Planned next action** (tick 78, ~30 min): first monitoring tick — read
-`train_log.jsonl` for steady-state step_time → real ETA; verify L_dino is
-descending and L_pc is non-NaN; check T_ema norm growing as expected. If
-steady-state too slow (>3 s/step), consider reducing local crops / batch.
-Subsequent ticks: hourly monitor, then 1× intermediate eval at epoch ~25
-(`eval_falsification.py` on early checkpoint, partial IllusionBench signal
-check).
+  - **HOLO-Net v2.1 SSL "pc-detach"** —
+    `/workspace/runs/2026-05-23_holonet-v2-pc-detach_seed20260521/`. step ~150,
+    L_dino 11.27 / L_pc 1.18, step_t ~0.62s. ETA 3.6 d at current rate.
+**Stuck streak**: 0 (tick produced a real bug-fix + re-launch)
+**Planned next action** (tick 79, ~30 min): monitor run 2 (~step 3000) —
+verify L_dino starts descending below 11.09 (no collapse) AND L_pc stays
+in healthy range (0.5-1.5, T learning T_face statistic, not zero), AND
+T_ema stays in ~40-60 range (AFP not shrinking). If all 3 healthy → fix
+works, continue running. If L_dino still flat → DINO setup itself needs
+work (center momentum / teacher temp / different SSL impl).
 **User directive (tick 75)**: 全权 / 持续 loop / 主线 = EEG 关联 + 模型设计 +
 公平严格 / 主动调用科研 SKILLS.
 **Confidence in current best idea**:
