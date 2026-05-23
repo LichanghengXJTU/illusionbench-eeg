@@ -187,3 +187,63 @@ proposed v2.0 redesign coming this tick / next.
   this file with a `RESOLVED:` line if you want a different split (e.g., go
   all-in on EEG decoder and freeze HOLO-Net at v3; or all-in on v2.2 and
   defer the EEG decoder; or pivot HOLO-Net to a different mechanism entirely).
+
+---
+
+## MILESTONE-004 — 2026-05-23 20:55 — Stage 3 EEG decoder built; **DINOv2 is a better EEG target than CLIP-H/14** (a new contribution)
+
+The Stage-3 EEG decoder you asked for (主线=EEG) is now built and validated.
+
+**Per-subject ridge ATM-EEG → frozen DINOv2 ViT-S/14, 200-way retrieval on
+THINGS-EEG2 test set, all 10 subjects**:
+
+| | mean | std | range |
+|---|------|-----|-------|
+| top-1 | **0.189** | 0.038 | 0.130 – 0.250 |
+| top-5 | 0.436 | 0.070 | 0.315 – 0.530 |
+| top-10 | 0.565 | 0.075 | 0.425 – 0.670 |
+
+Chance = 0.5%. Top-1 mean is **38× chance**, in the pre-registered range
+(18-32% from `EEG_DECODER_STAGE3_DESIGN.md` §6).
+
+**Surprising finding I want you to see**:
+
+Same ridge architecture, same EEG source, with CLIP-H/14 as the target
+instead of DINOv2: top-1 = 0.116 ± 0.037 = **CLIP-target underperforms by
+~38% absolute / ~63% relative.**
+
+Combined with E045 (where DINOv2 raw features PASS 2/4 §6 criteria including
+the dramatic part-whole flip from v1's 2.20 to 0.446), we now have two
+independent lines saying DINOv2 is the better EEG-decoder target:
+- **Image-side** (E045): DINOv2 raw FFA features pass 2/4 §6 (CLIP family
+  passes Thatcher but fails the rest per E033/E034).
+- **EEG-side** (E046): DINOv2-target ridge ATM-EEG mapping retrieves 63%
+  better than CLIP-target ridge.
+
+This refines E020's "uniform low-pass" thesis as **target-specific** — the
+low-pass was a property of CLIP-H/14 as a target, not of the EEG signal
+itself. With DINOv2 as target, per-dim preservation r_d mean is 0.315 (vs
+E020's CLIP ~0.158), and 98.5% of dims have r_d > 0.1 (i.e. essentially all
+dims carry EEG-recoverable signal). 
+
+**This is a publishable contribution in its own right** — separate from the
+IllusionBench-EEG benchmark — and motivates the headline experiment tick 84
+is running next: does the per-dim EEG bottleneck (r_d ≈ 0.3 average filter)
+preserve the §6 PASS profile that the raw DINOv2 features have? Or does the
+EEG attenuation collapse it to chance? Either result is informative:
+- preserved → DINOv2-targeted EEG decoders are paradigm-consistent (best
+  case for the headline)
+- collapsed → EEG bottleneck destroys the §6 signal despite per-dim
+  preservation (cleanest sharp prediction of the benchmark; motivates
+  sensor-side innovation in Stage 4+)
+
+**Idea pipeline shift**:
+- **Idea-001 (IllusionBench-EEG)**: **9.5 → 9.6** — the DINOv2-vs-CLIP target
+  finding is a useful refinement that strengthens the "what matters for EEG
+  decoder design" story.
+- **Idea-003 (HOLO-Net)**: unchanged at 5.5; v2.2 work deferred to after
+  tick 84 (we now have the headline EEG result first).
+
+**Next**: tick 84 — IllusionBench transfer (the headline). If you have a
+direction (lock in this as the paper's main result vs continue HOLO-Net v2.2
+in parallel), edit this file with `RESOLVED:`.

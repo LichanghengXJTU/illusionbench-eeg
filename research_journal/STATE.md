@@ -1,40 +1,38 @@
 # State
 
-**Tick #**: 82 (completed)
-**Last updated**: 2026-05-23 ~20:25 (Asia/Hong_Kong)
-**Current focus** (one sentence): THINGS images downloaded + DINOv2 features
-extracted (train 12.2s, test 1.4s, all on H100); EEG-decoder Stage 3 data
-inventory fully populated (24/24 expected files present); ready for tick-83
-ridge training + retrieval eval.
-**Last action**: Tick 82 — discovered THINGS-EEG2 stimulus images are bundled
-with the HF dataset (`images_set.tar.gz`, 0.78 GB) — saved a separate OSF
-download trip. Downloaded (29s) + extracted (18,604 entries: 1654 train
-concept dirs × 10 images + 200 test concept dirs × 1 image + metadata +
-test_images_tensor pre-cooked). Verified directory schema matches the
-ATM index convention (alphabetical 1..1654 outer, alphabetical 1..10 inner;
-metadata.npy provides explicit `{train,test}_img_{concepts,files}` lists).
-Wrote `eeg_decoder/extract_dinov2_things.py` (frozen DINOv2 ViT-S/14 +
-`mean`-pooled patch tokens matching the FFA-layer `afp_pooled` convention
-used in tick-80 IllusionBench eval, so the same feature space is used
-across the EEG and IllusionBench measurements). SCP'd, ran on server:
-test 200 imgs in 1.4 s (6.89 ms/img), train 16,540 imgs in 12.2 s (0.74
-ms/img). Outputs saved to `data/things_features/dinov2_vits14_{test,train}.pt`
-shape (200, 384) and (16540, 384). Sanity check via `data.py`:
-**24/24 expected files present**; ATM↔DINOv2 alignment verified by index;
-DINOv2 train feature norms 20.4–45.0 (mean 29.7) = healthy unnormalized
-ViT-S features.
-**Last action outcome**: all Stage-3 inputs locked in.
+**Tick #**: 83 (completed)
+**Last updated**: 2026-05-23 ~20:55 (Asia/Hong_Kong)
+**Current focus** (one sentence): **Stage 3 EEG decoder built and validated**
+— per-subject ridge ATM-EEG → DINOv2, top-1 retrieval **18.9% ± 3.8% (10
+subjects, 200-way, chance 0.5%; 38× chance)**, top-5 43.6%, top-10 56.5%,
+per-dim r_d mean 0.315 with 98.5% dims > 0.1; **DINOv2 target outperforms
+CLIP-H/14 by ~63% relative under same ridge** (CLIP top-1 11.6% via same
+pipeline) — new finding: target-space matters, refining E020's "uniform
+low-pass" thesis. Tick 84 next = IllusionBench transfer (the headline).
+**Last action**: Tick 83 — wrote `eeg_decoder/stage3_ridge.py` (per-subject
+closed-form ridge + 5-fold λ-CV + top-K retrieval + per-dim r_d for tick-84).
+Ran on server: 10 subjects × λ-CV + final fit + eval in <60s total. λ_best=100
+for all subjects (CV consistent). **Top-1 = 0.189 ± 0.038** (200-way; chance
+0.5%; 38× chance), **top-5 = 0.436 ± 0.070**, **top-10 = 0.565 ± 0.075**.
+Per-dim r_d on DINOv2 test predictions: mean 0.315, std 0.108, 98.5% dims
+>0.1. Pre-registered prediction (18-32% top-1) CONFIRMED. Ran sanity
+comparator (same ridge, CLIP-H/14 target): top-1 = 0.116 ± 0.037 → **DINOv2
+target outperforms CLIP-H/14 by ~63% relative under linear decoding** — a
+new finding refining E020's "uniform low-pass" thesis (the low-pass was
+target-specific). Wrote E046 with full results + sanity comparator + linked
+ideas. NPZs at `/workspace/runs/2026-05-23_stage3-ridge_seed20260521/`.
+**Last action outcome**: Stage-3 EEG decoder validated, ridge weights +
+per-dim r_d saved → ready for tick-84 transfer.
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 83, ~15 min — work is small, can pace fast):
-write `eeg_decoder/stage3_ridge.py` — per-subject ridge ATM-EEG (16540×1024)
-→ DINOv2 (16540×384), closed-form solution + λ sweep on a held-out fold;
-evaluate top-K retrieval (K=1, 5, 10) on the 200 test stimuli using cosine
-similarity in DINOv2 space; record per-subject distribution + summarize.
-Compare to ATM's published CLIP retrieval as sanity. Then tick 84:
-`illusionbench_transfer.py` — apply trained ridge to project Thatcher /
-Composite / Part-Whole / Random-bbox DINOv2 features to EEG-decoded space,
-measure ISI/CSI/PWI/random-bbox (the headline).
+**Planned next action** (tick 84, ~30 min — the headline): write
+`eeg_decoder/illusionbench_transfer.py` — for each (subject, layer, paradigm):
+  apply per-dim r_d filter to IllusionBench DINOv2 features at FFA layer →
+  feed through repo `analysis.compute_metrics` → record ISI/CSI/PWI/random-bbox.
+Pre-registered prediction: PWI/random-bbox PASS likely preserved (raw 0.446,
+0.654; per-dim attenuation should not flip sign); CSI 1.30 → unclear (close
+to threshold); ISI 0.901 → likely stays anti-direction. Report per-subject
+distribution + aggregate. Update IDEA_PIPELINE scores based on outcome.
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
