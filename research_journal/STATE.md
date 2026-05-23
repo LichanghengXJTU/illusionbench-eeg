@@ -1,15 +1,15 @@
 # State
 
-**Tick #**: 85 (completed) — MLP sensitivity check
-**Last updated**: 2026-05-23 ~21:50 (Asia/Hong_Kong)
-**Current focus** (one sentence): **MLP sensitivity result in**: retrieval
-≈ ridge (top-1 18.1 vs 18.9%, per-dim r_d 0.324 vs 0.315); IllusionBench
-transfer shows MLP **partially recovers PWI** (aggregate 0.479 PASS vs
-ridge's 0.537 FAIL; 7/10 vs 3/10 subjects pass PWI); ISI/CSI unchanged →
-**confirms "ISI/CSI fundamentally bottlenecked by EEG (decoder-family
-invariant)" + reveals "PWI has non-linear EEG structure missed by ridge"**.
-0/10 subjects achieve 4/4 with either decoder — benchmark sharpness
-robust. Strengthens AND refines the headline.
+**Tick #**: 86 (completed) — paper outline v2
+**Last updated**: 2026-05-23 ~22:15 (Asia/Hong_Kong)
+**Current focus** (one sentence): Wrote `PAPER_OUTLINE_v2.md` integrating all
+post-tick-8 evidence (HOLO-Net 3-variant negatives + Stage 3 decoder + transfer
+vindication + MLP sub-finding). v1 outline (tick 8) preserved as
+`PAPER_OUTLINE.md`. v2 has updated abstract (270 words), 5 contributions
+re-formulated, 10-section structure (intro / related / benchmark / image-side /
+HOLO-Net / EEG / sub-finding / discussion / future / conclusion), figures and
+tables inventories updated, 4 user-decision points flagged (single vs 2 papers,
+companion PWI paper, run v2.2 first?, run Stage 4 first?).
 **Last action**: Tick 85 — wrote `eeg_decoder/stage3_mlp.py` (2-layer MLP
 1024→512→384 with GELU+dropout, cosine loss, AdamW, early-stop). Ran on H100:
 10 subjects × ~7s each = 78s total. Retrieval: top-1 0.181 ± 0.039 (vs ridge
@@ -31,14 +31,13 @@ PWI partially recoverable with non-linear decoder (cognitive sub-finding);
 4/4 PASS unreachable for any decoder we've tried (benchmark sharpness holds)."
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 86, ~25 min): **paper outline** — story is
-complete (3 evidence lines + ridge/MLP comparison + 4-layer narrative arc).
-Will draft `research_journal/PAPER_OUTLINE_v1.md`: title, abstract,
-contributions, sections (image-side dissociation; HOLO-Net architectural
-negatives; EEG decoder Stage 3; IllusionBench-EEG transfer; sub-finding on
-PWI non-linearity), figures inventory, comparisons to claim, related work
-checklist. Then tick 87 onward: HOLO-Net v2.2 part-aware FTPC (image-side
-complement) OR paper section drafts (whichever the user prefers).
+**Planned next action** (tick 87, ~20 min): per outline §D3 default
+recommendation, **implement HOLO-Net v2.2 part-aware FTPC** (image-side
+complement to the EEG-side headline). K=4 sub-templates {T_eyes, T_nose,
+T_mouth, T_chin} at fixed sub-regions of the 16×16 patch grid; per-region
+δ aggregation; quick template-only training on ImageNet face samples; eval
+on IllusionBench. If v2.2 lifts ISI from 0.901 (anti) to ≥ 1.0 (no anti)
+that's a meaningful image-side gain. ~1 tick to scaffold + run.
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
