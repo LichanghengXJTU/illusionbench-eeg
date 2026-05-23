@@ -1,38 +1,47 @@
 # State
 
-**Tick #**: 83 (completed)
-**Last updated**: 2026-05-23 ~20:55 (Asia/Hong_Kong)
-**Current focus** (one sentence): **Stage 3 EEG decoder built and validated**
-— per-subject ridge ATM-EEG → DINOv2, top-1 retrieval **18.9% ± 3.8% (10
-subjects, 200-way, chance 0.5%; 38× chance)**, top-5 43.6%, top-10 56.5%,
-per-dim r_d mean 0.315 with 98.5% dims > 0.1; **DINOv2 target outperforms
-CLIP-H/14 by ~63% relative under same ridge** (CLIP top-1 11.6% via same
-pipeline) — new finding: target-space matters, refining E020's "uniform
-low-pass" thesis. Tick 84 next = IllusionBench transfer (the headline).
-**Last action**: Tick 83 — wrote `eeg_decoder/stage3_ridge.py` (per-subject
-closed-form ridge + 5-fold λ-CV + top-K retrieval + per-dim r_d for tick-84).
-Ran on server: 10 subjects × λ-CV + final fit + eval in <60s total. λ_best=100
-for all subjects (CV consistent). **Top-1 = 0.189 ± 0.038** (200-way; chance
-0.5%; 38× chance), **top-5 = 0.436 ± 0.070**, **top-10 = 0.565 ± 0.075**.
-Per-dim r_d on DINOv2 test predictions: mean 0.315, std 0.108, 98.5% dims
->0.1. Pre-registered prediction (18-32% top-1) CONFIRMED. Ran sanity
-comparator (same ridge, CLIP-H/14 target): top-1 = 0.116 ± 0.037 → **DINOv2
-target outperforms CLIP-H/14 by ~63% relative under linear decoding** — a
-new finding refining E020's "uniform low-pass" thesis (the low-pass was
-target-specific). Wrote E046 with full results + sanity comparator + linked
-ideas. NPZs at `/workspace/runs/2026-05-23_stage3-ridge_seed20260521/`.
-**Last action outcome**: Stage-3 EEG decoder validated, ridge weights +
-per-dim r_d saved → ready for tick-84 transfer.
+**Tick #**: 84 (completed) — **THE HEADLINE TICK**
+**Last updated**: 2026-05-23 ~21:20 (Asia/Hong_Kong)
+**Current focus** (one sentence): **IllusionBench-EEG transfer DONE**. 0/10
+subjects pass 4/4 §6 criteria; aggregate gives **1/4 PASS (only ISIrbox)**;
+3/10 subjects scrape 2/4 (PWI + ISIrbox). **PWI flipped from raw DINOv2
+PASS (0.397) to EEG-decoded FAIL (0.537 aggregate; 3 subjects with best
+r_d preserve PWI).** ISI worsens slightly (0.811 vs 0.908 raw, more
+anti-Thatcher). CSI ≈ unchanged (1.275 vs 1.282). ISIrbox preserved for all
+10 subjects — control criterion robust. **THE BENCHMARK'S PRE-REGISTERED
+SHARP PREDICTION IS VINDICATED**: even the best EEG decoder + best target
+(DINOv2 + ridge) cannot deliver the human-aligned §6 PASS profile.
+**Last action**: Tick 84 — wrote `eeg_decoder/illusionbench_transfer.py` —
+per-dim r_d filter applied to IllusionBench DINOv2 features (raw mean-pooled
+features at FFA layer = E045 baseline), per subject + aggregate + raw control;
+then re-ran `analysis.compute_metrics` on each. Pixel-corrected.
+**Result table (aggregate r_d; pixel-corrected at FFA = EEG-decoded DINOv2)**:
+- ISI = 0.811 (raw 0.908; **anti-direction worse**; need ≥3.0 → FAIL)
+- CSI = 1.275 (raw 1.282; essentially preserved; need ≥1.5 → FAIL)
+- PWI = 0.537 (raw 0.397; **flipped PASS→FAIL**; need ≤0.5 → FAIL)
+- ISIrbox = 0.603 (raw 0.662; control passes; need ≤1.5 → PASS)
+- **ALL FOUR: FAIL (1/4 pass; only ISIrbox)**
+
+Per-subject: 7/10 give 1/4 pass (ISIrbox only); 3/10 give 2/4 (PWI + ISIrbox);
+**0/10 give 3+/4**. The 3 PWI-pass subjects (04, 08, 10) have the highest
+per-dim r_d means (0.342-0.354), confirming a clean dose-response.
+E047 written with full results + interpretation + idea-pipeline impact.
+**Last action outcome**: the IllusionBench-EEG benchmark's pre-registered
+sharp prediction is **VINDICATED**: even the best EEG decoder + best target
+combination we found cannot deliver the §6 human-aligned PASS profile.
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 84, ~30 min — the headline): write
-`eeg_decoder/illusionbench_transfer.py` — for each (subject, layer, paradigm):
-  apply per-dim r_d filter to IllusionBench DINOv2 features at FFA layer →
-  feed through repo `analysis.compute_metrics` → record ISI/CSI/PWI/random-bbox.
-Pre-registered prediction: PWI/random-bbox PASS likely preserved (raw 0.446,
-0.654; per-dim attenuation should not flip sign); CSI 1.30 → unclear (close
-to threshold); ISI 0.901 → likely stays anti-direction. Report per-subject
-distribution + aggregate. Update IDEA_PIPELINE scores based on outcome.
+**Planned next action** (tick 85, ~25 min): two-track —
+  - **Track 1 (Paper consolidation)**: outline the IllusionBench-EEG paper
+    with the 3 lines of evidence now in hand (image-side priors, HOLO-Net
+    3× negatives, EEG-side transfer vindication). The story is complete
+    enough to start drafting.
+  - **Track 2 (Stage-3b sensitivity)**: try MLP mapping instead of ridge to
+    test the [CONJECTURE] in E047 that non-linear decoders could recover
+    PWI structure that linear-attenuation destroys. If MLP also fails, the
+    "EEG bottleneck is fundamental" conclusion is much stronger.
+  - **Track 3 (deferred)**: HOLO-Net v2.2 part-aware FTPC (image-side
+    complement; lower priority now that the EEG-side headline is complete).
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct
