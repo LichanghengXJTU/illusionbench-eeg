@@ -334,3 +334,50 @@ Per-generation report format:
 3. §6 verdict table (image-side)
 4. Diff vs previous generation
 5. Diagnosis + next-generation revision (if FAIL)
+
+---
+
+## MILESTONE-006 — 2026-05-23 23:35 — Gen 1 EXHAUSTED (5 variants tried, ISI ceiling 1.08); awaiting your steer between Gen-2-first vs Gen-3-directly
+
+5 image-side head-only variants tried (v3 global, v2.2 part-aware, v2.3 orient,
+v2.4a α-sweep, v2.4b face-restricted). Cumulative best ISI on Thatcher =
+**1.082** (at α=2.0, but with PWI 0.594 FAIL). No variant achieves the
+ISI > 1.2 threshold the iteration ladder set for Gen 1.
+
+**Root cause**: frozen DINOv2 backbone has orientation-invariant features
+(SSL on LVD-142M with all-orientation augmentation). Head-only changes
+(templates, vflip readouts, part decomposition) can re-weight features but
+cannot create orientation-specific ones. The lever has to be the BACKBONE.
+
+**Two paths forward; my default is B, please override if you want A**:
+
+**Option A — jump to Gen 3 immediately (compute escalation)**:
+- Train ViT-S/14 from scratch on natural images + face data, NO vertical
+  flip augmentation, + orientation classification aux task
+- Compute: single H100 ~3-5 days; 8× H100 ~12-18h
+- Risk: from-scratch SSL is collapse-prone (we saw v2 collapse 3 times)
+- **Triggers NEED-002 = 8× H100 box request**
+
+**Option B (default) — Gen 2 v3.0 first (~5 min cost), then escalate if it fails**:
+- Train dual templates: T_upright (EMA on detected upright faces) +
+  T_inverted (EMA on vflip of same samples)
+- At inference: δ = AFP - T_closer (pick closer template); ffa = concat(δ_up, δ_inv)
+- Honest assessment: low probability of breaking ISI past 1.2 (the asymmetric
+  template trick still works on top of a frozen backbone; the bottleneck is
+  still the backbone)
+- If v3.0 fails (expected), immediately escalate to Option A
+
+**Compute escalation request (NEED-002 draft for if/when triggered)**:
+
+```
+NEED-002 — Gen 3 from-scratch backbone retrain
+Why: Gen 1+2 saturated; backbone is the lever for Thatcher
+Resource: 8× H100 box for ~24h training time
+Estimated cost: TBD by user
+What blocks if not provided: project main story (HOLO-Net passes §6 4/4)
+What I'm doing meanwhile: writing Gen 3 training code on current 1× H100
+Awaiting: rental box from user
+```
+
+**RESOLVED**: edit this line with your choice (A or B). Loop will continue
+on B by default if no response in ~2 ticks.
