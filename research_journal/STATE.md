@@ -31,13 +31,15 @@ PWI partially recoverable with non-linear decoder (cognitive sub-finding);
 4/4 PASS unreachable for any decoder we've tried (benchmark sharpness holds)."
 **Running tasks** (on server, H100 80GB): none — server idle.
 **Stuck streak**: 0
-**Planned next action** (tick 87, ~20 min): per outline §D3 default
-recommendation, **implement HOLO-Net v2.2 part-aware FTPC** (image-side
-complement to the EEG-side headline). K=4 sub-templates {T_eyes, T_nose,
-T_mouth, T_chin} at fixed sub-regions of the 16×16 patch grid; per-region
-δ aggregation; quick template-only training on ImageNet face samples; eval
-on IllusionBench. If v2.2 lifts ISI from 0.901 (anti) to ≥ 1.0 (no anti)
-that's a meaningful image-side gain. ~1 tick to scaffold + run.
+**Planned next action** (tick 87, immediate): **user redirected post-tick-86
+— paper headline must be a WORKING model, not "benchmark vindicated"**
+(see NOTES_FOR_USER RESOLVED note 2026-05-23 ~22:20). Iterate HOLO-Net
+designs across Gen 1-4 ladder until §6 4/4 image-side + EEG-decoded PWI +
+ISIrbox PASS. Tick 87 starts Gen 1 v2.2 (K=4 part-aware FTPC) — same
+implementation I had planned but now framed as "first variant in an
+iteration ladder, not an image-side complement". Per-generation reporting
+format committed (see NOTES_FOR_USER). Compute escalation criterion: will
+request 8-GPU box if Gen 1-2 exhausted without ISI > 1.2.
 
 ## Confidence in current best ideas
 - **Idea-001** (IllusionBench-EEG): **9.5/10** — strongly reinforced. 3 distinct

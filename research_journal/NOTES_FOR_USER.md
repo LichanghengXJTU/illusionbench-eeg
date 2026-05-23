@@ -302,3 +302,35 @@ The **IllusionBench-EEG benchmark's pre-registered sharp prediction is VINDICATE
 - **Track 3 (HOLO-Net v2.2)**: deferred (image-side complement; the EEG-side headline is what the user explicitly asked for and it's now in hand).
 
 If you want a different prioritization, edit this file with a `RESOLVED:` line under MILESTONE-005.
+
+**RESOLVED 2026-05-23 ~22:20 (synchronous user input post-tick-86)** — User rejected the "ship the negative-result benchmark paper" framing. New directive:
+
+> "需要你不断迭代设计，不断详细分析并推倒重来，直到设计出来这样的一个模型。"
+> Scope: image-side §6 4/4 PASS + EEG-decoded at least PWI + ISIrbox PASS.
+> Model must BE the EEG decoder or a key part of it.
+> Normal tasks: (a) ImageNet linear-probe + (b) THINGS-EEG2 top-1 retrieval required; (c) LFW optional.
+> Compute: user offers more if needed — flag explicitly.
+> 持续 looping.
+
+**Loop interpretation**:
+- Paper headline = a working HOLO-Net framework, NOT "benchmark vindicated"
+- Iterate aggressively across generations of designs; tolerate full rewrites
+- Ship the model that passes, not the story that everything fails
+- Trigger compute escalation only when Gen 1-2 (frozen backbone) is exhausted
+
+**Iteration ladder committed to** (each gen: each variant 1-2 ticks):
+- Gen 1 (frozen DINOv2 + head changes): v2.2 part-aware FTPC; v2.3 orientation-aware readout; v2.4 dual-template
+- Gen 2 (training-time non-symmetric signal, frozen backbone): v3.0 orientation aux task; v3.1 contrastive templates
+- Gen 3 (from-scratch backbone retrain): v4.0 ViT-S/14 with no-vflip aug + orient head — needs >1 day single H100 or 8-GPU box
+- Gen 4 (EEG-vision joint training): v5.0 contrastive (image, EEG, IllusionBench label) — needs raw THINGS-EEG2 (~100 GB) + multi-day train
+
+**Compute escalation criterion** (will write a NEED-002 if triggered):
+- Gen 1-2 saturated with ISI ≤ 1.2 (still anti-Thatcher or trivial) — mechanism level insufficient → need Gen 3 → request 8× H100 box
+- Or Gen 3 single-card ETA > 5 days → request 8× H100 box
+
+Per-generation report format:
+1. Design motivation (one paragraph)
+2. Implementation + key training-log signals
+3. §6 verdict table (image-side)
+4. Diff vs previous generation
+5. Diagnosis + next-generation revision (if FAIL)
