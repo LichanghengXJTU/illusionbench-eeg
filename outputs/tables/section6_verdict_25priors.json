@@ -1,0 +1,280 @@
+{
+  "models": [
+    "N02_untrained_vit",
+    "N03_pixel",
+    "P02_clip_b32",
+    "P03_clip_l14",
+    "P04_clip_h14",
+    "P05_clip_g14",
+    "P06_clip_bigG14",
+    "P07_dinov2_base",
+    "P08_dinov2_large",
+    "P09_dinov2_giant",
+    "P10_mae_huge",
+    "P11_sdxl_vae",
+    "P17_facenet_vggface2",
+    "P18_facenet_casiawebface",
+    "P19_siglip_base_384",
+    "P20_siglip_so400m",
+    "P21_metaclip_h14",
+    "P22_cornet_s"
+  ],
+  "values": {
+    "N02_untrained_vit": {
+      "ISI": 1.0056244134902954,
+      "CSI": 1.029057758737413,
+      "PWI": 0.6456258590526867,
+      "ISIrbox": 0.9938626289367676
+    },
+    "N03_pixel": {
+      "ISI": 1.0000604391098022,
+      "CSI": 0.9996143658666637,
+      "PWI": 0.9997221277081432,
+      "ISIrbox": 1.0000356435775757
+    },
+    "P02_clip_b32": {
+      "ISI": 5.175888538360596,
+      "CSI": 1.123128423265591,
+      "PWI": 0.7139529146489605,
+      "ISIrbox": 2.1159019470214844
+    },
+    "P03_clip_l14": {
+      "ISI": 4.046485900878906,
+      "CSI": 1.5958587726318803,
+      "PWI": 0.740087319927882,
+      "ISIrbox": 1.3319895267486572
+    },
+    "P04_clip_h14": {
+      "ISI": 5.50194787979126,
+      "CSI": 1.1455864120983232,
+      "PWI": 0.568659948231575,
+      "ISIrbox": 1.4411039352416992
+    },
+    "P05_clip_g14": {
+      "ISI": 5.535428524017334,
+      "CSI": 1.1412691701206974,
+      "PWI": 0.6407679317398198,
+      "ISIrbox": 1.6128735542297363
+    },
+    "P06_clip_bigG14": {
+      "ISI": 6.762803077697754,
+      "CSI": 1.2057135601928821,
+      "PWI": 0.5861480601020344,
+      "ISIrbox": 1.9720885753631592
+    },
+    "P07_dinov2_base": {
+      "ISI": 1.3690861463546753,
+      "CSI": 1.224467274923559,
+      "PWI": 0.25520822073576255,
+      "ISIrbox": 1.0719209909439087
+    },
+    "P08_dinov2_large": {
+      "ISI": 2.369255781173706,
+      "CSI": 1.4077991220059451,
+      "PWI": 0.32856822410558106,
+      "ISIrbox": 0.8881128430366516
+    },
+    "P09_dinov2_giant": {
+      "ISI": 3.3375699520111084,
+      "CSI": 1.5245932031480478,
+      "PWI": 0.2928932326010578,
+      "ISIrbox": 0.8505784273147583
+    },
+    "P10_mae_huge": {
+      "ISI": 1.3048226833343506,
+      "CSI": 1.2065513878111627,
+      "PWI": 0.5786966365109665,
+      "ISIrbox": 0.993026316165924
+    },
+    "P11_sdxl_vae": {
+      "ISI": 0.99683940410614,
+      "CSI": 1.057662456224353,
+      "PWI": 0.3631154382090005,
+      "ISIrbox": 0.9950631856918336
+    },
+    "P17_facenet_vggface2": {
+      "ISI": 1.1168010234832764,
+      "CSI": 1.0105245649218018,
+      "PWI": 0.5913324245002226,
+      "ISIrbox": 0.3821580111980438
+    },
+    "P18_facenet_casiawebface": {
+      "ISI": 1.0261356830596924,
+      "CSI": 1.049604168580379,
+      "PWI": 0.7930489724963754,
+      "ISIrbox": 0.4577072858810425
+    },
+    "P19_siglip_base_384": {
+      "ISI": 3.512543201446533,
+      "CSI": 1.2822849735332902,
+      "PWI": 0.5605138974657868,
+      "ISIrbox": 1.2997653484344482
+    },
+    "P20_siglip_so400m": {
+      "ISI": 5.587627410888672,
+      "CSI": 1.4263592165529566,
+      "PWI": 0.7870777474465268,
+      "ISIrbox": 1.5734543800354004
+    },
+    "P21_metaclip_h14": {
+      "ISI": 6.083845615386963,
+      "CSI": 1.563888880423354,
+      "PWI": 0.6007153460269363,
+      "ISIrbox": 1.7566486597061155
+    },
+    "P22_cornet_s": {
+      "ISI": 0.9905082583427428,
+      "CSI": 1.0476164431654398,
+      "PWI": 0.17810544733596523,
+      "ISIrbox": 0.938124179840088
+    }
+  },
+  "legacy_pass": {
+    "N02_untrained_vit": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "N03_pixel": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P02_clip_b32": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P03_clip_l14": {
+      "n_pass": 3,
+      "all_four_pass": false
+    },
+    "P04_clip_h14": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P05_clip_g14": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P06_clip_bigG14": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P07_dinov2_base": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P08_dinov2_large": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P09_dinov2_giant": {
+      "n_pass": 4,
+      "all_four_pass": true
+    },
+    "P10_mae_huge": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P11_sdxl_vae": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P17_facenet_vggface2": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P18_facenet_casiawebface": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P19_siglip_base_384": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P20_siglip_so400m": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P21_metaclip_h14": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P22_cornet_s": {
+      "n_pass": 2,
+      "all_four_pass": false
+    }
+  },
+  "tanaka_pass": {
+    "N02_untrained_vit": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "N03_pixel": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P02_clip_b32": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P03_clip_l14": {
+      "n_pass": 3,
+      "all_four_pass": false
+    },
+    "P04_clip_h14": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P05_clip_g14": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P06_clip_bigG14": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P07_dinov2_base": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P08_dinov2_large": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P09_dinov2_giant": {
+      "n_pass": 3,
+      "all_four_pass": false
+    },
+    "P10_mae_huge": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P11_sdxl_vae": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P17_facenet_vggface2": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P18_facenet_casiawebface": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P19_siglip_base_384": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P20_siglip_so400m": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "P21_metaclip_h14": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "P22_cornet_s": {
+      "n_pass": 1,
+      "all_four_pass": false
+    }
+  }
+}

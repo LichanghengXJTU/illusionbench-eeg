@@ -457,3 +457,56 @@ loop committed to:
     collapse signs (L_dino stuck at ln(out_dim))
   - Hard limit: 2 attempts. If both collapse, escalate to 8× H100 box
   - 持续监控承诺: every tick reports training state + action
+
+---
+
+## MILESTONE-007 (DIRECTION CHANGE) — 2026-05-24 ~14:20 — User-driven benchmark methodology audit; Gen 3 killed; metric + stimulus fix initiated
+
+User reviewed the HANDOFF doc and pushed back on the benchmark itself,
+not just architecture. After deep audit, the new agent confirms three
+methodological issues in IllusionBench-EEG that the 9-day HOLO-Net
+iteration may have been chasing without realizing:
+
+1. **PWI direction is opposite to Tanaka 1997**. The §6 threshold PWI ≤ 0.5
+   rewards models that go OPPOSITE to the human direction (Tanaka predicts
+   PWI > 1: whole-face context amplifies feature discrimination). The
+   previous agent flagged this in E024 ("opposite of what our embedding
+   distances show") then set the threshold in the wrong direction anyway.
+2. **CSI ≥ 1.5 threshold is arbitrary**. No Carbon-2005-equivalent human
+   anchor for composite. The composite-face effect in humans is measured
+   as accuracy interference, not cosine ratio.
+3. **Visible bbox seam artifacts in Thatcher stimuli + skin-tone mismatch
+   in composite stimuli** (confirmed by visual audit of qc/ffhq_contact.png).
+   These are smaller-magnitude effects than (1)-(2): E003 random-bbox control
+   shows seams alone contribute ISI 1.2-2.0, vs face-Thatcher 4-7. So
+   artifacts are real but not the primary driver of the dissociation.
+
+Hidden 3rd hypothesis the previous agent missed: **embedding cosine ratio
+does not operationalize human task structure**. Human Thatcher = grotesque
+judgment d′; human Composite = top-half same/different interference;
+human Part-Whole = part identification accuracy. All three need
+verification-2AFC or accuracy-style operationalizations, not pairwise
+embedding distance ratios. Q002/E027 verification framing was the right
+direction but was applied to only one paradigm.
+
+**Synchronous user input** (2026-05-24 ~14:15):
+- Kill Gen 3: YES (done; step-57K snapshot saved before kill; PID 120885 reaped)
+- Metric + stimulus fix: BOTH in parallel
+- Kreiman dataset: dual track — search for hidden public DB (user briefly
+  studied with him and recalls such a resource exists) + fetch Jacob 2021
+  OSF (osf.io/35fmh) as the backup precedent. If both insufficient or
+  too small, use GPT-image-2 (user has API key) with super-detailed prompts.
+
+**Current background work**:
+- Agent A (running): Kreiman hidden database hunt
+- Agent B (running): Jacob 2021 OSF stimulus inventory
+- Local: metric module redesign drafted (see CLAIMS_SKELETON updates pending)
+
+**Snapshot status (RunPod /workspace/runs/2026-05-24_gen3_v4.0_seed20260521/)**:
+- checkpoint_step45K.pt (best PWI 0.312 PASS)
+- checkpoint_step57K_killed.pt (final state at kill)
+- checkpoint.pt (= step-57K, dup of above)
+
+Loop direction post-kill: benchmark methodology fix BEFORE any new training run.
+Any architecture work after the metric/stimulus fix should re-evaluate v1/v3/Gen3
+existing checkpoints on the NEW metrics before launching new compute.

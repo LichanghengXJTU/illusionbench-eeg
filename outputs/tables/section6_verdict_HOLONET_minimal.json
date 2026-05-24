@@ -1,0 +1,115 @@
+{
+  "models": [
+    "HOLONET_minimal_afp",
+    "HOLONET_minimal_atl",
+    "HOLONET_minimal_ffa",
+    "HOLONET_minimal_mfp",
+    "HOLONET_minimal_v1",
+    "HOLONET_minimal_v2",
+    "HOLONET_minimal_v4"
+  ],
+  "values": {
+    "HOLONET_minimal_afp": {
+      "ISI": 0.9745717644691468,
+      "CSI": 1.1922392224701455,
+      "PWI": 0.7790878489489564,
+      "ISIrbox": 1.0833271741867063
+    },
+    "HOLONET_minimal_atl": {
+      "ISI": 0.9754728078842164,
+      "CSI": 1.1945275201702032,
+      "PWI": 0.7703663802979989,
+      "ISIrbox": 1.0812793970108032
+    },
+    "HOLONET_minimal_ffa": {
+      "ISI": 0.9745717644691468,
+      "CSI": 1.1922392224701455,
+      "PWI": 0.7790878489489564,
+      "ISIrbox": 1.0833271741867063
+    },
+    "HOLONET_minimal_mfp": {
+      "ISI": 0.9650114178657532,
+      "CSI": 1.0731722464661255,
+      "PWI": 0.7252464576092814,
+      "ISIrbox": 1.1545525789260864
+    },
+    "HOLONET_minimal_v1": {
+      "ISI": 1.018638253211975,
+      "CSI": 1.1413242732317912,
+      "PWI": 1.2610081626650895,
+      "ISIrbox": 1.0330101251602173
+    },
+    "HOLONET_minimal_v2": {
+      "ISI": 1.0366202592849731,
+      "CSI": 1.1744398328800219,
+      "PWI": 0.7769681153797271,
+      "ISIrbox": 1.0184375047683716
+    },
+    "HOLONET_minimal_v4": {
+      "ISI": 1.0181620121002195,
+      "CSI": 1.1453503798744264,
+      "PWI": 0.6754529257979052,
+      "ISIrbox": 1.104853868484497
+    }
+  },
+  "legacy_pass": {
+    "HOLONET_minimal_afp": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_atl": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_ffa": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_mfp": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_v1": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_v2": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_v4": {
+      "n_pass": 1,
+      "all_four_pass": false
+    }
+  },
+  "tanaka_pass": {
+    "HOLONET_minimal_afp": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_atl": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_ffa": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_mfp": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_v1": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_v2": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_minimal_v4": {
+      "n_pass": 1,
+      "all_four_pass": false
+    }
+  }
+}

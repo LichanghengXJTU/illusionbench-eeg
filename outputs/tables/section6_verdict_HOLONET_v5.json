@@ -1,0 +1,115 @@
+{
+  "models": [
+    "HOLONET_v5_afp",
+    "HOLONET_v5_atl",
+    "HOLONET_v5_ffa",
+    "HOLONET_v5_mfp",
+    "HOLONET_v5_v1",
+    "HOLONET_v5_v2",
+    "HOLONET_v5_v4"
+  ],
+  "values": {
+    "HOLONET_v5_afp": {
+      "ISI": 1.018344521522522,
+      "CSI": 0.9673370677194778,
+      "PWI": 2.067834485985475,
+      "ISIrbox": 1.0733646154403689
+    },
+    "HOLONET_v5_atl": {
+      "ISI": 0.9960865378379822,
+      "CSI": 1.1026412384199815,
+      "PWI": 0.8133078077668556,
+      "ISIrbox": 1.0998320579528809
+    },
+    "HOLONET_v5_ffa": {
+      "ISI": 1.0017321109771729,
+      "CSI": 0.9908465714320147,
+      "PWI": 2.202606835896878,
+      "ISIrbox": 1.076490044593811
+    },
+    "HOLONET_v5_mfp": {
+      "ISI": 0.9931980967521667,
+      "CSI": 1.084847055423032,
+      "PWI": 0.7522804368157157,
+      "ISIrbox": 1.114859700202942
+    },
+    "HOLONET_v5_v1": {
+      "ISI": 1.020058512687683,
+      "CSI": 1.146763319097073,
+      "PWI": 1.2611570255133555,
+      "ISIrbox": 1.017296552658081
+    },
+    "HOLONET_v5_v2": {
+      "ISI": 1.0357192754745483,
+      "CSI": 1.1815127727657804,
+      "PWI": 0.7411841544851091,
+      "ISIrbox": 0.9976378083229064
+    },
+    "HOLONET_v5_v4": {
+      "ISI": 0.9973341822624208,
+      "CSI": 1.1269721906764383,
+      "PWI": 0.7472067525898558,
+      "ISIrbox": 1.0249245166778564
+    }
+  },
+  "legacy_pass": {
+    "HOLONET_v5_afp": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_atl": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_ffa": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_mfp": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_v1": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_v2": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_v4": {
+      "n_pass": 1,
+      "all_four_pass": false
+    }
+  },
+  "tanaka_pass": {
+    "HOLONET_v5_afp": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_atl": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_ffa": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_mfp": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_v1": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_v2": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v5_v4": {
+      "n_pass": 1,
+      "all_four_pass": false
+    }
+  }
+}

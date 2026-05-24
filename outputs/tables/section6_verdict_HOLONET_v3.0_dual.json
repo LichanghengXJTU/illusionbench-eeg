@@ -1,0 +1,70 @@
+{
+  "models": [
+    "HOLONET_v3.0_dual_afp",
+    "HOLONET_v3.0_dual_delta_inv",
+    "HOLONET_v3.0_dual_delta_up",
+    "HOLONET_v3.0_dual_ffa"
+  ],
+  "values": {
+    "HOLONET_v3.0_dual_afp": {
+      "ISI": 0.9078480005264282,
+      "CSI": 1.2819771337118662,
+      "PWI": 0.39705319234019704,
+      "ISIrbox": 0.6622459292411804
+    },
+    "HOLONET_v3.0_dual_delta_inv": {
+      "ISI": 0.6326598525047302,
+      "CSI": 1.2587770968811203,
+      "PWI": 0.36936455379905,
+      "ISIrbox": 0.4484939277172088
+    },
+    "HOLONET_v3.0_dual_delta_up": {
+      "ISI": 0.9041357040405272,
+      "CSI": 1.2945816449624392,
+      "PWI": 0.45623239780622793,
+      "ISIrbox": 0.6581288576126099
+    },
+    "HOLONET_v3.0_dual_ffa": {
+      "ISI": 0.7526382803916931,
+      "CSI": 1.2753258194025263,
+      "PWI": 0.4076826294726024,
+      "ISIrbox": 0.5411341786384583
+    }
+  },
+  "legacy_pass": {
+    "HOLONET_v3.0_dual_afp": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "HOLONET_v3.0_dual_delta_inv": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "HOLONET_v3.0_dual_delta_up": {
+      "n_pass": 2,
+      "all_four_pass": false
+    },
+    "HOLONET_v3.0_dual_ffa": {
+      "n_pass": 2,
+      "all_four_pass": false
+    }
+  },
+  "tanaka_pass": {
+    "HOLONET_v3.0_dual_afp": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v3.0_dual_delta_inv": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v3.0_dual_delta_up": {
+      "n_pass": 1,
+      "all_four_pass": false
+    },
+    "HOLONET_v3.0_dual_ffa": {
+      "n_pass": 1,
+      "all_four_pass": false
+    }
+  }
+}
