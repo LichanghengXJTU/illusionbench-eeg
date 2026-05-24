@@ -5,3 +5,12 @@ qc/*.png
 qc/*.jpg
 *.npz
 .DS_Store
+
+# secrets (NEVER commit)
+.env
+.env.*
+*.key
+secrets/
+.secrets/
+**/openai_key*
+**/api_key*
