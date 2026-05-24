@@ -1,14 +1,15 @@
 # State
 
-**Tick #**: 91 (completed) — Gen 3 v4.0 LAUNCHED
-**Last updated**: 2026-05-24 ~00:25 (Asia/Hong_Kong)
-**Current focus** (one sentence): **Gen 3 v4.0 training STARTED on 1× H100**
-(user approved single-card path); ViT-S/14 from scratch + DINOv2-style SSL
-+ NO vflip aug + orient classification aux head. Wrote 3 new files
-(gen3_data.py, gen3_model.py, gen3_train.py); fixed torch.amp→torch.cuda.amp
-API; sanity bs=64 passed, bs=256 timing 1.2 s/step; launched 30 epochs in
-background (ETA ~2.1 days). E053 written with pre-registered checkpoints
-at steps 5000/25000/100000. Monitoring committed every 30 min.
+**Tick #**: 103 (completed) — Gen 3 v4.0 training step ~31K + step-25K early eval done
+**Last updated**: 2026-05-24 ~11:35 (Asia/Hong_Kong)
+**Current focus** (one sentence): Gen 3 v4.0 healthy at step 29.5K
+(L_dino 2.59 new low, L_orient 0.26 new low, orient_acc 0.87+);
+**step-25K early eval (E054)** shows mixed result — PWI dramatic 0.397→0.145
+improvement (new best ever), but ISI essentially unchanged (0.943 vs frozen
+DINOv2's 0.908). orient-aux CLS-level didn't translate to per-patch Thatcher
+detection. §6 still 2/4 PASS (PWI + ISIrbox). Default = continue training,
+re-eval at step-50K; if ISI still ≈ 1 at 50K → escalate to v4.1 per-patch
+orient task design.
 **Last action**: Tick 85 — wrote `eeg_decoder/stage3_mlp.py` (2-layer MLP
 1024→512→384 with GELU+dropout, cosine loss, AdamW, early-stop). Ran on H100:
 10 subjects × ~7s each = 78s total. Retrieval: top-1 0.181 ± 0.039 (vs ridge
