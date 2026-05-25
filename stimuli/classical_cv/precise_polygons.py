@@ -133,6 +133,113 @@ def eye_only_polygon(landmarks: np.ndarray, eye_idx: list[int],
     return cv2.convexHull(eye_pts.astype(np.int32))
 
 
+def nose_polygon(landmarks: np.ndarray,
+                 pad_lateral: float = 0.10,
+                 pad_top: float = 0.02,
+                 pad_bottom: float = 0.04,
+                 lip_clearance: float = 0.02,
+                 iod: float = 100.0) -> np.ndarray:
+    """Polygon enclosing the nose: bridge (27-30) + alar/base (31-35),
+    with synthetic lateral points so the convex hull has adequate WIDTH
+    (dlib's 27-30 are centerline-only, so a raw hull is a thin strip).
+
+    Bottom is CAPPED above the upper-lip line (lm 51) so the polygon
+    cannot leak into the philtrum/upper-lip — that would cause the
+    seamless-clone seam to fall on a salient lip edge.
+    """
+    nose_pts = landmarks[27:36].astype(np.float32)
+    bridge = nose_pts[:4]   # 27 (root) .. 30 (tip)
+    base   = nose_pts[4:]   # 31 .. 35 (alar wings + nostrils + under-tip)
+    lateral_px = pad_lateral * iod
+    # Synthetic width points at bridge tip (widest) and bridge mid (narrower)
+    extra = [
+        [bridge[3, 0] - lateral_px,        bridge[3, 1]],
+        [bridge[3, 0] + lateral_px,        bridge[3, 1]],
+        [bridge[2, 0] - 0.7 * lateral_px,  bridge[2, 1]],
+        [bridge[2, 0] + 0.7 * lateral_px,  bridge[2, 1]],
+        [bridge[1, 0] - 0.45 * lateral_px, bridge[1, 1]],
+        [bridge[1, 0] + 0.45 * lateral_px, bridge[1, 1]],
+        # Top above lm 27
+        [bridge[0, 0], bridge[0, 1] - pad_top * iod],
+    ]
+    all_pts = np.concatenate(
+        [nose_pts, np.array(extra, dtype=np.float32)], axis=0
+    )
+    # Cap bottom strictly above upper lip
+    upper_lip_y = float(landmarks[51, 1])
+    cap_y = upper_lip_y - lip_clearance * iod
+    # Lateral pad on base points (alar wings outward)
+    base_cx = base[:, 0].mean()
+    base_pad_x = 0.5 * lateral_px
+    base_pad_y = pad_bottom * iod
+    # Apply both to the base portion of all_pts (indices 4..8 = original 31..35)
+    for idx in [4, 5, 6, 7, 8]:
+        all_pts[idx, 1] = min(all_pts[idx, 1] + base_pad_y, cap_y)
+        dx = all_pts[idx, 0] - base_cx
+        if abs(dx) > 1e-3:
+            all_pts[idx, 0] += np.sign(dx) * base_pad_x
+    all_pts[:, 1] = np.minimum(all_pts[:, 1], cap_y)
+    return cv2.convexHull(all_pts.astype(np.int32))
+
+
+def both_eyes_polygon(landmarks: np.ndarray,
+                      pad_lateral: float = 0.06,
+                      pad_above: float = 0.05,
+                      pad_below: float = 0.10,
+                      iod: float = 100.0) -> np.ndarray:
+    """Combined left+right eye polygon (no brows), used for the part-whole
+    EYE-feature swap. Uses the same outward-from-centroid expansion as
+    eye_only_polygon but applied to all 12 eye landmarks at once."""
+    eye_pts = landmarks[36:48].astype(np.float32).copy()
+    eye_cy = eye_pts[:, 1].mean()
+    is_lower = eye_pts[:, 1] >= eye_cy
+    is_upper = ~is_lower
+    eye_pts[is_lower, 1] += pad_below * iod
+    eye_pts[is_upper, 1] -= pad_above * iod
+    cx = float(eye_pts[:, 0].mean()); cy = float(eye_pts[:, 1].mean())
+    for i in range(len(eye_pts)):
+        dx, dy = eye_pts[i, 0] - cx, eye_pts[i, 1] - cy
+        n = float(np.hypot(dx, dy))
+        if n > 1e-3:
+            eye_pts[i, 0] += (dx / n) * pad_lateral * iod
+            eye_pts[i, 1] += (dy / n) * pad_lateral * iod
+    return cv2.convexHull(eye_pts.astype(np.int32))
+
+
+def both_eyes_tight_polygon(landmarks: np.ndarray) -> np.ndarray:
+    """TIGHT both-eyes polygon for part-isolation V3/V4 — eye-arc only,
+    NO outward pad. Tanaka-style isolated feature."""
+    eye_pts = landmarks[36:48].astype(np.int32)
+    return cv2.convexHull(eye_pts)
+
+
+def nose_tight_polygon(landmarks: np.ndarray, iod: float = 100.0) -> np.ndarray:
+    """TIGHT nose polygon for part-isolation V3/V4. Uses 9 nose landmarks
+    with MINIMAL synthetic width (just enough for visibility — dlib's
+    27-30 centerline alone gives a 1-pixel-wide strip). NO bottom pad,
+    NO lip-clearance — relies purely on landmark positions."""
+    nose_pts = landmarks[27:36].astype(np.float32)
+    bridge = nose_pts[:4]
+    lateral_px = 0.04 * iod  # MUCH smaller than swap-polygon's 0.10
+    extra = [
+        [bridge[3, 0] - lateral_px,        bridge[3, 1]],
+        [bridge[3, 0] + lateral_px,        bridge[3, 1]],
+        [bridge[2, 0] - 0.5 * lateral_px,  bridge[2, 1]],
+        [bridge[2, 0] + 0.5 * lateral_px,  bridge[2, 1]],
+    ]
+    all_pts = np.concatenate(
+        [nose_pts, np.array(extra, dtype=np.float32)], axis=0
+    )
+    return cv2.convexHull(all_pts.astype(np.int32))
+
+
+def mouth_tight_polygon(landmarks: np.ndarray) -> np.ndarray:
+    """TIGHT outer-lip polygon for part-isolation V3/V4 — landmarks as
+    ordered, NO outward pad."""
+    pts = landmarks[48:60].astype(np.int32)
+    return pts.reshape(-1, 1, 2)
+
+
 def face_oval_polygon(landmarks: np.ndarray, iod: float,
                        forehead_pad_frac: float = 0.50) -> np.ndarray:
     """Return ordered polygon enclosing the visible face (jaw + estimated

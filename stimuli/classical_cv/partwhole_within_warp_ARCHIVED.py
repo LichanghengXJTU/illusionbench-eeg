@@ -58,7 +58,7 @@ from stimuli.classical_cv.precise_polygons import (
 )
 from stimuli.classical_cv.face_embedding import FaceEmbedder
 from stimuli.classical_cv.donor_match import (
-    build_attr, candidate_pool, IdAttr, is_likely_infant,
+    build_attr, candidate_pool, IdAttr,
 )
 
 
@@ -337,14 +337,6 @@ def main(args):
             continue
         all_attrs.append(attr)
     print(f"[init] {len(all_attrs)} identities passed embedder")
-    # Filter out infants/toddlers — anatomical mismatch cannot be solved by
-    # cross-identity donor matching (baby eyes/nose are wrong scale for adult
-    # face context). Removed from BOTH target and donor pool.
-    pre_filter = len(all_attrs)
-    infants = [a.name for a in all_attrs if is_likely_infant(a)]
-    all_attrs = [a for a in all_attrs if not is_likely_infant(a)]
-    print(f"[init] filtered {pre_filter - len(all_attrs)} infants/toddlers "
-          f"(IDs: {infants}); pool now {len(all_attrs)}")
     # Generate
     rng = random.Random(args.seed)
     n_qc = min(args.n_qc, len(all_attrs))

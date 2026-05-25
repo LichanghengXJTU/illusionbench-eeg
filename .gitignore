@@ -19,3 +19,16 @@ secrets/
 data/stimuli_gpt/identity_*.png
 data/stimuli_gpt/identity_*.json
 data/stimuli_gpt/manifest.csv
+
+# dlib model files (large; downloaded by setup, not committed)
+models/*.dat
+models/*.dat.bz2
+
+# local QC outputs (regenerable, hundreds MB)
+data/local_*/
+data/local_qc_partwhole/
+data/thatcher_ffhq_70k/
+
+# partwhole runtime (regenerable, large)
+data/partwhole_*/
+data/partwhole_attrs.pkl
