@@ -1,0 +1,57 @@
+{
+  "group_id": 1,
+  "demographics": {
+    "group_id": 1,
+    "gender": "male",
+    "ethnicity": "Black",
+    "age": "middle-aged",
+    "scene": "indoor at a warmly-lit coffee shop, soft bokeh of lights behind",
+    "lighting": "warm ambient indoor light from a window on the right",
+    "shadow": "soft natural shadow under the eyes and on the left side of the nose",
+    "angle": "head turned approximately 8 degrees left, gaze directly at camera",
+    "hair": "short closely-cropped hair with a trimmed beard",
+    "complexion": "deep brown complexion with visible skin pores"
+  },
+  "records": [
+    {
+      "group_id": 1,
+      "variant": "V1_source",
+      "image_path": "data/stimuli_gpt_diverse_pilot/group_01/V1_source.png",
+      "prompt": "Photorealistic high-resolution DSLR portrait photograph of a middle-aged Black male adult with short closely-cropped hair with a trimmed beard, deep brown complexion with visible skin pores. head turned approximately 8 degrees left, gaze directly at camera. The face is well-visible, occupying approximately 60% of the frame, showing head and shoulders only. Neutral facial expression with mouth closed and eyes open.\n\nSetting: indoor at a warmly-lit coffee shop, soft bokeh of lights behind.\nLighting: warm ambient indoor light from a window on the right, creating soft natural shadow under the eyes and on the left side of the nose.\n\nIMPORTANT: Generate a fully synthetic, non-identifiable face. Do NOT reproduce the likeness of any real person, public figure, or celebrity. The face must look natural, not airbrushed.",
+      "elapsed_s": 0.0,
+      "cost_usd": 0.0,
+      "success": true,
+      "error": "(cached)"
+    },
+    {
+      "group_id": 1,
+      "variant": "V2_thatcher",
+      "image_path": "data/stimuli_gpt_diverse_pilot/group_01/V2_thatcher.png",
+      "prompt": "Edit this exact photograph to apply the Thatcher illusion transform: rotate BOTH eye regions (including eyebrows and lashes) 180 degrees in place, AND rotate the mouth region 180 degrees in place. The eyes appear upside-down (eyebrows below the eyes, lower lashes above). The mouth appears upside-down (the chin-side lip ends up on top, the nose-side lip ends up on the bottom). Keep the rest of the face IDENTICAL: same forehead, nose bridge, nose tip, cheeks, jaw, chin shape, hair, skin tone, lighting, background, and overall head orientation. Photorealistic, seamless integration of the rotated regions, no visible cut lines or rectangular boundaries.",
+      "elapsed_s": 0.0,
+      "cost_usd": 0.0,
+      "success": true,
+      "error": "(cached)"
+    },
+    {
+      "group_id": 1,
+      "variant": "V3_composite",
+      "image_path": "data/stimuli_gpt_diverse_pilot/group_01/V3_composite.png",
+      "prompt": "Edit this exact photograph: keep the TOP HALF of the face (forehead, both eyes, both eyebrows, nose bridge down to the nose tip) IDENTICAL to the input \u2014 same person above the nose. REPLACE the BOTTOM HALF of the face (lower nose, mouth, chin, jaw line) with the corresponding lower-face features of a DIFFERENT but plausible person of the SAME approximate age, gender, ethnicity, and lighting. Blend seamlessly across the nose tip line \u2014 no visible seam. Match the skin tone, lighting direction, and natural texture between halves. Keep the hair, background, and shoulders unchanged. Photorealistic, no visible cut line.",
+      "elapsed_s": 0.0,
+      "cost_usd": 0.0,
+      "success": true,
+      "error": "(cached)"
+    },
+    {
+      "group_id": 1,
+      "variant": "V4_partwhole",
+      "image_path": "data/stimuli_gpt_diverse_pilot/group_01/V4_partwhole.png",
+      "prompt": "Edit this exact photograph: keep EVERYTHING IDENTICAL \u2014 same forehead, nose, mouth, chin, jaw, hair, skin tone, lighting, background \u2014 EXCEPT replace just the eye region (both eyes and both eyebrows) with the eyes and eyebrows of a DIFFERENT but plausible person of the same approximate age, gender, ethnicity. The new eyes should have different shape, color, and expression. Blend seamlessly into the surrounding skin \u2014 no visible patch boundary. Match the skin tone, lighting direction, and natural texture. Photorealistic.",
+      "elapsed_s": 47.02474542893469,
+      "cost_usd": 0.167,
+      "success": true,
+      "error": ""
+    }
+  ]
+}

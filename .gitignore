@@ -14,3 +14,8 @@ secrets/
 .secrets/
 **/openai_key*
 **/api_key*
+
+# large backup / superseded stimuli (regenerable from scripts)
+data/stimuli_gpt/identity_*.png
+data/stimuli_gpt/identity_*.json
+data/stimuli_gpt/manifest.csv
