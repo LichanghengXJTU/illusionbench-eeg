@@ -32,83 +32,80 @@ from PIL import Image
 
 from stimuli.classical_cv.face_pipeline import (
     FacePipeline, default_filter, iter_ffhq_tar,
-    LEFT_EYE_REGION, RIGHT_EYE_REGION, MOUTH_REGION,
 )
-
-
-def hull_and_bbox(landmarks: np.ndarray, idx: list[int], img_h: int, img_w: int,
-                    pad: int) -> tuple[np.ndarray, tuple[int, int, int, int]]:
-    """Return (hull_points_in_image_coords, padded_bbox)."""
-    pts = landmarks[idx].astype(np.int32)
-    hull = cv2.convexHull(pts)
-    x1 = max(0, int(pts[:, 0].min()) - pad)
-    y1 = max(0, int(pts[:, 1].min()) - pad)
-    x2 = min(img_w, int(pts[:, 0].max()) + pad)
-    y2 = min(img_h, int(pts[:, 1].max()) + pad)
-    return hull, (x1, y1, x2, y2)
+from stimuli.classical_cv.precise_polygons import (
+    eye_brow_polygon, mouth_polygon, polygon_bbox,
+    LEFT_EYE, RIGHT_EYE, LEFT_BROW, RIGHT_BROW,
+)
 
 
 def thatcherize_classical(img_rgb: np.ndarray, landmarks: np.ndarray,
                             pad: int = 8) -> np.ndarray:
     """Apply Thatcher transform with Poisson seamless cloning.
 
-    Rotates left eye+brow, right eye+brow, and mouth regions 180° in place,
-    using convex-hull masks and cv2.seamlessClone for invisible blending."""
+    Uses PRECISE landmark-ordered polygons (not convex hulls) for tighter
+    masks that hug the actual feature boundary. This makes seamlessClone's
+    blending operate on a much smaller transition region → invisible seams."""
     h, w = img_rgb.shape[:2]
-    out = img_rgb.copy()
-    # Process each region. Mouth padded slightly larger because it has more
-    # surrounding texture to blend (lips → chin/cheek skin transition).
-    regions = [
-        ("L_eye", LEFT_EYE_REGION,  pad),
-        ("R_eye", RIGHT_EYE_REGION, pad),
-        ("mouth", MOUTH_REGION,     pad + 4),
+    le_c = landmarks[LEFT_EYE].mean(axis=0)
+    re_c = landmarks[RIGHT_EYE].mean(axis=0)
+    iod = float(np.linalg.norm(le_c - re_c))
+
+    polys = [
+        ("L_eye", eye_brow_polygon(landmarks, LEFT_EYE,  LEFT_BROW,  iod=iod)),
+        ("R_eye", eye_brow_polygon(landmarks, RIGHT_EYE, RIGHT_BROW, iod=iod)),
+        ("mouth", mouth_polygon(landmarks)),
     ]
-    for name, idx, region_pad in regions:
-        hull, bbox = hull_and_bbox(landmarks, idx, h, w, region_pad)
-        x1, y1, x2, y2 = bbox
+    out = img_rgb.copy()
+    for name, poly in polys:
+        x1, y1, x2, y2 = polygon_bbox(poly, (h, w), pad=pad)
         bw, bh = x2 - x1, y2 - y1
         if bw < 4 or bh < 4:
             continue
-
-        # 1. Extract bbox patch from CURRENT working image (out),
-        #    so successive region edits don't clobber each other.
+        # Extract bbox patch from current working image
         patch = out[y1:y2, x1:x2].copy()
-
-        # 2. Rotate the patch 180°
         patch_rot = cv2.rotate(patch, cv2.ROTATE_180)
 
-        # 3. Build the hull mask in BBOX-LOCAL coordinates, and also the
-        #    rotated version (since the patch is now rotated 180°, the mask
-        #    that selects "feature interior" must also be rotated).
-        hull_local = hull.copy()
-        hull_local[:, 0, 0] -= x1
-        hull_local[:, 0, 1] -= y1
+        # Mask in bbox-local coords (polygon vertices shifted)
+        poly_local = poly.copy()
+        poly_local[:, 0, 0] -= x1
+        poly_local[:, 0, 1] -= y1
         mask_local = np.zeros((bh, bw), dtype=np.uint8)
-        cv2.fillConvexPoly(mask_local, hull_local, 255)
+        cv2.fillPoly(mask_local, [poly_local], 255)
+        # Rotate mask 180° to match the rotated patch
         mask_local_rot = cv2.rotate(mask_local, cv2.ROTATE_180)
-        # Use the rotated mask: it tells seamlessClone which pixels of
-        # patch_rot correspond to "feature content."
-        mask_for_clone = mask_local_rot
 
-        # 4. seamlessClone center = the patch center in destination coords
-        #    (i.e., the hull's bounding-box center in the full image).
+        # seamlessClone wants a SOLID mask (not feathered). The Poisson solve
+        # produces its own smooth transition at the mask boundary.
         center = (x1 + bw // 2, y1 + bh // 2)
-
-        # 5. Poisson seamless clone (NORMAL_CLONE preserves the source patch's
-        #    content while smoothing the boundary to match destination gradients).
         try:
-            out = cv2.seamlessClone(patch_rot, out, mask_for_clone,
+            out = cv2.seamlessClone(patch_rot, out, mask_local_rot,
                                       center, cv2.NORMAL_CLONE)
         except cv2.error as e:
-            # Fallback: simple alpha blend with the mask (if seamlessClone
-            # fails on edge cases — e.g., mask near image border)
-            alpha = (mask_for_clone.astype(np.float32) / 255.0)[..., None]
+            # Alpha-blend fallback (rare; happens if mask touches border)
+            alpha = (mask_local_rot.astype(np.float32) / 255.0)[..., None]
             base = out[y1:y2, x1:x2].astype(np.float32)
             new = patch_rot.astype(np.float32)
-            blend = base * (1 - alpha) + new * alpha
-            out[y1:y2, x1:x2] = np.clip(blend, 0, 255).astype(np.uint8)
-            print(f"  [warn] seamlessClone failed on {name}, used alpha "
-                  f"fallback: {e}")
+            out[y1:y2, x1:x2] = np.clip(base * (1 - alpha) + new * alpha,
+                                          0, 255).astype(np.uint8)
+            print(f"  [warn] seamlessClone failed on {name}, alpha fallback: {e}")
+    return out
+
+
+def overlay_polygons(img_rgb: np.ndarray, landmarks: np.ndarray) -> np.ndarray:
+    """Draw the precise eye/brow/mouth polygons on top of the source for QC."""
+    h, w = img_rgb.shape[:2]
+    le_c = landmarks[LEFT_EYE].mean(axis=0)
+    re_c = landmarks[RIGHT_EYE].mean(axis=0)
+    iod = float(np.linalg.norm(le_c - re_c))
+    polys = [
+        ("L_eye", eye_brow_polygon(landmarks, LEFT_EYE,  LEFT_BROW,  iod=iod), (0, 255, 0)),
+        ("R_eye", eye_brow_polygon(landmarks, RIGHT_EYE, RIGHT_BROW, iod=iod), (0, 255, 0)),
+        ("mouth", mouth_polygon(landmarks), (255, 0, 0)),
+    ]
+    out = img_rgb.copy()
+    for name, poly, color in polys:
+        cv2.polylines(out, [poly], isClosed=True, color=color, thickness=3)
     return out
 
 
@@ -155,6 +152,9 @@ def main(args):
         v2 = thatcherize_classical(rgb, rec.landmarks, pad=args.pad)
         v3 = cv2.rotate(v1, cv2.ROTATE_180)
         v4 = cv2.rotate(v2, cv2.ROTATE_180)
+        v0_overlay = overlay_polygons(rgb, rec.landmarks)
+
+        Image.fromarray(v0_overlay).save(idir / "polygon_overlay.png")
 
         for cond, im in [("V1", v1), ("V2", v2), ("V3", v3), ("V4", v4)]:
             p = idir / f"thatcher_{cond}.png"
