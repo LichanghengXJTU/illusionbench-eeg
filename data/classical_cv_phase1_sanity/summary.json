@@ -1,0 +1,14 @@
+{
+  "n_scanned": 50,
+  "n_face_detected": 49,
+  "n_passed": 20,
+  "pass_rate": 0.4,
+  "per_criterion_fail_count": {
+    "iod_ok": 0,
+    "tilt_ok": 0,
+    "yaw_ok": 23,
+    "face_dominant": 0,
+    "no_glasses": 0,
+    "mouth_not_wide_open": 11
+  }
+}
