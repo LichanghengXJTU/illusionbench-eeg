@@ -188,19 +188,25 @@ class FacePipeline:
 
 
 def default_filter(rec: FaceRecord,
-                     brow_skin_L_diff_max: float = 22.0) -> tuple[bool, dict]:
+                     brow_skin_L_diff_max: float = 1000.0,
+                     glasses_density_max: float = 0.07) -> tuple[bool, dict]:
     """Apply standard filter. Returns (pass, per-criterion-bool-dict).
 
     brow_skin_L_diff_max: max LAB-L difference between brow and forehead
-    skin (8-bit scale). Lower = more similar = Thatcher-plausible.
-    22 on 0-255 scale ≈ 8.6 on canonical 0-100 LAB scale (mild contrast).
+    skin (8-bit scale). DISABLED by default (1000 = always passes) since
+    the Thompson 1980 eye-only Thatcher variant doesn't rotate brows, so
+    brow contrast is irrelevant. Kept for ablation studies.
+
+    glasses_density_max: max Canny edge density in eye-bbox region.
+    Default 0.07 = STRICT (excludes most glasses; loose 0.15 missed thin
+    or rimless frames).
     """
     criteria = {
         "iod_ok":          rec.iod_px >= 120.0,
         "tilt_ok":         rec.tilt_deg <= 15.0,
         "yaw_ok":          rec.yaw_score <= 0.18,   # ~< 15° yaw
         "face_dominant":   rec.face_area_frac >= 0.20,
-        "no_glasses":      rec.glasses_edge_density <= 0.15,
+        "no_glasses":      rec.glasses_edge_density <= glasses_density_max,
         "mouth_not_wide_open": rec.mouth_open_frac <= 0.18,
         "brow_subtle":     (not np.isnan(rec.brow_skin_L_diff) and
                              rec.brow_skin_L_diff <= brow_skin_L_diff_max),

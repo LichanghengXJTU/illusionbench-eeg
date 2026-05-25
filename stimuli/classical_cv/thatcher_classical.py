@@ -34,7 +34,8 @@ from stimuli.classical_cv.face_pipeline import (
     FacePipeline, default_filter, iter_ffhq_tar,
 )
 from stimuli.classical_cv.precise_polygons import (
-    eye_brow_polygon, mouth_polygon, polygon_bbox, polygon_centroid,
+    eye_brow_polygon, eye_only_polygon, mouth_polygon,
+    polygon_bbox, polygon_centroid,
     LEFT_EYE, RIGHT_EYE, LEFT_BROW, RIGHT_BROW,
 )
 
@@ -64,9 +65,12 @@ def thatcherize_classical(img_rgb: np.ndarray, landmarks: np.ndarray,
     re_c = landmarks[RIGHT_EYE].mean(axis=0)
     iod = float(np.linalg.norm(le_c - re_c))
 
+    # Thompson 1980 canonical: rotate EYE (not brow) + MOUTH only.
+    # Brow stays put — eliminates the "brows clearly visible after flip"
+    # problem entirely (no flip → no visibility issue).
     polys = [
-        ("L_eye", eye_brow_polygon(landmarks, LEFT_EYE,  LEFT_BROW,  iod=iod)),
-        ("R_eye", eye_brow_polygon(landmarks, RIGHT_EYE, RIGHT_BROW, iod=iod)),
+        ("L_eye", eye_only_polygon(landmarks, LEFT_EYE,  iod=iod)),
+        ("R_eye", eye_only_polygon(landmarks, RIGHT_EYE, iod=iod)),
         ("mouth", mouth_polygon(landmarks, iod=iod)),
     ]
     out = img_rgb.copy()
@@ -119,9 +123,9 @@ def overlay_polygons(img_rgb: np.ndarray, landmarks: np.ndarray) -> np.ndarray:
     re_c = landmarks[RIGHT_EYE].mean(axis=0)
     iod = float(np.linalg.norm(le_c - re_c))
     polys = [
-        ("L_eye", eye_brow_polygon(landmarks, LEFT_EYE,  LEFT_BROW,  iod=iod), (0, 255, 0)),
-        ("R_eye", eye_brow_polygon(landmarks, RIGHT_EYE, RIGHT_BROW, iod=iod), (0, 255, 0)),
-        ("mouth", mouth_polygon(landmarks), (255, 0, 0)),
+        ("L_eye", eye_only_polygon(landmarks, LEFT_EYE,  iod=iod), (0, 255, 0)),
+        ("R_eye", eye_only_polygon(landmarks, RIGHT_EYE, iod=iod), (0, 255, 0)),
+        ("mouth", mouth_polygon(landmarks, iod=iod), (255, 0, 0)),
     ]
     out = img_rgb.copy()
     for name, poly, color in polys:

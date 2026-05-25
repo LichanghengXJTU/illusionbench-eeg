@@ -102,6 +102,37 @@ def polygon_centroid(poly: np.ndarray) -> tuple[int, int]:
     return int(round(pts[:, 0].mean())), int(round(pts[:, 1].mean()))
 
 
+def eye_only_polygon(landmarks: np.ndarray, eye_idx: list[int],
+                       pad_above: float = 0.05,
+                       pad_below: float = 0.10,
+                       pad_lateral: float = 0.05,
+                       iod: float = 100.0) -> np.ndarray:
+    """Eye-only polygon (NO brow). Used for Thompson 1980 eye-only Thatcher
+    variant — brows stay put, only the eye/eyeball region rotates.
+
+    Pad eye landmarks:
+      - upper: slight up-pad to include upper eyelid (NOT all the way to brow)
+      - lower: down-pad to include eye-bag region
+      - lateral: outward from polygon centroid to capture eyeshadow/corner
+    """
+    eye_pts = landmarks[eye_idx].astype(np.float32).copy()
+    eye_cy = eye_pts[:, 1].mean()
+    is_lower = eye_pts[:, 1] >= eye_cy
+    is_upper = ~is_lower
+    eye_pts[is_lower, 1] += pad_below * iod
+    eye_pts[is_upper, 1] -= pad_above * iod
+    # Lateral expansion from polygon centroid
+    cx = float(eye_pts[:, 0].mean())
+    cy = float(eye_pts[:, 1].mean())
+    for i in range(len(eye_pts)):
+        dx, dy = eye_pts[i, 0] - cx, eye_pts[i, 1] - cy
+        n = float(np.hypot(dx, dy))
+        if n > 1e-3:
+            eye_pts[i, 0] += (dx / n) * pad_lateral * iod
+            eye_pts[i, 1] += (dy / n) * pad_lateral * iod
+    return cv2.convexHull(eye_pts.astype(np.int32))
+
+
 def face_oval_polygon(landmarks: np.ndarray, iod: float,
                        forehead_pad_frac: float = 0.50) -> np.ndarray:
     """Return ordered polygon enclosing the visible face (jaw + estimated
