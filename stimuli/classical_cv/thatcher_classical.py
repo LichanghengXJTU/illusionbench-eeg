@@ -145,6 +145,29 @@ def make_contact_sheet(images, titles, out_path, tile=384):
     Image.fromarray(sheet).save(out_path)
 
 
+def _iter_multi_tars(tar_dir: str | None, tar_glob: str | None,
+                       single_tar: str | None, max_n: int, seed: int):
+    """Yield (src_name, rgb) across single tar OR all tars matching glob."""
+    if tar_dir:
+        tar_paths = sorted(Path(tar_dir).glob("*.tar"))
+    elif tar_glob:
+        from glob import glob
+        tar_paths = sorted(Path(p) for p in glob(tar_glob))
+    else:
+        tar_paths = [Path(single_tar)]
+    print(f"[iter] iterating {len(tar_paths)} tar(s)")
+    n_yielded = 0
+    for tar_path in tar_paths:
+        if 0 < max_n <= n_yielded:
+            break
+        for name, rgb in iter_ffhq_tar(tar_path, max_n=-1,
+                                         shuffle=True, seed=seed):
+            if 0 < max_n <= n_yielded:
+                break
+            yield name, rgb
+            n_yielded += 1
+
+
 def main(args):
     pipe = FacePipeline(args.predictor)
     out_root = Path(args.output_dir); out_root.mkdir(parents=True, exist_ok=True)
@@ -153,8 +176,9 @@ def main(args):
     manifest = []
     n_scanned = 0; n_passed = 0
     contact_sheets = []
-    for src_name, rgb in iter_ffhq_tar(Path(args.tar), max_n=args.scan_cap,
-                                         shuffle=True, seed=args.seed):
+    src_iter = _iter_multi_tars(args.tar_dir, args.tar_glob, args.tar,
+                                  args.scan_cap, args.seed)
+    for src_name, rgb in src_iter:
         n_scanned += 1
         if n_passed >= n_target:
             break
@@ -186,12 +210,13 @@ def main(args):
             manifest.append({"identity_id": idx, "ffhq_name": src_name,
                               "condition": cond, "path": str(p)})
 
-        # Per-identity contact sheet
-        cs = idir / "contact.png"
-        make_contact_sheet([v1, v2, v3, v4],
-                           ["V1 upright_normal", "V2 upright_thatched",
-                            "V3 inverted_normal", "V4 inverted_thatched"], cs)
-        contact_sheets.append(cs)
+        # Per-identity contact sheet ONLY for first 30 IDs (QC sampling at scale)
+        if idx < 30:
+            cs = idir / "contact.png"
+            make_contact_sheet([v1, v2, v3, v4],
+                               ["V1 upright_normal", "V2 upright_thatched",
+                                "V3 inverted_normal", "V4 inverted_thatched"], cs)
+            contact_sheets.append(cs)
 
         # Also save landmarks for downstream use (composite/PW)
         lm_path = idir / "landmarks.json"
@@ -235,9 +260,14 @@ def parse_args():
                    default="/workspace/models/shape_predictor_68_face_landmarks.dat")
     p.add_argument("--tar",
                    default="/workspace/.hf_cache/hub/datasets--gaunernst--ffhq-1024-wds/snapshots/d74f1f1f59e3bbe975bee29872b9bef827314577/00000.tar")
+    p.add_argument("--tar_dir", default=None,
+                   help="if set: iterate ALL *.tar in this directory")
+    p.add_argument("--tar_glob", default=None,
+                   help="if set: iterate all tars matching this glob pattern")
     p.add_argument("--output_dir", default="data/classical_cv_phase2_thatcher")
     p.add_argument("--target_n", type=int, default=20)
-    p.add_argument("--scan_cap", type=int, default=200)
+    p.add_argument("--scan_cap", type=int, default=200,
+                   help="hard cap on input scans; -1 = unlimited")
     p.add_argument("--pad", type=int, default=8)
     p.add_argument("--seed", type=int, default=20260525)
     return p.parse_args()
