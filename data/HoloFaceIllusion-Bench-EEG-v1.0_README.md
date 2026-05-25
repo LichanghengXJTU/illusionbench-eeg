@@ -17,9 +17,16 @@ tags:
 size_categories:
 - 10K<n<100K
 pretty_name: HoloFaceIllusion-Bench-EEG v1.0 (Thatcher)
+configs:
+- config_name: default
+  data_files:
+  - split: train
+    path: "*.tar"
 ---
 
 # HoloFaceIllusion-Bench-EEG v1.0 (Thatcher)
+
+![Sample of 6 identities × 4 conditions (V1 upright_normal, V2 upright_thatched, V3 inverted_normal, V4 inverted_thatched)](./preview.png)
 
 A large-scale benchmark of **holistic-face illusion stimuli** built for testing
 human-vs-DNN alignment on configural face processing and for training /
@@ -44,20 +51,35 @@ Composite-face and Part-Whole paradigms will be released as v1.1 and v1.2.
 
 ## Quick start
 
+### Option A — via 🤗 `datasets` (recommended, auto-handles webdataset)
+
+```python
+from datasets import load_dataset
+
+ds = load_dataset("Enhui-1/HoloFaceIllusion-Bench-EEG",
+                   split="train", streaming=True)
+for sample in ds:
+    # keys: "v1_upright_normal.png", "v2_upright_thatched.png",
+    #       "v3_inverted_normal.png", "v4_inverted_thatched.png",
+    #       "landmarks.json", "__key__" (= ffhq_name)
+    v1 = sample["v1_upright_normal.png"]   # PIL.Image
+    v2 = sample["v2_upright_thatched.png"]
+    landmarks = sample["landmarks.json"]    # parsed dict
+    break
+```
+
+### Option B — directly via `webdataset`
+
 ```python
 import webdataset as wds
 
-url = "https://huggingface.co/datasets/<your-username>/HoloFaceIllusion-Bench-EEG/resolve/main/{00000..69000}.tar"
-ds = (wds.WebDataset(url)
-        .decode("rgb"))
+url = ("https://huggingface.co/datasets/Enhui-1/HoloFaceIllusion-Bench-EEG/"
+       "resolve/main/{00000..69000}.tar")
+ds = wds.WebDataset(url).decode("rgb")
 
 for sample in ds:
-    # sample is a dict; keys are file basenames
-    v1 = sample["v1_upright_normal.png"]           # H×W×3 uint8 RGB
+    v1 = sample["v1_upright_normal.png"]   # H×W×3 uint8 RGB
     v2 = sample["v2_upright_thatched.png"]
-    v3 = sample["v3_inverted_normal.png"]
-    v4 = sample["v4_inverted_thatched.png"]
-    landmarks = sample["landmarks.json"]
     # ...
 ```
 
@@ -167,7 +189,7 @@ derived work.
   title  = {HoloFaceIllusion-Bench-EEG v1.0 (Thatcher)},
   author = {En Hui Li (HKUST)},
   year   = {2026},
-  url    = {https://huggingface.co/datasets/<username>/HoloFaceIllusion-Bench-EEG},
+  url    = {https://huggingface.co/datasets/Enhui-1/HoloFaceIllusion-Bench-EEG},
   note   = {CC BY-NC-SA 4.0; derivative of FFHQ (Karras et al. 2019)},
 }
 ```
