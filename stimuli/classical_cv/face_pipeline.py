@@ -66,6 +66,7 @@ class FaceRecord:
     face_area_frac: float        # bbox area / total image area
     glasses_edge_density: float  # Canny density inside eye bbox (proxy)
     mouth_open_frac: float       # inner-lip h / mouth-width (smile proxy)
+    brow_skin_L_diff: float      # |LAB-L(forehead) - LAB-L(brow)|, 8-bit scale
     src_name: str                # FFHQ filename root
 
 
@@ -144,16 +145,56 @@ class FacePipeline:
         inner_h = float(abs(inner_bot - inner_top))
         mouth_open = inner_h / max(mw, 1e-6)
 
+        # Brow vs forehead-skin lightness contrast (Thatcher-illusion plausibility).
+        # Dark brows on light skin make the inverted-brow obvious; we want
+        # subjects whose brow blends with surrounding skin lightness.
+        brow_skin_L_diff = self._brow_skin_lightness(rgb, lm, iod)
+
         return FaceRecord(
             image=rgb, landmarks=lm, bbox=bbox, iod_px=iod, tilt_deg=tilt,
             yaw_score=yaw_score, face_area_frac=face_area_frac,
             glasses_edge_density=glasses_density,
-            mouth_open_frac=mouth_open, src_name=src_name,
+            mouth_open_frac=mouth_open,
+            brow_skin_L_diff=brow_skin_L_diff,
+            src_name=src_name,
         )
 
+    @staticmethod
+    def _brow_skin_lightness(rgb: np.ndarray, lm: np.ndarray, iod: float) -> float:
+        """Mean LAB-L of brow region vs mean LAB-L of forehead strip above
+        brows. Returns |delta_L| in 8-bit OpenCV LAB scale (0-255).
+        Larger = darker brow vs skin = Thatcher more visible."""
+        h, w = rgb.shape[:2]
+        # Brow convex hull from landmarks 17-26
+        brow_pts = lm[LEFT_BROW + RIGHT_BROW].astype(np.int32)
+        brow_mask = np.zeros((h, w), dtype=np.uint8)
+        if len(brow_pts) >= 3:
+            cv2.fillPoly(brow_mask, [cv2.convexHull(brow_pts)], 255)
+        # Forehead skin strip: just above the brow line
+        brow_top_y = int(brow_pts[:, 1].min())
+        fh_y1 = max(0, brow_top_y - int(iod * 0.35))
+        fh_y2 = max(0, brow_top_y - int(iod * 0.10))
+        fh_x1 = max(0, int(brow_pts[:, 0].min()))
+        fh_x2 = min(w, int(brow_pts[:, 0].max()))
+        if fh_y2 <= fh_y1 + 1 or fh_x2 <= fh_x1 + 1:
+            return float("nan")
+        forehead_mask = np.zeros((h, w), dtype=np.uint8)
+        forehead_mask[fh_y1:fh_y2, fh_x1:fh_x2] = 255
+        lab_L = cv2.cvtColor(rgb, cv2.COLOR_RGB2LAB)[..., 0].astype(np.float32)
+        if brow_mask.sum() == 0 or forehead_mask.sum() == 0:
+            return float("nan")
+        return float(abs(lab_L[forehead_mask > 0].mean() -
+                          lab_L[brow_mask > 0].mean()))
 
-def default_filter(rec: FaceRecord) -> tuple[bool, dict]:
-    """Apply standard filter. Returns (pass, per-criterion-bool-dict)."""
+
+def default_filter(rec: FaceRecord,
+                     brow_skin_L_diff_max: float = 22.0) -> tuple[bool, dict]:
+    """Apply standard filter. Returns (pass, per-criterion-bool-dict).
+
+    brow_skin_L_diff_max: max LAB-L difference between brow and forehead
+    skin (8-bit scale). Lower = more similar = Thatcher-plausible.
+    22 on 0-255 scale ≈ 8.6 on canonical 0-100 LAB scale (mild contrast).
+    """
     criteria = {
         "iod_ok":          rec.iod_px >= 120.0,
         "tilt_ok":         rec.tilt_deg <= 15.0,
@@ -161,8 +202,8 @@ def default_filter(rec: FaceRecord) -> tuple[bool, dict]:
         "face_dominant":   rec.face_area_frac >= 0.20,
         "no_glasses":      rec.glasses_edge_density <= 0.15,
         "mouth_not_wide_open": rec.mouth_open_frac <= 0.18,
-        # Note: we ALLOW smiling/closed-mouth smile (mouth_open_frac small);
-        # we only reject loudly-laughing/yawning (large inner-lip gap).
+        "brow_subtle":     (not np.isnan(rec.brow_skin_L_diff) and
+                             rec.brow_skin_L_diff <= brow_skin_L_diff_max),
     }
     return all(criteria.values()), criteria
 
@@ -199,7 +240,7 @@ def sanity_run(predictor_path: str, ffhq_tar: Path,
     n_scanned = 0; n_face_detected = 0; n_passed = 0
     per_crit_fail = {k: 0 for k in [
         "iod_ok", "tilt_ok", "yaw_ok", "face_dominant",
-        "no_glasses", "mouth_not_wide_open"]}
+        "no_glasses", "mouth_not_wide_open", "brow_subtle"]}
     rows = []
     for src_name, rgb in iter_ffhq_tar(ffhq_tar, max_n=n_scan, shuffle=True):
         n_scanned += 1
@@ -223,6 +264,7 @@ def sanity_run(predictor_path: str, ffhq_tar: Path,
             "yaw": rec.yaw_score, "face_area_frac": rec.face_area_frac,
             "glasses_density": rec.glasses_edge_density,
             "mouth_open": rec.mouth_open_frac,
+            "brow_skin_L_diff": rec.brow_skin_L_diff,
             "passed": passed,
         })
         if out_dir is not None and passed and n_passed <= 10:
