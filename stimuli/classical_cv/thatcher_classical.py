@@ -34,18 +34,31 @@ from stimuli.classical_cv.face_pipeline import (
     FacePipeline, default_filter, iter_ffhq_tar,
 )
 from stimuli.classical_cv.precise_polygons import (
-    eye_brow_polygon, mouth_polygon, polygon_bbox,
+    eye_brow_polygon, mouth_polygon, polygon_bbox, polygon_centroid,
     LEFT_EYE, RIGHT_EYE, LEFT_BROW, RIGHT_BROW,
 )
 
 
 def thatcherize_classical(img_rgb: np.ndarray, landmarks: np.ndarray,
-                            pad: int = 8) -> np.ndarray:
-    """Apply Thatcher transform with Poisson seamless cloning.
+                            pad: int = 12) -> np.ndarray:
+    """Thatcher with **centroid-anchored** 180° rotation per region.
 
-    Uses PRECISE landmark-ordered polygons (not convex hulls) for tighter
-    masks that hug the actual feature boundary. This makes seamlessClone's
-    blending operate on a much smaller transition region → invisible seams."""
+    Per-region procedure (per user feedback 2026-05-25):
+      1. Build precise polygon with proper pads (brow_up, eye-bag, lateral
+         makeup zone — see precise_polygons.eye_brow_polygon).
+      2. Compute polygon CENTROID (cx, cy).
+      3. Build centroid-symmetric bbox = (cx ± dx_max, cy ± dy_max) so
+         that rotating the bbox patch 180° rotates the FEATURE around its
+         own centroid (not around bbox edge = lower-lip / upper-brow).
+      4. Build mask M from polygon (in bbox-local coords).
+         Build M_rot = M rotated 180° (= same mask reflected around bbox center).
+         Use mask_union = M ∪ M_rot for seamlessClone target region — covers
+         BOTH the original feature position AND the rotated position, so any
+         residue of the original (in the wedge where rotated doesn't reach)
+         still gets replaced by the rotated patch content.
+      5. cv2.seamlessClone(NORMAL_CLONE) — Poisson solves the Laplace at
+         mask boundary, hiding the seam in surrounding skin gradient.
+    """
     h, w = img_rgb.shape[:2]
     le_c = landmarks[LEFT_EYE].mean(axis=0)
     re_c = landmarks[RIGHT_EYE].mean(axis=0)
@@ -54,36 +67,43 @@ def thatcherize_classical(img_rgb: np.ndarray, landmarks: np.ndarray,
     polys = [
         ("L_eye", eye_brow_polygon(landmarks, LEFT_EYE,  LEFT_BROW,  iod=iod)),
         ("R_eye", eye_brow_polygon(landmarks, RIGHT_EYE, RIGHT_BROW, iod=iod)),
-        ("mouth", mouth_polygon(landmarks)),
+        ("mouth", mouth_polygon(landmarks, iod=iod)),
     ]
     out = img_rgb.copy()
     for name, poly in polys:
-        x1, y1, x2, y2 = polygon_bbox(poly, (h, w), pad=pad)
+        cx, cy = polygon_centroid(poly)
+        # Centroid-symmetric bbox: ensures rotation around centroid
+        xs = poly[:, 0, 0]; ys = poly[:, 0, 1]
+        dx_max = max(int(abs(xs.max() - cx)), int(abs(cx - xs.min()))) + pad
+        dy_max = max(int(abs(ys.max() - cy)), int(abs(cy - ys.min()))) + pad
+        # Clip to image bounds while keeping symmetry around centroid
+        max_dx = min(dx_max, cx, w - 1 - cx)
+        max_dy = min(dy_max, cy, h - 1 - cy)
+        x1, x2 = cx - max_dx, cx + max_dx
+        y1, y2 = cy - max_dy, cy + max_dy
         bw, bh = x2 - x1, y2 - y1
         if bw < 4 or bh < 4:
             continue
-        # Extract bbox patch from current working image
+        # Extract bbox patch + rotate 180° around bbox center (= centroid)
         patch = out[y1:y2, x1:x2].copy()
         patch_rot = cv2.rotate(patch, cv2.ROTATE_180)
-
-        # Mask in bbox-local coords (polygon vertices shifted)
+        # Build polygon mask in bbox-local coords
         poly_local = poly.copy()
         poly_local[:, 0, 0] -= x1
         poly_local[:, 0, 1] -= y1
-        mask_local = np.zeros((bh, bw), dtype=np.uint8)
-        cv2.fillPoly(mask_local, [poly_local], 255)
-        # Rotate mask 180° to match the rotated patch
-        mask_local_rot = cv2.rotate(mask_local, cv2.ROTATE_180)
-
-        # seamlessClone wants a SOLID mask (not feathered). The Poisson solve
-        # produces its own smooth transition at the mask boundary.
-        center = (x1 + bw // 2, y1 + bh // 2)
+        mask = np.zeros((bh, bw), dtype=np.uint8)
+        cv2.fillPoly(mask, [poly_local], 255)
+        # Union with rotated mask → covers any uncovered ghost wedge
+        mask_rot = cv2.rotate(mask, cv2.ROTATE_180)
+        mask_union = cv2.bitwise_or(mask, mask_rot)
+        # seamlessClone — NORMAL_CLONE preserves rotated content,
+        # smooths boundary into surrounding skin via Poisson editing.
+        center = (cx, cy)
         try:
-            out = cv2.seamlessClone(patch_rot, out, mask_local_rot,
+            out = cv2.seamlessClone(patch_rot, out, mask_union,
                                       center, cv2.NORMAL_CLONE)
         except cv2.error as e:
-            # Alpha-blend fallback (rare; happens if mask touches border)
-            alpha = (mask_local_rot.astype(np.float32) / 255.0)[..., None]
+            alpha = (mask_union.astype(np.float32) / 255.0)[..., None]
             base = out[y1:y2, x1:x2].astype(np.float32)
             new = patch_rot.astype(np.float32)
             out[y1:y2, x1:x2] = np.clip(base * (1 - alpha) + new * alpha,

@@ -38,31 +38,68 @@ MOUTH_INNER = list(range(60, 68))   # 8 points
 
 
 def eye_brow_polygon(landmarks: np.ndarray, eye_idx: list[int],
-                       brow_idx: list[int], pad_above_brow: float = 0.05,
+                       brow_idx: list[int],
+                       pad_above_brow: float = 0.06,
+                       pad_below_eye: float = 0.13,
+                       pad_lateral:    float = 0.07,
                        iod: float = 100.0) -> np.ndarray:
-    """Return ordered polygon (N, 1, 2) int32 for the FULL eye+brow region.
-    Brow upper line (padded up) + eye lower arc, with the SIDES connecting
-    them via the eye's outer + inner corners. Produces a tight shape that
-    encloses the entire brow AND the entire eye opening (so seamlessClone
-    sees the iris/pupil as 'feature interior').
-
-    Approach: take the CONVEX HULL of {padded_brow_points ∪ eye_points}.
-    This guarantees the polygon encloses everything we care about while
-    still tightly hugging the visible feature boundary. The convex-hull
-    result here is much tighter than just bbox because brow + eye points
-    are inherently arc-shaped, not rectangular."""
+    """Return convex hull enclosing the FULL eye region:
+       - brow (padded UP by pad_above_brow × IOD: brow hair)
+       - eye opening (the 6-point arc)
+       - eye bag region (eye lower points padded DOWN by pad_below_eye × IOD)
+       - lateral makeup region (all points pushed outward from polygon centroid
+         by pad_lateral × IOD: captures eyeshadow / outer-canthus crow's-feet
+         / inner-corner makeup)
+    Defaults tuned for typical FFHQ portraits at 1024×1024.
+    """
     brow_pts = landmarks[brow_idx].astype(np.float32).copy()
-    pad_px = pad_above_brow * iod
-    brow_pts[:, 1] -= pad_px      # shift brow upward to include brow hair
-    eye_pts = landmarks[eye_idx].astype(np.float32)
-    all_pts = np.concatenate([brow_pts, eye_pts], axis=0).astype(np.int32)
-    hull = cv2.convexHull(all_pts)
+    eye_pts = landmarks[eye_idx].astype(np.float32).copy()
+    above_px = pad_above_brow * iod
+    below_px = pad_below_eye * iod
+    lateral_px = pad_lateral * iod
+    # 1. Pad brow upward to include brow hair (above the landmark line)
+    brow_pts[:, 1] -= above_px
+    # 2. Pad LOWER eye landmarks downward to include eye bags / under-eye area
+    #    (only the lower-half eye points: those with y >= eye centroid)
+    eye_cy_native = eye_pts[:, 1].mean()
+    is_lower = eye_pts[:, 1] >= eye_cy_native
+    eye_pts[is_lower, 1] += below_px
+    # 3. Pad all points outward from polygon centroid (lateral expansion)
+    all_pts = np.concatenate([brow_pts, eye_pts], axis=0)
+    cx = float(all_pts[:, 0].mean())
+    cy = float(all_pts[:, 1].mean())
+    for i in range(len(all_pts)):
+        dx, dy = all_pts[i, 0] - cx, all_pts[i, 1] - cy
+        norm = float(np.hypot(dx, dy))
+        if norm > 1e-3:
+            all_pts[i, 0] += (dx / norm) * lateral_px
+            all_pts[i, 1] += (dy / norm) * lateral_px
+    hull = cv2.convexHull(all_pts.astype(np.int32))
     return hull
 
 
-def mouth_polygon(landmarks: np.ndarray) -> np.ndarray:
-    """Return ordered polygon for the OUTER mouth boundary (12 points)."""
-    return landmarks[MOUTH_OUTER].astype(np.int32).reshape(-1, 1, 2)
+def mouth_polygon(landmarks: np.ndarray, pad_frac: float = 0.07,
+                    iod: float = 100.0) -> np.ndarray:
+    """12-point outer-lip polygon, dilated outward by pad_frac × IOD to
+    include the immediate lip-line / philtrum / chin-top transition zone
+    (so seamlessClone has skin context to blend against)."""
+    pts = landmarks[MOUTH_OUTER].astype(np.float32)
+    cx, cy = pts[:, 0].mean(), pts[:, 1].mean()
+    pad_px = pad_frac * iod
+    out = pts.copy()
+    for i in range(len(out)):
+        dx, dy = out[i, 0] - cx, out[i, 1] - cy
+        n = float(np.hypot(dx, dy))
+        if n > 1e-3:
+            out[i, 0] += (dx / n) * pad_px
+            out[i, 1] += (dy / n) * pad_px
+    return out.astype(np.int32).reshape(-1, 1, 2)
+
+
+def polygon_centroid(poly: np.ndarray) -> tuple[int, int]:
+    """Vertex-averaged centroid (good approximation for our small polygons)."""
+    pts = poly.reshape(-1, 2).astype(np.float32)
+    return int(round(pts[:, 0].mean())), int(round(pts[:, 1].mean()))
 
 
 def face_oval_polygon(landmarks: np.ndarray, iod: float,
