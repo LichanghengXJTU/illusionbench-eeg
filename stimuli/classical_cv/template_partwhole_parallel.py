@@ -43,7 +43,9 @@ import numpy as np
 from PIL import Image
 
 from stimuli.classical_cv.face_embedding import FaceEmbedder
-from stimuli.classical_cv.donor_match import build_attr, IdAttr, is_likely_infant
+from stimuli.classical_cv.donor_match import (
+    build_attr, IdAttr, is_likely_infant, is_blinking,
+)
 from stimuli.classical_cv.template_partwhole import (
     build_template_stimuli, FEATURES,
 )
@@ -52,17 +54,22 @@ from stimuli.classical_cv.template_partwhole import (
 # === Phase A (reused from partwhole_parallel, replicated for self-containment) ==
 
 _embedder: FaceEmbedder | None = None
+_insight = None         # InsightAttrExtractor instance per worker
 _args: dict | None = None
 
 
-def _attrs_init(predictor_path: str, recognizer_path: str, args_dict: dict):
-    global _embedder, _args
+def _attrs_init(predictor_path: str, recognizer_path: str,
+                use_insight: bool, args_dict: dict):
+    global _embedder, _insight, _args
     _embedder = FaceEmbedder(predictor_path, recognizer_path)
     _args = args_dict
+    if use_insight:
+        from stimuli.classical_cv.insight_attrs import InsightAttrExtractor
+        _insight = InsightAttrExtractor()
 
 
 def _extract_attrs_for_id(id_dir_str: str) -> dict | None:
-    global _embedder
+    global _embedder, _insight
     id_dir = Path(id_dir_str)
     lm_path = id_dir / "landmarks.json"
     img_path = id_dir / "thatcher_V1.png"
@@ -72,7 +79,8 @@ def _extract_attrs_for_id(id_dir_str: str) -> dict | None:
         meta = json.loads(lm_path.read_text())
         rgb = np.array(Image.open(img_path).convert("RGB"))
         lm = np.array(meta["landmarks"], dtype=np.float32)
-        attr = build_attr(meta["ffhq_name"], rgb, lm, _embedder)
+        attr = build_attr(meta["ffhq_name"], rgb, lm, _embedder,
+                          age_gender_predictor=_insight)
         if attr is None:
             return None
         return {
@@ -84,7 +92,14 @@ def _extract_attrs_for_id(id_dir_str: str) -> dict | None:
             "iod_face_ratio": attr.iod_face_ratio,
             "cheek_smoothness": attr.cheek_smoothness,
             "lwr_upr_ratio": attr.lwr_upr_ratio,
-            "is_infant": is_likely_infant(attr),
+            "eye_width_iod":     attr.eye_width_iod,
+            "eye_ear":           attr.eye_ear,
+            "nose_height_face":  attr.nose_height_face,
+            "mouth_width_face":  attr.mouth_width_face,
+            "predicted_age":     attr.predicted_age,
+            "predicted_gender":  attr.predicted_gender,
+            "is_infant":         is_likely_infant(attr),
+            "is_blinking":       is_blinking(attr),
             "id_dir": str(id_dir),
         }
     except Exception:
@@ -97,9 +112,11 @@ def run_phase_attrs(args):
     print(f"[phase A] {len(id_dirs)} identity dirs", flush=True)
     t0 = time.monotonic()
     results: list[dict] = []
+    use_insight = bool(getattr(args, "use_insight", False))
+    print(f"[phase A] use_insight={use_insight} workers={args.workers}", flush=True)
     with mp.Pool(processes=args.workers,
                   initializer=_attrs_init,
-                  initargs=(args.predictor, args.recognizer, {})) as pool:
+                  initargs=(args.predictor, args.recognizer, use_insight, {})) as pool:
         for i, r in enumerate(pool.imap_unordered(
                 _extract_attrs_for_id, [str(p) for p in id_dirs])):
             if r is not None:
@@ -136,6 +153,12 @@ def _dict_to_idattr(d: dict, rgb: np.ndarray, lm: np.ndarray) -> IdAttr:
         iod_face_ratio=d["iod_face_ratio"],
         cheek_smoothness=d["cheek_smoothness"],
         lwr_upr_ratio=d["lwr_upr_ratio"],
+        eye_width_iod=d.get("eye_width_iod", 0.0),
+        eye_ear=d.get("eye_ear", 0.0),
+        nose_height_face=d.get("nose_height_face", 0.0),
+        mouth_width_face=d.get("mouth_width_face", 0.0),
+        predicted_age=d.get("predicted_age", -1),
+        predicted_gender=d.get("predicted_gender", "?"),
     )
 
 
@@ -161,27 +184,46 @@ def _gen_init(attrs_pkl: str, template_assignments_path: str,
 
 
 def _process_one_template(template_idx: int) -> dict:
-    """Worker function: generate all PW stimuli for one template."""
+    """Worker function: generate all PW stimuli for one template.
+
+    Supports BOTH legacy format ({"donor_names": [...]}) and per-feature
+    format ({"donors_per_feature": {"eye":[...], ...}}). Per-feature
+    routing skips any feature whose pool is empty (template-feature pair
+    rejected by kNN filter)."""
     global _attrs_dicts, _template_groups, _args
     out_root = Path(_args["output_dir"])
     seed = _args["seed"]
     n_targets = _args["n_targets"]
     assignment = _template_groups[template_idx]
     template_name = assignment["template_name"]
-    donor_names = assignment["donor_names"]
-    # Find attr dicts
     name_to_dict = {d["name"]: d for d in _attrs_dicts}
     if template_name not in name_to_dict:
         return {"template": template_name, "status": "template_missing"}
     template_dict = name_to_dict[template_name]
     template_attr = _load_attr_with_rgb(template_dict)
-    donor_pool = []
-    for dn in donor_names:
-        if dn in name_to_dict:
-            donor_pool.append(_load_attr_with_rgb(name_to_dict[dn]))
-    if len(donor_pool) < 6:
-        return {"template": template_name, "status": "pool_too_small",
-                "pool_size": len(donor_pool)}
+    # Build donor pools — per-feature if available, else legacy
+    if "donors_per_feature" in assignment:
+        donor_pools_per_feature: dict[str, list[IdAttr]] = {}
+        for feat in ("eye", "nose", "mouth"):
+            names = assignment["donors_per_feature"].get(feat, [])
+            donor_pools_per_feature[feat] = [
+                _load_attr_with_rgb(name_to_dict[n]) for n in names
+                if n in name_to_dict
+            ]
+        active = [f for f, p in donor_pools_per_feature.items()
+                  if len(p) >= n_targets]
+        if not active:
+            return {"template": template_name, "status": "pool_too_small",
+                    "active_features": []}
+    else:
+        donor_pool = []
+        for dn in assignment.get("donor_names", []):
+            if dn in name_to_dict:
+                donor_pool.append(_load_attr_with_rgb(name_to_dict[dn]))
+        if len(donor_pool) < 6:
+            return {"template": template_name, "status": "pool_too_small",
+                    "pool_size": len(donor_pool)}
+        donor_pools_per_feature = None
     # Idempotent skip: if last expected file exists, assume done
     tdir = out_root / f"template_{template_name}"
     sentinel = tdir / f"target{n_targets-1:02d}_mouth_V4.png"
@@ -189,8 +231,13 @@ def _process_one_template(template_idx: int) -> dict:
         return {"template": template_name, "status": "skip_exists"}
     rng = random.Random(seed + hash(template_name) % 2**31)
     try:
-        results = build_template_stimuli(template_attr, donor_pool, rng,
-                                          n_targets=n_targets)
+        if donor_pools_per_feature is not None:
+            results = build_template_stimuli(
+                template_attr, donor_pools_per_feature, rng,
+                n_targets=n_targets, per_feature_pools=True)
+        else:
+            results = build_template_stimuli(template_attr, donor_pool, rng,
+                                              n_targets=n_targets)
     except Exception as e:
         return {"template": template_name, "status": "exception",
                 "error": repr(e)}
@@ -252,15 +299,225 @@ def _kmeans_pick_templates(attrs: list[dict], n_templates: int,
     return out
 
 
+def _knn_pick_templates_per_feature(
+        attrs: list[dict], donors_per_template: int,
+        query_k: int = 500,
+        # Template-level demographic constraints (must pass to be candidate at all)
+        lab_L_max: float = 8.0,
+        lab_a_max: float = 6.0,
+        lab_b_max: float = 6.0,
+        face_ratio_max: float = 0.15,
+        iod_ratio_max: float = 0.05,
+        smoothness_log_max: float = 0.7,
+        d_emb_low: float = 0.60,
+        d_emb_high: float = 0.85,
+        # InsightFace gender/age constraints (skipped if predictions unavailable)
+        require_gender_match: bool = True,
+        age_diff_max: int = 15,
+        # Per-feature size constraints
+        eye_size_diff_max:   float = 0.10,   # |Δ eye_width_iod| (typical ~ 0.45-0.55)
+        nose_size_diff_max:  float = 0.025,  # |Δ nose_width_face|; nose_w_face ~ 0.18-0.25
+        mouth_size_diff_max: float = 0.04,   # |Δ mouth_width_face|; ~ 0.28-0.38
+        # "If both are LARGE on this feature → skip swap" — Pxx defined per feature
+        skip_both_large_pct: float = 75.0,   # P75 cutoff
+        min_donors_per_feature: int = 6,
+        ) -> list[dict]:
+    """Per-feature KDTree donor selection.
+
+    Two-stage filter:
+      Stage 1 (template-level): demographic hard constraints — gender match,
+        age diff ≤ 15, skin LAB Δ ≤ 8/6/6, face geometry, embedding distance.
+      Stage 2 (per-feature):    for each of {eye, nose, mouth} independently:
+        - |size_template - size_donor| <= eps_feature
+        - skip if BOTH template and donor's feature size > P75 across dataset
+          (user request 2026-05-27: "if both have very large feature, don't
+           swap" — large features create distinct stimuli that break the
+           subtle PW illusion)
+
+    Returns per-template per-feature donor lists. Template is DROPPED if any
+    feature's pool has fewer than min_donors_per_feature passing candidates.
+    """
+    from sklearn.neighbors import KDTree
+
+    feats = np.array([
+        [d["skin_lab"][0], d["skin_lab"][1], d["skin_lab"][2],
+         d["face_ratio"], d["lwr_upr_ratio"], d["nose_rel"]]
+        for d in attrs
+    ], dtype=np.float64)
+    feats = (feats - feats.mean(0)) / (feats.std(0) + 1e-6)
+
+    embs = np.array([d["emb"] for d in attrs], dtype=np.float32)  # (N, 128)
+
+    # P75 cutoffs per feature (computed across population)
+    eye_w_arr   = np.array([d.get("eye_width_iod",   0.5) for d in attrs])
+    nose_w_arr  = np.array([d.get("nose_rel",        0.2) for d in attrs])
+    mouth_w_arr = np.array([d.get("mouth_width_face", 0.3) for d in attrs])
+    eye_w_p75   = float(np.percentile(eye_w_arr,   skip_both_large_pct))
+    nose_w_p75  = float(np.percentile(nose_w_arr,  skip_both_large_pct))
+    mouth_w_p75 = float(np.percentile(mouth_w_arr, skip_both_large_pct))
+    print(f"[knn-filter] P{skip_both_large_pct:.0f} cutoffs: "
+          f"eye_w_iod={eye_w_p75:.3f}  nose_rel={nose_w_p75:.3f}  "
+          f"mouth_w_face={mouth_w_p75:.3f}", flush=True)
+
+    k = min(len(attrs), query_k)
+    tree = KDTree(feats)
+    indices = tree.query(feats, k=k, return_distance=False)
+
+    out = []
+    n_dropped_no_demo = 0
+    n_dropped_per_feature = {f: 0 for f in ("eye", "nose", "mouth")}
+    n_dropped_template = 0
+    for i in range(len(attrs)):
+        di = attrs[i]
+        ls_i = float(np.log10(di["cheek_smoothness"] + 1.0))
+        gi = di.get("predicted_gender", "?")
+        ai = di.get("predicted_age", -1)
+        # Stage 1: template-level filter → list of valid candidate idxs
+        demo_pool: list[int] = []
+        for j in indices[i]:
+            if j == i:
+                continue
+            dj = attrs[int(j)]
+            # Gender hard match (only enforce if BOTH have predictions)
+            if require_gender_match:
+                gj = dj.get("predicted_gender", "?")
+                if gi != "?" and gj != "?" and gi != gj:
+                    continue
+            # Age diff
+            aj = dj.get("predicted_age", -1)
+            if ai >= 0 and aj >= 0 and abs(ai - aj) > age_diff_max:
+                continue
+            # Skin LAB
+            if abs(di["skin_lab"][0] - dj["skin_lab"][0]) > lab_L_max:
+                continue
+            if abs(di["skin_lab"][1] - dj["skin_lab"][1]) > lab_a_max:
+                continue
+            if abs(di["skin_lab"][2] - dj["skin_lab"][2]) > lab_b_max:
+                continue
+            # Face geometry
+            if abs(di["face_ratio"] - dj["face_ratio"]) > face_ratio_max:
+                continue
+            if abs(di["iod_face_ratio"] - dj["iod_face_ratio"]) > iod_ratio_max:
+                continue
+            # Smoothness (age proxy)
+            ls_j = float(np.log10(dj["cheek_smoothness"] + 1.0))
+            if abs(ls_i - ls_j) > smoothness_log_max:
+                continue
+            # Embedding distance
+            d_emb = float(np.linalg.norm(embs[i] - embs[int(j)]))
+            if not (d_emb_low <= d_emb <= d_emb_high):
+                continue
+            demo_pool.append(int(j))
+        if len(demo_pool) < min_donors_per_feature:
+            n_dropped_no_demo += 1
+            continue
+        # Stage 2: per-feature filter on demo_pool
+        eye_pool, nose_pool, mouth_pool = [], [], []
+        tpl_eye_w   = di.get("eye_width_iod",   0.5)
+        tpl_nose_w  = di.get("nose_rel",        0.2)
+        tpl_mouth_w = di.get("mouth_width_face", 0.3)
+        tpl_blinking = di.get("is_blinking", False)
+        for j in demo_pool:
+            dj = attrs[j]
+            # EYE pool
+            if len(eye_pool) < donors_per_template:
+                ok = True
+                if dj.get("is_blinking", False):
+                    ok = False  # never use blinking donor for eye swap
+                d_size = abs(tpl_eye_w - dj.get("eye_width_iod", 0.5))
+                if d_size > eye_size_diff_max:
+                    ok = False
+                # Skip if both large
+                if (tpl_eye_w > eye_w_p75 and
+                        dj.get("eye_width_iod", 0.5) > eye_w_p75):
+                    ok = False
+                if ok:
+                    eye_pool.append(j)
+            # NOSE pool
+            if len(nose_pool) < donors_per_template:
+                ok = True
+                d_size = abs(tpl_nose_w - dj.get("nose_rel", 0.2))
+                if d_size > nose_size_diff_max:
+                    ok = False
+                if (tpl_nose_w > nose_w_p75 and
+                        dj.get("nose_rel", 0.2) > nose_w_p75):
+                    ok = False
+                if ok:
+                    nose_pool.append(j)
+            # MOUTH pool
+            if len(mouth_pool) < donors_per_template:
+                ok = True
+                d_size = abs(tpl_mouth_w - dj.get("mouth_width_face", 0.3))
+                if d_size > mouth_size_diff_max:
+                    ok = False
+                if (tpl_mouth_w > mouth_w_p75 and
+                        dj.get("mouth_width_face", 0.3) > mouth_w_p75):
+                    ok = False
+                if ok:
+                    mouth_pool.append(j)
+        # If template is blinking, drop its eye pool (don't generate eye swaps)
+        if tpl_blinking:
+            eye_pool = []
+        # Check pool sizes per feature
+        pool_sizes = {"eye": len(eye_pool), "nose": len(nose_pool),
+                      "mouth": len(mouth_pool)}
+        kept_features = {f for f, sz in pool_sizes.items()
+                         if sz >= min_donors_per_feature}
+        for f, sz in pool_sizes.items():
+            if sz < min_donors_per_feature:
+                n_dropped_per_feature[f] += 1
+        if not kept_features:
+            n_dropped_template += 1
+            continue
+        out.append({
+            "template_name": di["name"],
+            "donors_per_feature": {
+                "eye":   [attrs[j]["name"] for j in eye_pool]   if "eye"   in kept_features else [],
+                "nose":  [attrs[j]["name"] for j in nose_pool]  if "nose"  in kept_features else [],
+                "mouth": [attrs[j]["name"] for j in mouth_pool] if "mouth" in kept_features else [],
+            },
+        })
+    print(f"[knn-filter] yield: kept {len(out)} / {len(attrs)} templates", flush=True)
+    print(f"  dropped (no demo donors):  {n_dropped_no_demo}", flush=True)
+    print(f"  dropped per-feature pool too small: {n_dropped_per_feature}", flush=True)
+    print(f"  dropped (no features kept): {n_dropped_template}", flush=True)
+    n_eye   = sum(1 for r in out if r["donors_per_feature"]["eye"])
+    n_nose  = sum(1 for r in out if r["donors_per_feature"]["nose"])
+    n_mouth = sum(1 for r in out if r["donors_per_feature"]["mouth"])
+    print(f"  templates with eye/nose/mouth pool: {n_eye}/{n_nose}/{n_mouth}", flush=True)
+    return out
+
+
+def _knn_pick_templates(attrs: list[dict], donors_per_template: int,
+                         **kwargs) -> list[dict]:
+    """Back-compat alias. Calls per-feature picker."""
+    return _knn_pick_templates_per_feature(attrs, donors_per_template, **kwargs)
+
+
 def run_phase_gen(args):
     print(f"[phase B] loading attrs from {args.attrs_pkl}")
     with open(args.attrs_pkl, "rb") as f:
         attrs = pickle.load(f)
     print(f"[phase B] {len(attrs)} adult attrs loaded")
-    print(f"[phase B] k-means clustering into {args.n_templates} templates...")
-    template_groups = _kmeans_pick_templates(
-        attrs, args.n_templates, args.donors_per_template, args.seed)
+
+    mode = getattr(args, "template_mode", "kmeans")
+    if mode == "knn":
+        print(f"[phase B] kNN templates: {len(attrs)} templates "
+              f"× {args.donors_per_template} donors each ...")
+        template_groups = _knn_pick_templates(attrs, args.donors_per_template)
+    else:
+        print(f"[phase B] k-means clustering into {args.n_templates} templates...")
+        template_groups = _kmeans_pick_templates(
+            attrs, args.n_templates, args.donors_per_template, args.seed)
     print(f"[phase B] {len(template_groups)} templates picked")
+    # Optional subsample for dry-run validation
+    max_t = getattr(args, "max_templates", 0)
+    if max_t and len(template_groups) > max_t:
+        rng_sub = random.Random(args.seed + 1)
+        rng_sub.shuffle(template_groups)
+        template_groups = template_groups[:max_t]
+        print(f"[phase B] subsampled to {len(template_groups)} templates "
+              f"(--max_templates={max_t})")
     assignments_path = Path(args.attrs_pkl).parent / "templates.json"
     assignments_path.write_text(json.dumps(template_groups, indent=2))
     print(f"[phase B] saved template assignments: {assignments_path}")
@@ -322,6 +579,13 @@ def parse_args():
     p.add_argument("--donors_per_template", type=int, default=15)
     p.add_argument("--n_targets", type=int, default=6)
     p.add_argument("--seed", type=int, default=20260526)
+    p.add_argument("--template_mode", choices=["kmeans", "knn"], default="kmeans",
+                   help="kmeans: cluster centroids as templates; "
+                        "knn: every adult face is a template with k NN donors")
+    p.add_argument("--max_templates", type=int, default=0,
+                   help="If > 0, subsample template_groups to this many for dry-run")
+    p.add_argument("--use_insight", action="store_true",
+                   help="Use InsightFace for age/gender prediction in Phase A")
     return p.parse_args()
 
 

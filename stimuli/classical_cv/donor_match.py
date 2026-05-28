@@ -39,11 +39,28 @@ class IdAttr:
     face_w: float
     face_h: float
     face_ratio: float        # face_w / face_h
-    nose_rel: float          # nose_width / face_w
+    nose_rel: float          # nose_width / face_w (kept as alias of nose_width_face)
     iod_face_ratio: float    # IOD / face_w (not strongly discriminative across ages)
     cheek_smoothness: float  # Laplacian var; unreliable as absolute age proxy
     lwr_upr_ratio: float     # (chin_y - eye_y) / (eye_y - brow_y) — INFANT INDICATOR
                               # infants/toddlers < 4.0; adults typically 4.5-7.5
+    # Per-feature size metrics (normalized) — added for per-feature donor matching
+    eye_width_iod:   float = 0.0   # avg(eye_w_left, eye_w_right) / IOD
+                                    # typical ~ 0.45-0.55; varies less than nose/mouth
+    eye_ear:         float = 0.0   # avg eye aspect ratio: open ~0.25-0.35, closed <0.18
+    nose_height_face: float = 0.0  # (lm[33].y - lm[27].y) / face_h
+    mouth_width_face: float = 0.0  # (lm[54].x - lm[48].x) / face_w
+    # InsightFace predictions (optional — None if not run)
+    predicted_age: int = -1        # -1 = unknown
+    predicted_gender: str = "?"    # "M" / "F" / "?"
+
+
+def is_blinking(attr: "IdAttr", ear_thresh: float = 0.18) -> bool:
+    """True if both eyes are closed/blinking (avg EAR < threshold).
+    Calibration: open eyes EAR ~0.25-0.35; soft blink ~0.18-0.22; closed <0.15.
+    Used to exclude donors from EYE swap pool (closed-eye donors paste closed
+    eyes onto open-eye templates, producing weird stimuli)."""
+    return attr.eye_ear > 0 and attr.eye_ear < ear_thresh
 
 
 def is_likely_infant(attr: "IdAttr") -> bool:
@@ -105,9 +122,30 @@ def _cheek_smoothness(rgb: np.ndarray, lm: np.ndarray, iod: float) -> float:
     return float(lap.var())
 
 
+def _eye_ear(lm: np.ndarray) -> float:
+    """Eye Aspect Ratio averaged over both eyes. See Soukupova & Cech 2016."""
+    def _ear_one(eye: np.ndarray) -> float:
+        w = float(np.linalg.norm(eye[0] - eye[3]))
+        if w <= 0:
+            return 0.0
+        h = (float(np.linalg.norm(eye[1] - eye[5])) +
+             float(np.linalg.norm(eye[2] - eye[4]))) / 2.0
+        return h / w
+    left  = lm[36:42]
+    right = lm[42:48]
+    return (_ear_one(left) + _ear_one(right)) / 2.0
+
+
 def build_attr(name: str, rgb: np.ndarray, lm: np.ndarray,
-               embedder) -> IdAttr | None:
-    """Compute attribute vector for one identity. Returns None if no face detected."""
+               embedder,
+               age_gender_predictor=None) -> IdAttr | None:
+    """Compute attribute vector for one identity. Returns None if no face
+    detected.
+
+    age_gender_predictor: optional InsightAttrExtractor instance. If
+    provided, populates predicted_age + predicted_gender. If None or it
+    fails on this image, leaves them at defaults (-1, "?").
+    """
     emb, _shape = embedder.embed(rgb)
     if emb is None:
         return None
@@ -122,12 +160,30 @@ def build_attr(name: str, rgb: np.ndarray, lm: np.ndarray,
     iod_face_ratio = iod / max(face_w, 1e-6)
     smoothness = _cheek_smoothness(rgb, lm, iod)
     # Infant-discriminating proportion: ratio of (chin-to-eye)/(eye-to-brow).
-    # Infants have shorter chins + larger foreheads → ratio is LOW.
     eye_y = float(lm[36:48, 1].mean())
     chin_y = float(lm[8, 1])
     lwr = chin_y - eye_y
     upr = eye_y - brow_y
     lwr_upr_ratio = lwr / max(upr, 1e-6)
+    # Per-feature sizes (normalized)
+    eye_w_left  = float(lm[39, 0] - lm[36, 0])
+    eye_w_right = float(lm[45, 0] - lm[42, 0])
+    eye_width_iod = ((eye_w_left + eye_w_right) / 2.0) / max(iod, 1e-6)
+    eye_ear = _eye_ear(lm)
+    nose_h = float(lm[33, 1] - lm[27, 1])
+    nose_height_face = nose_h / max(face_h, 1e-6)
+    mouth_w = float(lm[54, 0] - lm[48, 0])
+    mouth_width_face = mouth_w / max(face_w, 1e-6)
+    # InsightFace predictions
+    p_age = -1
+    p_gender = "?"
+    if age_gender_predictor is not None:
+        try:
+            r = age_gender_predictor.predict(rgb, lm)
+            if r is not None:
+                p_age, p_gender = r
+        except Exception:
+            pass
     return IdAttr(
         name=name, rgb=rgb, lm=lm, emb=emb,
         skin_lab=skin_lab, face_w=face_w, face_h=face_h,
@@ -135,6 +191,12 @@ def build_attr(name: str, rgb: np.ndarray, lm: np.ndarray,
         iod_face_ratio=iod_face_ratio,
         cheek_smoothness=smoothness,
         lwr_upr_ratio=lwr_upr_ratio,
+        eye_width_iod=eye_width_iod,
+        eye_ear=eye_ear,
+        nose_height_face=nose_height_face,
+        mouth_width_face=mouth_width_face,
+        predicted_age=p_age,
+        predicted_gender=p_gender,
     )
 
 

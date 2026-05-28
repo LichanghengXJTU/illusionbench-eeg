@@ -46,7 +46,7 @@ import numpy as np
 from PIL import Image
 from skimage.metrics import structural_similarity as ssim
 
-from stimuli.classical_cv.color_transfer import reinhard_transfer
+from stimuli.classical_cv.color_transfer import reinhard_L_only_ring
 from stimuli.classical_cv.precise_polygons import (
     both_eyes_polygon, nose_polygon, mouth_polygon,
     both_eyes_tight_polygon, nose_tight_polygon, mouth_tight_polygon,
@@ -155,11 +155,15 @@ def composite_template_face(template_rgb: np.ndarray, template_lm: np.ndarray,
     """Build a target face by pasting `donors[feature]`'s feature into
     `template`. Returns the composite RGB.
 
-    `donors` = {feature: (donor_rgb, donor_lm)} for each of eye/nose/mouth.
-    The 3 donor faces are distinct (Tanaka design)."""
+    `donors` = {feature: (donor_rgb, donor_lm)} for SOME OR ALL of
+    eye/nose/mouth. Features missing from `donors` are NOT substituted —
+    template's own content is kept for those features. The 3 donor faces
+    are typically distinct (Tanaka design)."""
     h, w = template_rgb.shape[:2]
     out = template_rgb.copy()
     for feature in FEATURES:
+        if feature not in donors:
+            continue
         donor_rgb, donor_lm = donors[feature]
         # 1. Similarity-warp donor so its feature anchors align with template's
         warped_rgb, lm_warped = _warp_donor_to_template(
@@ -179,36 +183,26 @@ def composite_template_face(template_rgb: np.ndarray, template_lm: np.ndarray,
             cx = int(M["m10"] / M["m00"]); cy = int(M["m01"] / M["m00"])
         else:
             cx, cy = polygon_centroid(poly_template)
-        # 3. Reinhard: recolor warped donor → match local skin annulus on `out`
-        skin_ref = _annulus_skin_pixels(out, mask_union, ring_px=30)
-        warped_recolor = reinhard_transfer(warped_rgb,
-                                           skin_ref[None, :, :])
-        # 4. Poisson seamlessClone — MIXED_CLONE preserves donor's strong
-        #    gradients (eyelashes, iris edges, lip lines) better than
-        #    NORMAL_CLONE, reducing the "soft halo" around the swap.
+        # 3. Reinhard: L-only ring transfer. Only shift donor's LUMINANCE
+        #    to match dst skin around the mask boundary. Preserve donor's
+        #    a/b chroma (donor identity: eye iris hue, lip color, eye
+        #    shadow). Full RGB Reinhard was erasing color identity.
+        warped_recolor = reinhard_L_only_ring(warped_rgb, out, mask_union,
+                                              ring_px=15)
+        # 4. Poisson seamlessClone — NORMAL_CLONE forces internal Δ = donor's
+        #    gradient field → fully replaces template's feature content
+        #    with donor's. (MIXED_CLONE used max(|src|,|dst|) gradients,
+        #    which let template's strong eye/nose/mouth gradients leak
+        #    through, yielding V1 ≈ V2.)
         try:
             poisson = cv2.seamlessClone(warped_recolor, out, mask_union,
-                                        (cx, cy), cv2.MIXED_CLONE)
+                                        (cx, cy), cv2.NORMAL_CLONE)
         except cv2.error:
             alpha = cv2.GaussianBlur(mask_union, (0, 0), 5, 5).astype(np.float32) / 255.0
             alpha = alpha[..., None]
             poisson = (out.astype(np.float32) * (1 - alpha) +
                        warped_recolor.astype(np.float32) * alpha).astype(np.uint8)
-        # 5. Detail-preservation layer: Poisson attenuates high-freq details
-        #    (eyelashes, iris texture, lip lines) near mask boundary. Add
-        #    back donor's high-frequency content INSIDE the tight feature
-        #    polygon — restores crisp detail without re-introducing the seam.
-        poly_tight = _build_tight_polygon(feature, template_lm, iod_t)
-        mask_tight = polygon_mask(poly_tight, (h, w))
-        # Erode tight mask inward so detail layer doesn't reach the Poisson
-        # transition zone (avoid double-edge artifacts)
-        mask_inner = cv2.erode(mask_tight, np.ones((4, 4), np.uint8))
-        alpha_inner = cv2.GaussianBlur(mask_inner, (0, 0), 2.0)
-        alpha_inner = (alpha_inner.astype(np.float32) / 255.0)[..., None]
-        donor_low = cv2.GaussianBlur(warped_recolor, (0, 0), 2.0)
-        donor_detail = warped_recolor.astype(np.float32) - donor_low.astype(np.float32)
-        out_f = poisson.astype(np.float32) + donor_detail * alpha_inner
-        out = np.clip(out_f, 0, 255).astype(np.uint8)
+        out = poisson
     return out
 
 
@@ -229,60 +223,87 @@ def isolate_feature_on_gray(rgb: np.ndarray, template_lm: np.ndarray,
 
 # === Build target faces + PW conditions for one template ====================
 
-def build_template_stimuli(template: IdAttr, donor_pool: list[IdAttr],
-                           rng: random.Random,
-                           n_targets: int = 6) -> list[dict]:
+def build_template_stimuli(template: IdAttr,
+                            donor_pool_or_pools,
+                            rng: random.Random,
+                            n_targets: int = 6,
+                            per_feature_pools: bool = False) -> list[dict]:
     """Generate `n_targets` target faces under this template, plus the
     PW V1-V4 conditions for each (target × feature) combination.
 
-    Returns list of dicts, one per (target_idx, feature)."""
+    Two modes:
+      Legacy (per_feature_pools=False): donor_pool_or_pools is a flat list
+        of IdAttr. Each target picks 3 distinct donors (one per feature)
+        from this shared pool.
+      Per-feature (per_feature_pools=True): donor_pool_or_pools is a dict
+        {"eye": [...], "nose": [...], "mouth": [...]}. Each feature has
+        its own independently-filtered pool. Active features are those
+        whose pool has >= n_targets donors; inactive features are skipped
+        (template content preserved for those features in the composite,
+        and no swap stimuli generated for them).
+
+    Returns list of dicts, one per (target_idx, ACTIVE feature)."""
     iod_t = float(np.linalg.norm(
         template.lm[36:42].mean(0) - template.lm[42:48].mean(0)))
-    if len(donor_pool) < 6:
-        return []
-    # Build n_targets target faces. Each target = 3 distinct donors.
-    targets = []  # list of {eye_donor, nose_donor, mouth_donor, composite_rgb}
-    for t_idx in range(n_targets):
-        # Pick 3 distinct donors (different from previous targets when possible)
-        triple = rng.sample(donor_pool, 3)
-        donors = {
-            "eye":   (triple[0].rgb, triple[0].lm),
-            "nose":  (triple[1].rgb, triple[1].lm),
-            "mouth": (triple[2].rgb, triple[2].lm),
+    # Determine active features + sampled donors per (target, feature)
+    if per_feature_pools:
+        pools = donor_pool_or_pools
+        active = [f for f in FEATURES
+                  if len(pools.get(f, [])) >= n_targets]
+        if not active:
+            return []
+        donors_grid: dict[str, list[IdAttr]] = {
+            f: rng.sample(pools[f], n_targets) for f in active
         }
-        composite = composite_template_face(template.rgb, template.lm,
-                                            donors, iod_t)
+    else:
+        donor_pool = donor_pool_or_pools
+        if len(donor_pool) < 6:
+            return []
+        active = list(FEATURES)
+        donors_grid = {}
+        # Pre-sample triples per target — same logic as legacy
+        per_target_triples = [rng.sample(donor_pool, 3) for _ in range(n_targets)]
+        for f_idx, f in enumerate(FEATURES):
+            donors_grid[f] = [per_target_triples[t_idx][f_idx]
+                              for t_idx in range(n_targets)]
+    # Build each target's full composite (uses target's donor for every ACTIVE feature)
+    targets = []
+    for t_idx in range(n_targets):
+        donor_attrs_t = {f: donors_grid[f][t_idx] for f in active}
+        composite = composite_template_face(
+            template.rgb, template.lm,
+            {f: (a.rgb, a.lm) for f, a in donor_attrs_t.items()},
+            iod_t,
+        )
         targets.append({
-            "donor_names": {f: triple[i].name for i, f in enumerate(FEATURES)},
-            "donor_attrs": {f: triple[i] for i, f in enumerate(FEATURES)},
+            "donor_names": {f: donor_attrs_t[f].name for f in active},
+            "donor_attrs": donor_attrs_t,
             "composite":   composite,
         })
 
-    # Build PW conditions
+    # Build PW conditions — only for ACTIVE features
     results = []
     for t_idx, t in enumerate(targets):
-        # Pick foil = another target index (not t_idx)
-        foil_options = [j for j in range(n_targets) if j != t_idx]
-        foil_idx = rng.choice(foil_options)
-        foil = targets[foil_idx]
-        for feature in FEATURES:
-            # V2 = T + t's features except `feature` swapped with foil's
-            v2_donors = {
-                "eye":   t["donor_attrs"]["eye"],
-                "nose":  t["donor_attrs"]["nose"],
-                "mouth": t["donor_attrs"]["mouth"],
-            }
-            v2_donors[feature] = foil["donor_attrs"][feature]
+        for feature in active:
+            valid_foils = [j for j in range(n_targets)
+                           if j != t_idx and
+                           targets[j]["donor_names"][feature] != t["donor_names"][feature]]
+            if not valid_foils:
+                valid_foils = [j for j in range(n_targets) if j != t_idx]
+            foil_idx = rng.choice(valid_foils)
+            foil = targets[foil_idx]
+            # V2 = T + t's active features except `feature` swapped with foil's
+            v2_donor_attrs = dict(t["donor_attrs"])
+            v2_donor_attrs[feature] = foil["donor_attrs"][feature]
             v2_composite = composite_template_face(
                 template.rgb, template.lm,
-                {f: (a.rgb, a.lm) for f, a in v2_donors.items()},
+                {f: (a.rgb, a.lm) for f, a in v2_donor_attrs.items()},
                 iod_t,
             )
             v1 = t["composite"]
             v2 = v2_composite
             v3 = isolate_feature_on_gray(v1, template.lm, feature, iod_t)
             v4 = isolate_feature_on_gray(v2, template.lm, feature, iod_t)
-            # SSIM in feature bbox
             poly_t = _build_tight_polygon(feature, template.lm, iod_t)
             bx1, by1, bx2, by2 = polygon_bbox(poly_t, v1.shape[:2], pad=6)
             ssim_val = (float(ssim(v1[by1:by2, bx1:bx2],

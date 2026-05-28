@@ -36,6 +36,52 @@ def reinhard_transfer(source_rgb: np.ndarray,
     return cv2.cvtColor(out, cv2.COLOR_LAB2RGB)
 
 
+def reinhard_L_only_ring(donor_rgb: np.ndarray,
+                          dst_rgb: np.ndarray,
+                          mask: np.ndarray,
+                          ring_px: int = 15) -> np.ndarray:
+    """L-channel-only luminance shift for feature substitution.
+
+    Why this over full RGB Reinhard:
+      - Full Reinhard rescales L, a, b mean+std of the entire donor image
+        to match dst skin → eliminates donor's chroma identity (iris hue,
+        lip color, ethnic skin tone tint at eye corners). For PW, this
+        kills the perceptual difference between V1 and V2.
+      - L-only ring instead shifts donor's LUMINANCE only, by the mean
+        difference between donor pixels INSIDE mask and dst pixels in a
+        narrow ring around the mask boundary. This preserves chroma while
+        preventing a visible brightness seam at the Poisson boundary.
+
+    Args:
+      donor_rgb:  warped donor image, uint8 RGB, same shape as dst_rgb
+      dst_rgb:    current composite (template + previously-pasted features)
+      mask:       uint8 binary mask of the swap region (255 inside, 0 out)
+      ring_px:    ring width around mask boundary used to estimate dst skin
+                  luminance. Wider = more stable, but may include non-skin.
+
+    Returns:
+      donor_rgb with L channel shifted; a/b unchanged.
+    """
+    if mask.max() == 0:
+        return donor_rgb.copy()
+    donor_lab = cv2.cvtColor(donor_rgb, cv2.COLOR_RGB2LAB).astype(np.float32)
+    dst_lab   = cv2.cvtColor(dst_rgb,   cv2.COLOR_RGB2LAB).astype(np.float32)
+    # Ring = dilated(mask) - eroded(mask): a band straddling the boundary
+    ksz = max(1, int(ring_px))
+    K = np.ones((ksz, ksz), np.uint8)
+    dilated = cv2.dilate(mask, K)
+    eroded  = cv2.erode(mask, K)
+    ring = (dilated > 0) & (eroded == 0)
+    inside = (mask > 0)
+    if not ring.any() or not inside.any():
+        return donor_rgb.copy()
+    L_donor_inside = donor_lab[..., 0][inside].mean()
+    L_dst_ring     = dst_lab[..., 0][ring].mean()
+    shift = float(L_dst_ring - L_donor_inside)
+    donor_lab[..., 0] = np.clip(donor_lab[..., 0] + shift, 0, 255)
+    return cv2.cvtColor(donor_lab.astype(np.uint8), cv2.COLOR_LAB2RGB)
+
+
 def reinhard_transfer_masked(source_rgb: np.ndarray, source_mask: np.ndarray,
                               reference_pixels_rgb: np.ndarray) -> np.ndarray:
     """Apply Reinhard transfer to source_rgb but use only pixels where

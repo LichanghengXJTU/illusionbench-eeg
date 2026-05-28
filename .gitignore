@@ -32,3 +32,20 @@ data/thatcher_ffhq_70k/
 # partwhole runtime (regenerable, large)
 data/partwhole_*/
 data/partwhole_attrs.pkl
+
+# composite v2 runtime (regenerable, ~100 GB locally)
+data/composite_v2/
+data/composite_v2_pngs/
+data/composite_v2_release/
+data/composite_attrs.pkl
+data/composite_attrs.phaseB.pkl
+data/composite_pilot_*/
+data/composite_ffhq_src/
+
+# server-only HF cache + dataset README copies
+data/HoloFaceIllusion-Bench-EEG_*.md
+data/HoloFaceIllusion-Bench-EEG-v*_*.md
+data/HoloFaceIllusion-Bench-EEG*/
+
+# mediapipe model file (3.6 MB; download via setup)
+models/mediapipe/*.task
